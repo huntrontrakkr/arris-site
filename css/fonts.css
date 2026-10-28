@@ -43,3 +43,10 @@
   font-display: swap;
   src: url("../fonts/arris-mono-700.woff2") format("woff2");
 }
+@font-face {
+  font-family: "Arris Mono";
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+  src: url("../fonts/arris-mono-400-italic.woff2") format("woff2");
+}

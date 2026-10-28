@@ -23,6 +23,7 @@
     <a href="#specimen">Specimen</a>
     <a href="#features">Features</a>
     <a href="#in-use">In use</a>
+    <a href="#mono">Mono</a>
     <a href="https://github.com/huntrontrakkr/arris-type">Source ↗</a>
     <a class="dl" href="#download">↓ Download</a>
   </nav>
@@ -172,19 +173,39 @@
   </div>
 </section>
 
-<section class="prop-row">
-  <pre class="prop term" aria-label="A ship's log in Arris Mono with its ligatures"><code><span class="c">// relay log, ring 4</span>
-fn route(p: &amp;Packet) -&gt; Bay {
-    match p.dest {
-        Dest::Ceres =&gt; Bay::new(7),
-        d if d != Dest::Home =&gt; Bay::hold(d),
-        _ =&gt; Bay::new(8),
-    }
-}
-<span class="c">// 03:47  courier jacked in · bay 09</span></code></pre>
-  <div class="prop-side">
-    <p class="note">Arris Mono puts every glyph on the figures' 10-module pitch. Its ligatures (<code>-&gt;</code> <code>=&gt;</code> <code>!=</code> <code>|&gt;</code> <code>&lt;/&gt;</code>) keep each character in its own cell, so columns never drift.</p>
+<section class="mono" id="mono">
+  <h2>Arris Mono</h2>
+  <p class="mono-lede">Every glyph on the figures' 10-module pitch, and 45 ligatures that never move the grid: a sequence of characters becomes one sign drawn back across their cells, each character still where it stands.</p>
+
+  <div class="editor" id="editor">
+    <div class="ed-bar">
+      <div class="ed-tabs" role="tablist" aria-label="Code samples" id="ed-tabs"></div>
+      <div class="ed-tools" role="group" aria-label="Display">
+        <button type="button" id="t-calt" aria-pressed="true">Ligatures</button>
+        <button type="button" id="t-ss03" aria-pressed="false" title="ss03: &lt;= and &gt;= as their characters, for languages where they are arrows"><code>ss03</code></button>
+        <button type="button" id="t-cells" aria-pressed="false">Cells</button>
+        <button type="button" id="t-bold" aria-pressed="false">Bold</button>
+      </div>
+    </div>
+    <div class="ed-body">
+      <pre class="ed-nums" id="ed-nums" aria-hidden="true"></pre>
+      <pre class="ed-code" id="ed-code" contenteditable="plaintext-only" spellcheck="false" aria-label="Editable code, set in Arris Mono"></pre>
+    </div>
   </div>
+  <p class="note">Edit the code. Ligatures form as you type (<code>calt</code>, on by default; editors can turn it off). Cells shows the grid every character keeps.</p>
+
+  <h3 class="lig-title">The ligatures</h3>
+  <div class="ligs" id="ligs"></div>
+  <p class="note">Hover or tap a sign to see its characters, outlined in red, exactly where they stand. Each is as many cells wide as the characters it replaces.</p>
+  <div class="never">
+    <span class="never-label">Never forms</span>
+    <span id="never"></span>
+  </div>
+  <p class="note">A ligature never forms when another operator touches it, so <code>&lt;=&lt;</code>, <code>&gt;&gt;=</code> and <code>----&gt;</code> stay as their characters. Sequences that would only be drawn closer together (<code>::</code> <code>//</code> <code>||</code> <code>..</code>) are left alone.</p>
+
+  <h3 class="lig-title">In the terminal</h3>
+  <pre class="tui" id="tui" aria-label="A terminal interface drawn in Arris Mono's box drawing, blocks, Braille and Powerline glyphs"></pre>
+  <p class="note">Box drawing, blocks, shades, 256 Braille cells and the Powerline glyphs fill their cells and join row to row.</p>
 </section>
 
 <section class="prop-row reverse">
@@ -249,5 +270,6 @@ body {
 </main>
 
 <script src="js/site.js" defer></script>
+<script src="js/mono.js" defer></script>
 </body>
 </html>

@@ -9,7 +9,7 @@ arrives only when a character from it is on the page.
            (CSS unicode-range), so Cyrillic, Greek, symbols and the terminal
            set load on demand
 
-Also copies Mono Regular and Bold whole, writes data/font.json (version,
+Also copies Mono Regular, Bold and Italic whole, writes data/font.json (version,
 axes, features, code points with their Unicode names and blocks) and the
 @font-face rules to css/fonts.css.
 
@@ -119,6 +119,7 @@ def main(zip_path):
             }
     for weight, name in ((400, 'Regular'), (700, 'Bold')):
         (FONTS / f'arris-mono-{weight}.woff2').write_bytes(web(f'ArrisMono-{name}.woff2'))
+    (FONTS / 'arris-mono-400-italic.woff2').write_bytes(web('ArrisMono-Italic.woff2'))
     (DATA / 'font.json').write_text(json.dumps(info, separators=(',', ':'), ensure_ascii=False))
     rules = ['/* written by tools/fonts.py from the release zip; do not edit */']
     for style, file, rng in faces:
@@ -128,6 +129,8 @@ def main(zip_path):
     for weight in (400, 700):
         rules.append('@font-face {\n  font-family: "Arris Mono";\n  font-weight: %d;\n  font-display: swap;\n'
                      '  src: url("../fonts/arris-mono-%d.woff2") format("woff2");\n}' % (weight, weight))
+    rules.append('@font-face {\n  font-family: "Arris Mono";\n  font-weight: 400;\n  font-style: italic;\n  font-display: swap;\n'
+                 '  src: url("../fonts/arris-mono-400-italic.woff2") format("woff2");\n}')
     (CSS / 'fonts.css').write_text('\n'.join(rules) + '\n')
     print(info['family'], info['version'], len(info['chars']), 'chars', info['features'])
 

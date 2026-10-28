@@ -463,14 +463,23 @@
   onScroll();
 
   /* ------------------------------------------------------------ the survey */
-  const slice = $('#slice'), leakRow = $('.leak-row');
+  // the four named minerals make 85.8 %; the total says so, until the
+  // fifth row shows and it reads 100.0
+  const slice = $('#slice'), leakRow = $('.leak-row'), survey = $('.survey'), totalEl = $('#survey-total');
+  function leaking(on) {
+    leakRow.classList.toggle('on', on);
+    survey.classList.toggle('leaking', on);
+    totalEl.textContent = on ? '100.0' : '85.8';
+  }
+  leakRow.addEventListener('pointerenter', () => leaking(true));
+  leakRow.addEventListener('pointerleave', () => leaking(false));
   if (!reduce && slice) {
     let s = 1, hold = 0;
     setInterval(() => {
       if (hold > 0) { hold--; return; }
       s = s % 33 + 1;
       slice.textContent = two(s);
-      leakRow.classList.toggle('on', s === 33);
+      if (!leakRow.matches(':hover')) leaking(s === 33);
       if (s === 33) hold = 8;
     }, 180);
   }

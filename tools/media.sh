@@ -17,4 +17,5 @@ loop() {  # name, start s, length s
 loop survey 0 8
 loop dock 0 6
 loop weight-field 0 7.5
-loop gauge-blocks 0 3.5
+# the survey opens on a dark frame: its stills come from the YouTube thumbnail
+cp "$SRC/youtube/survey.jpg" "$OUT/survey.jpg"

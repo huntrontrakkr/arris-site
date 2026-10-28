@@ -56,7 +56,21 @@ tools/media.sh ../arris-films/presentation
 | `index.html` | the page |
 | `css/site.css` | the two faces, the props, the crossing |
 | `css/fonts.css` | written by `tools/fonts.py` |
-| `js/site.js` | the name, the watch, the axes, the specimen, the features, the crossing |
+| `js/site.js` | the name, the watch, the designspace, the italic, the specimen, the features, the crossing |
+| `js/mono.js` | Arris Mono: the code window, the ligature board, the terminal |
+| `js/belt.js` | the paperwork and the long read whose lines fill in as you reach them |
 | `data/font.json` | written by `tools/fonts.py` |
 | `media/` | written by `tools/media.sh` |
-| `kapa/` | not linked from the navigation |
+| `kapa/` | not linked from the navigation; `sealed.json` is written by `tools/seal.mjs` |
+
+## The layer underneath
+
+Some pages are not in the navigation, and some of what they say is sealed:
+`tools/seal.mjs` encrypts a transmission with a key derived from its
+access code, so the repository holds only ciphertext and the page's source
+gives nothing away. Keep the plaintexts and their codes out of the
+repository.
+
+```
+node tools/seal.mjs CODE < transmission.txt > kapa/sealed.json
+```

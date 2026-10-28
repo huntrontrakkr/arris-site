@@ -193,12 +193,83 @@
     <div class="cface cface-paper" aria-hidden="true"><span>Specimen</span></div>
     <div class="cface cface-cut" aria-hidden="true"></div>
     <div class="cface cface-night" aria-hidden="true"><span>In use</span></div>
-    <p class="slogan" id="slogan">cutting corners where we can</p>
+    <p class="slogan" id="slogan"><span class="slogan-said">cutting corners where we can</span></p>
+    <div class="slogan-cut" aria-hidden="true"><span class="slogan-x">✂</span><span class="slogan-dash"></span></div>
   </div>
 </section>
 
 <!-- ============================================================ NIGHT: the Belt -->
 <div class="face-night" id="in-use">
+
+<section class="desk" id="paperwork" aria-label="Paperwork from the Belt, set in Arris">
+  <div class="pile">
+
+    <article class="doc clip" style="--r: -2.4deg">
+      <div class="clip-mast"><span>Ceres Daily</span><span>Вестник Цереры</span></div>
+      <div class="clip-date">TUE 27 OCT · RING EDITION · 2 cr</div>
+      <h3 class="clip-hed">Survey ship back from 0347&nbsp;KAPA four days early</h3>
+      <p class="clip-dek">Crew of SURVEY 4-A say the rock was “smaller on the inside”; the survey office says nothing at all.</p>
+      <div class="clip-cols">
+        <p>SURVEY 4-A docked at bay 09 on the 03:47 shift, four days ahead of its flight plan and eleven tonnes heavier than it left. Its crew of three walked off past the press without a word and were driven up the ring line to the medical deck.</p>
+        <p>The ship's report gives the rock's composition to a tenth of a percent, nickel-iron, olivine, ice and carbon, except for <span class="redact">fourteen point two percent of it</span>, which the office declined to discuss.</p>
+        <p>The dockmaster confirmed that a single sealed crate came off the ship and has not moved since.</p>
+      </div>
+      <img class="clip-photo" src="media/survey.jpg" alt="" loading="lazy">
+    </article>
+
+    <div class="doc manifest" style="--r: 3.2deg">
+      <div class="man-head"><b>DOCK 07</b><span>MANIFEST · SHIFT 03:47</span></div>
+      <table>
+        <thead><tr><th>Bay</th><th>Item</th><th>Mass t</th><th>From</th></tr></thead>
+        <tbody>
+          <tr><td>07</td><td>Water bladders ×12</td><td>4.800</td><td>Ice yard</td></tr>
+          <tr><td>08</td><td>Scrubber cores ×40</td><td>1.250</td><td>Ring 4</td></tr>
+          <tr><td>08</td><td>Rose cuttings ×1</td><td>0.002</td><td>Glasshouse</td></tr>
+          <tr class="held"><td>09</td><td>Crate, sealed ×1</td><td>11.000</td><td>0347 KAPA</td></tr>
+        </tbody>
+      </table>
+      <div class="man-foot"><span>CONSIGNEE <span class="redact">SURVEY OFFICE, NO ONE ELSE</span></span><span class="stamp">HOLD</span></div>
+    </div>
+
+    <div class="doc ticket" style="--r: -5deg">
+      <div class="tk-line">Ring line · Кольцевая · Γραμμή Δακτυλίου</div>
+      <div class="tk-route"><span>Arcology 7</span><span class="tk-arrow">→</span><span>Docks</span></div>
+      <div class="tk-grid">
+        <div><span>Dep</span><b>03:47</b></div>
+        <div><span>Car</span><b class="px">34</b></div>
+        <div><span>Pod</span><b>7</b></div>
+        <div><span>Fare</span><b class="frac">1/2</b></div>
+      </div>
+      <div class="tk-foot">SLEEPER · WAKE 05:10 · RICE BALL AND BLACK COFFEE</div>
+    </div>
+
+    <div class="doc receipt" style="--r: 4.5deg">
+      <div class="rc-head">Noodles, all night</div>
+      <div class="rc-sub">Ring 3 · Spinward · 03:31</div>
+      <div class="rc-rows">
+        <div><span>Beef noodles</span><span>12.50</span></div>
+        <div><span>Rice ball ×2</span><span>6.50</span></div>
+        <div><span>Black coffee</span><span>2.75</span></div>
+        <div class="rc-total"><span>Total, cr</span><span>21.75</span></div>
+      </div>
+      <div class="rc-foot">Thank you · Спасибо · Cảm ơn</div>
+    </div>
+
+    <div class="doc badge" style="--r: -8deg">
+      <div class="bd-top">SURVEY 4-A · CREW</div>
+      <div class="bd-name">K. Ostrowska</div>
+      <div class="bd-role">Slice operator</div>
+      <div class="bd-num px">0347</div>
+      <div class="bd-foot">Tier 2 · Docks, ring line, medical</div>
+    </div>
+
+  </div>
+  <div class="desk-notes">
+    <p class="note">Tabular figures by default: masses, fares and totals line up on every slip.</p>
+    <p class="note">The watch's time colon, fractions, and Cyrillic and Greek on one ticket.</p>
+    <p class="note">Hover or tap a page to straighten it.</p>
+  </div>
+</section>
 
 <section class="prop-row">
   <div class="prop dock" aria-label="A loading dock floor, painted in Arris">
@@ -226,12 +297,45 @@
         <tr><td>04</td><td>Carbonaceous</td><td>9.4</td></tr>
         <tr class="leak-row"><td>05</td><td>Unclassified</td><td>14.2</td></tr>
       </tbody>
+      <tfoot><tr><td>Σ</td><td>Total</td><td id="survey-total">85.8</td></tr></tfoot>
     </table>
   </div>
   <div class="prop-side">
     <video muted loop playsinline preload="none" poster="media/survey.jpg" aria-label="SURVEY, a layered glass display drawing an asteroid in slices"><source src="media/survey.mp4" type="video/mp4"></video>
     <p class="note">Mono for data: every character in its cell, figures and units that line up down a column.</p>
   </div>
+</section>
+
+<section class="reading" id="reading">
+  <div class="sheet-wrap">
+    <aside class="doc snip" style="--r: 6deg" aria-label="A clipping pinned to the margin">
+      <div class="snip-kicker">Transit · Night shift</div>
+      <div class="snip-hed">The rain never stops. Neither do the trains.</div>
+      <div class="snip-dek">Couriers, coders and noodle cooks ride the 03:47 maglev from Arcology 7 to the docks.</div>
+    </aside>
+    <article class="sheet" id="glasshouse">
+      <div class="sheet-kicker">Station life · The Glasshouse</div>
+      <h3 class="sheet-hed">Roses take their time at four hundred kilometres.</h3>
+      <p class="sheet-dek">In the ring’s quietest module a horticulturist and two retired pilots grow the only flowers for a million kilometres. They will not tell you their secret, but they will let you water.</p>
+      <div class="sheet-by">Words by Ines Varga · 14 min read</div>
+      <div class="sheet-nums">
+        <div><b>2,140</b><span>rose bushes</span></div><div><b>26 h</b><span>to a day</span></div><div><b>340 L</b><span>water a week</span></div><div><b>11</b><span>years running</span></div><div><b>0</b><span>sold</span></div>
+      </div>
+      <div class="sheet-body" id="sheet-body">
+        <p class="taper">The Glasshouse is the last stop on the night line, and most riders sleep through it. Those who wake find a long white module, warm as a kitchen, where the air smells of soil for the first time in weeks. Mira Okonkwo has run it for eleven years. She keeps the lights on a twenty-six-hour day, because, she says, roses never agreed to ours.</p>
+        <p class="taper">Everything is weighed. Water comes up from the docks in sealed bladders, 340 litres a week; what the plants breathe out goes back down the line to the scrubbers. The roses are an old French variety, grown from cuttings that flew up in a lunchbox. In low spin they climb slower and their stems come out thick, almost woody, but the flowers open the same deep red.</p>
+        <p class="pull">“Up here everything is engineered. The roses are the one thing that still decides for itself.”</p>
+        <p class="taper">Two retired pilots, Hal and Teodor, take the night shift. They prune by headlamp, argue about aphids that cannot possibly exist up here, and sell nothing: every bloom goes to a hospital bed, a launch or a wedding on the ring. If you want one, come and water. Bring your own cup.</p>
+        <p class="taper" data-clue>The secret, as far as I can tell, is patience and soil. Soil is the one thing the Glasshouse cannot make. For most of its eleven years it came up the line in sealed sacks from the farms on Ring 4, and Mira mixed it by hand on a table she built from a cargo pallet. Last spring she ran short, and the docks sent up what they had: forty kilos of crushed regolith from a survey rock, sifted and washed, still smelling faintly of iron.</p>
+        <p class="taper" data-clue>She planted a new bed with it, the long one under the east window, and for a month nothing happened. Then everything happened at once. The bushes in the new bed are taller than the rest and a darker green, and they flower on a schedule of their own that pays no attention to the lamps.</p>
+        <p class="taper" data-clue>Hal thinks it is the iron. Teodor thinks it is something else and will not say what, only that the thorns on the new bed are wrong. I asked him how a thorn could be wrong. He took my hand and ran my thumb along a stem. Every thorn came to the same clean edge, flat on one face, as if someone had gone along the stem with a file.</p>
+        <p class="taper" data-clue>Mira does not like to talk about the new bed. She showed me the old roses instead, and the logbook where every bloom is written down: the day it opened, who it went to, and why. A child born on the ring. A pilot who did not come back. Two dockhands married under the east window at a quarter to four in the morning, because that was when their shifts allowed.</p>
+        <p class="taper" data-clue>At the end of the night shift the lamps go amber, then out, and the module runs on the light from the corridor. Hal waters the last row. Teodor writes in the log. I asked whether I could take a rose from the new bed back down the line, and the three of them looked at each other for a long moment before Mira said no, kindly, the way you would tell a child not to touch a stove.</p>
+        <p class="taper">If you go, and you should, take the 03:47, ask for a lower pod, and get off at the end of the line. Water the old roses first.</p>
+      </div>
+    </article>
+  </div>
+  <p class="note">Long text at any weight. Each line fills in from Thin as you reach it, and never reflows: the line breaks are set at the reading weight.</p>
 </section>
 
 <section class="mono" id="mono">
@@ -332,5 +436,6 @@ body {
 
 <script src="js/site.js" defer></script>
 <script src="js/mono.js" defer></script>
+<script src="js/belt.js" defer></script>
 </body>
 </html>

@@ -20,6 +20,8 @@
   <a class="tab" href="#top" aria-label="Arris, back to top">A</a>
   <span class="bar-name">Arris <sup class="ver" data-font="version">1.002</sup></span>
   <nav>
+    <a href="#axes">Axes</a>
+    <a href="#italic">Italic</a>
     <a href="#specimen">Specimen</a>
     <a href="#features">Features</a>
     <a href="#in-use">In use</a>
@@ -75,24 +77,52 @@
 </section>
 
 <section class="space" id="axes">
-  <h2>Three axes, one at a time</h2>
-  <div class="axis-tabs" role="tablist" aria-label="Axis">
-    <button role="tab" id="tab-wght" aria-selected="true" aria-controls="axis-panel" data-axis="wght">Weight <code>wght</code></button>
-    <button role="tab" id="tab-grad" aria-selected="false" aria-controls="axis-panel" data-axis="GRAD">Grade <code>GRAD</code></button>
-    <button role="tab" id="tab-wtch" aria-selected="false" aria-controls="axis-panel" data-axis="WTCH">Watch <code>WTCH</code></button>
-  </div>
-  <div class="axis-panel" id="axis-panel" role="tabpanel">
-    <div class="axis-stage" id="axis-stage">
-      <p class="axis-line" id="axis-line" contenteditable="true" spellcheck="false">Gate 8 closes at 21:47</p>
-      <p class="axis-line ghost" id="axis-ghost" aria-hidden="true">Gate 8 closes at 21:47</p>
+  <h2>The designspace</h2>
+  <p class="sub">Three axes and every point between them. Drag across the map, or use the sliders; over the map, scroll to move through the third axis.</p>
+
+  <div class="ds" id="ds">
+    <div class="ds-stage" id="ds-stage">
+      <p class="ds-text" id="ds-text" contenteditable="true" spellcheck="false">Gate 8 closes at 21:47</p>
+      <p class="ds-ghost" id="ds-ghost" aria-hidden="true">Gate 8 closes at 21:47</p>
     </div>
-    <div class="axis-control">
-      <label for="axis-range" id="axis-label">Weight</label>
-      <input type="range" id="axis-range" min="100" max="900" step="1" value="400">
-      <output id="axis-out" for="axis-range">400</output>
+
+    <div class="ds-panel">
+      <div class="ds-mapbox">
+        <div class="ds-pairs" role="group" aria-label="Axes on the map">
+          <button type="button" data-pair="wght,WTCH" aria-pressed="true">wght × WTCH</button>
+          <button type="button" data-pair="wght,GRAD" aria-pressed="false">wght × GRAD</button>
+          <button type="button" data-pair="GRAD,WTCH" aria-pressed="false">GRAD × WTCH</button>
+        </div>
+        <div class="ds-mapwrap">
+          <div class="ds-map" id="ds-map" tabindex="0" role="slider" aria-label="Designspace map: arrow keys move, Page Up and Page Down change the third axis" aria-valuetext="">
+            <div class="ds-cells" id="ds-cells" aria-hidden="true"></div>
+            <div class="ds-cross" id="ds-cross" aria-hidden="true"><i class="h"></i><i class="v"></i><b></b></div>
+          </div>
+          <div class="ds-third" id="ds-third" aria-hidden="true"><i></i><span></span></div>
+        </div>
+        <div class="ds-axislabels"><span id="ds-xlabel">wght →</span><span id="ds-ylabel">WTCH ↓</span></div>
+      </div>
+
+      <div class="ds-controls">
+        <div class="ds-slider"><label for="s-wght">Weight <code>wght</code></label><input id="s-wght" type="range" min="100" max="900" step="1"><output id="o-wght"></output>
+          <p class="ds-what">Thin to Black. The colour is the titanium oxide shade for that weight.</p></div>
+        <div class="ds-slider"><label for="s-GRAD">Grade <code>GRAD</code></label><input id="s-GRAD" type="range" min="-100" max="100" step="1"><output id="o-GRAD"></output>
+          <p class="ds-what">Thinner or thicker strokes with every advance unmoved: the red outline is grade 0, and the line keeps its length.</p></div>
+        <div class="ds-slider"><label for="s-WTCH">Watch <code>WTCH</code></label><input id="s-WTCH" type="range" min="0" max="100" step="1"><output id="o-WTCH"></output>
+          <p class="ds-what">The watch's own stroke balance: at 100, diagonals as wide across as a stem.</p></div>
+        <div class="ds-row">
+          <div class="switch small" role="group" aria-label="Style">
+            <button type="button" id="ds-up" aria-pressed="true">Upright</button>
+            <button type="button" id="ds-it" aria-pressed="false">Italic</button>
+          </div>
+          <button type="button" class="ds-fly" id="ds-fly" aria-pressed="false">▶ Fly through</button>
+        </div>
+        <div class="ds-presets" id="ds-presets" aria-label="Named places"></div>
+        <div class="ds-css"><code id="ds-css"></code><button type="button" id="ds-copy">Copy</button></div>
+      </div>
     </div>
-    <p class="note" id="axis-note">Nine named weights from Thin to Black, and every weight between. Each colour is the shade a titanium oxide film takes as it thickens; here it only ever means weight.</p>
   </div>
+
   <figure class="field">
     <video id="field-video" muted loop playsinline preload="none" poster="media/weight-field.jpg" aria-label="A field of eights where every outline point takes its own weight">
       <source src="media/weight-field.mp4" type="video/mp4">
@@ -101,21 +131,52 @@
   </figure>
 </section>
 
+<section class="italic" id="italic">
+  <p class="it-kicker">Arris Italic</p>
+  <h2 class="it-title" id="it-title" contenteditable="true" spellcheck="false">Cursive, not slanted.</h2>
+  <p class="it-lede">Ten degrees, and drawn as a hand would: every chamfer becomes a curve, the a closes into a single storey, the f descends, and every point the upright keeps sharp stays sharp.</p>
+
+  <div class="it-pairs" id="it-pairs"></div>
+  <p class="note">Each pair is the upright and its italic at the same weight. Hover or tap one to lay the upright's outline over the italic.</p>
+
+  <div class="it-wave" id="it-wave" aria-label="A line of italic whose weight follows the pointer">Rain hissed on the maglev rails as the last courier jacked in at 03:47</div>
+  <p class="note">The italic carries all three axes. Move across the line: the weight follows you, letter by letter.</p>
+
+  <div class="it-weights" id="it-weights"></div>
+
+  <div class="it-locl">
+    <div class="it-locl-row"><span class="it-lang">Русский</span><span class="it-sample" lang="ru">бвгдлпт</span></div>
+    <div class="it-locl-row"><span class="it-lang">Српски</span><span class="it-sample" lang="sr">бвгдлпт</span></div>
+    <div class="it-locl-row"><span class="it-lang">Македонски</span><span class="it-sample" lang="mk">бвгдлпт</span></div>
+    <div class="it-locl-row"><span class="it-lang">Български</span><span class="it-sample" lang="bg">бвгдлпт</span></div>
+  </div>
+  <p class="note">The same seven letters, set with <code>lang</code>: Serbian and Macedonian get their own cursive б г п т, Bulgarian its own в д л п т, through <code>locl</code>.</p>
+</section>
+
 <section class="specimen" id="specimen">
   <h2>The character set</h2>
   <div class="spec">
     <div class="card" id="card">
-      <div class="card-head"><span id="card-cp">U+0041</span><span id="card-block">Basic Latin</span></div>
-      <canvas id="card-canvas" width="600" height="600" aria-label="The selected character, large, on Arris's metrics"></canvas>
+      <div class="card-head"><span id="card-cp">U+0041</span><span id="card-block">Latin</span></div>
+      <div class="card-stage" id="card-stage" aria-label="The selected character, large, on Arris's metrics">
+        <div class="card-lines" id="card-lines" aria-hidden="true"></div>
+        <div class="card-glyph" id="card-glyph"><span id="card-ch">A</span></div>
+      </div>
       <div class="card-name" id="card-name">LATIN CAPITAL LETTER A</div>
-      <div class="card-metrics" id="card-metrics"></div>
+      <div class="card-foot">
+        <div class="card-metrics" id="card-metrics"></div>
+        <div class="switch small dark" role="group" aria-label="Style of the card">
+          <button type="button" id="card-up" aria-pressed="true">Upright</button>
+          <button type="button" id="card-it" aria-pressed="false">Italic</button>
+        </div>
+      </div>
     </div>
     <div class="spec-side">
       <div class="groups" id="groups" role="tablist" aria-label="Scripts and sets"></div>
       <div class="grid" id="grid" role="listbox" aria-label="Characters"></div>
     </div>
   </div>
-  <p class="note"><span data-font="chars">2,170</span> characters: Latin with Vietnamese and pinyin, Cyrillic, Greek, symbols, arrows, mathematics, box drawing, blocks and Braille. Characters outside Latin load when you open them.</p>
+  <p class="note"><span data-font="chars">2,170</span> characters: Latin with Vietnamese and pinyin, Cyrillic, Greek, symbols, arrows, mathematics, box drawing, blocks and Braille. The card follows the place you chose in the designspace. Characters outside Latin load when you open them.</p>
 </section>
 
 <section class="features" id="features">
@@ -253,7 +314,7 @@
 }
 body {
   font-family: "Arris", sans-serif;
-  font-variation-settings: "GRAD" -40; /* light text on dark */
+  font-variation-settings: "GRAD" -50; /* light text on a dark screen */
 }</code></pre>
       <button type="button" class="copy" id="copy-css">Copy CSS</button>
     </div>

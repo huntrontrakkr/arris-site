@@ -1,11 +1,14 @@
 /* Arris: the site's behaviour. Everything the page states about the font
  * (version, character count, the character set) comes from data/font.json,
- * written from the release by tools/fonts.py. */
+ * written from the release by tools/fonts.py. One place in the designspace
+ * (LOC) is shared: the map, the sliders, the presets and the specimen card
+ * all follow it. */
 (() => {
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const two = n => String(n).padStart(2, '0');
 
   // the titanium colours: an oxide film thickening, one per weight 100..900
   const TI = ['#a8804c', '#804799', '#4554cc', '#4087e6', '#a8cced', '#f2cc61', '#e67891', '#9e66d1', '#45c7a8'];
@@ -16,6 +19,16 @@
     return `rgb(${a.map((v, k) => Math.round(v + (b[k] - v) * f)).join(',')})`;
   }
   const NAMES = { 100: 'Thin', 200: 'ExtraLight', 300: 'Light', 400: 'Regular', 500: 'Medium', 600: 'SemiBold', 700: 'Bold', 800: 'ExtraBold', 900: 'Black' };
+  const fvs = (w, g, x) => `"wght" ${Math.round(w)}, "GRAD" ${Math.round(g)}, "WTCH" ${Math.round(x)}`;
+
+  /* ------------------------------------------------------------ the shared place */
+  const AX = { wght: [100, 900], GRAD: [-100, 100], WTCH: [0, 100] };
+  const LOC = { wght: 400, GRAD: 0, WTCH: 0, ital: false };
+  const subs = [];
+  function setLoc(p) {
+    for (const k in p) LOC[k] = k === 'ital' ? p[k] : clamp(p[k], AX[k][0], AX[k][1]);
+    subs.forEach(f => f(LOC));
+  }
 
   /* ------------------------------------------------------------ the name */
   const mark = $('#mark'), rw = $('#r-wght'), rx = $('#r-wtch');
@@ -47,7 +60,6 @@
   /* ------------------------------------------------------------ the watch */
   const watch = $('#watch'), wt = $('#watch-time'), wd = $('#watch-date');
   const DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-  const two = n => String(n).padStart(2, '0');
   let leakUntil = 0;
   function tickWatch() {
     const d = new Date(), now = d.getTime();
@@ -59,60 +71,207 @@
     wd.textContent = `${DAYS[d.getDay()]} ${two(d.getDate())}`;
   }
   tickWatch(); setInterval(tickWatch, 250);
-  const pixOn = $('#pix-on'), pixOff = $('#pix-off');
-  function pixels(on) {
-    watch.classList.toggle('pixels', on);
-    pixOn.setAttribute('aria-pressed', on); pixOff.setAttribute('aria-pressed', !on);
-  }
-  pixOn.addEventListener('click', () => pixels(true));
-  pixOff.addEventListener('click', () => pixels(false));
+  function pressSwitch(onBtn, offBtn, on) { onBtn.setAttribute('aria-pressed', on); offBtn.setAttribute('aria-pressed', !on); }
+  $('#pix-on').addEventListener('click', () => { watch.classList.add('pixels'); pressSwitch($('#pix-on'), $('#pix-off'), true); });
+  $('#pix-off').addEventListener('click', () => { watch.classList.remove('pixels'); pressSwitch($('#pix-on'), $('#pix-off'), false); });
 
-  /* ------------------------------------------------------------ one axis at a time */
-  const AXES = {
-    wght: { label: 'Weight', min: 100, max: 900, value: 400, cls: 'weight',
-      note: 'Nine named weights from Thin to Black, and every weight between. Each colour is the shade a titanium oxide film takes as it thickens; here it only ever means weight.' },
-    GRAD: { label: 'Grade', min: -100, max: 100, value: -40, cls: 'grade dark',
-      note: 'Light text on a dark ground looks heavier than dark on light. Grade thins or thickens every stroke by up to a fifth without moving a single advance: the red outline is grade 0, and the line never changes length, so nothing reflows.' },
-    WTCH: { label: 'Watch', min: 0, max: 100, value: 100, cls: 'watch',
-      note: "The watch's own stroke balance: at 100, diagonals are as wide across as a stem, as the pixel figures drew them. Arris Watch is this axis at 100." },
-  };
-  const panel = $('#axis-panel'), range = $('#axis-range'), out = $('#axis-out'), line = $('#axis-line'), ghost = $('#axis-ghost');
-  let axis = 'wght';
-  const loc = { wght: 400, GRAD: 0, WTCH: 0 };
-  function renderAxis() {
-    const v = +range.value;
-    loc[axis] = v;
-    out.textContent = axis === 'wght' ? v : (v > 0 ? '+' : '') + v;
-    line.style.setProperty('--aw', axis === 'wght' ? v : (axis === 'GRAD' ? 400 : 600));
-    line.style.setProperty('--ag', axis === 'GRAD' ? v : 0);
-    line.style.setProperty('--ax', axis === 'WTCH' ? v : 0);
-    ghost.style.setProperty('--aw', 400);
-    panel.style.setProperty('--aink', axis === 'wght' ? titanium(v) : 'inherit');
-    if (axis === 'wght') out.textContent = NAMES[v] ? `${v} ${NAMES[v]}` : v;
+  /* ------------------------------------------------------------ the designspace */
+  const map = $('#ds-map'), cells = $('#ds-cells'), cross = $('#ds-cross'), third = $('#ds-third');
+  const dsText = $('#ds-text'), dsGhost = $('#ds-ghost'), dsStage = $('#ds-stage');
+  const NX = 7, NY = 5;
+  let pair = ['wght', 'WTCH'];
+  const thirdAxis = () => Object.keys(AX).find(a => !pair.includes(a));
+  const norm = (a, v) => (v - AX[a][0]) / (AX[a][1] - AX[a][0]);
+  const denorm = (a, u) => AX[a][0] + clamp(u, 0, 1) * (AX[a][1] - AX[a][0]);
+  const signed = (a, v) => (a === 'GRAD' && v > 0 ? '+' : '') + Math.round(v);
+
+  for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) {
+    const c = document.createElement('span');
+    c.textContent = 'a'; c.dataset.i = i; c.dataset.j = j;
+    cells.appendChild(c);
   }
-  function selectAxis(a) {
-    axis = a;
-    const A = AXES[a];
-    $$('.axis-tabs [role=tab]').forEach(b => b.setAttribute('aria-selected', b.dataset.axis === a));
-    panel.className = 'axis-panel ' + A.cls;
-    $('#axis-label').textContent = A.label;
-    range.min = A.min; range.max = A.max; range.value = A.value;
-    $('#axis-note').textContent = A.note;
-    if (a === 'WTCH') line.textContent = line.textContent === 'Gate 8 closes at 21:47' ? '2,170 · 10:08 · 456' : line.textContent;
-    else if (line.textContent === '2,170 · 10:08 · 456') line.textContent = 'Gate 8 closes at 21:47';
-    ghost.textContent = line.textContent;
-    renderAxis();
+  let cellKey = '';
+  function drawCells() {
+    const t = thirdAxis(), key = pair.join() + Math.round(LOC[t]) + LOC.ital;
+    if (key === cellKey) return;
+    cellKey = key;
+    for (const c of cells.children) {
+      const l = { [pair[0]]: denorm(pair[0], c.dataset.i / (NX - 1)), [pair[1]]: denorm(pair[1], c.dataset.j / (NY - 1)), [t]: LOC[t] };
+      c.style.fontVariationSettings = fvs(l.wght, l.GRAD, l.WTCH);
+      c.style.color = titanium(l.wght);
+      c.style.fontStyle = LOC.ital ? 'italic' : 'normal';
+    }
   }
-  $$('.axis-tabs [role=tab]').forEach(b => b.addEventListener('click', () => selectAxis(b.dataset.axis)));
-  $('.axis-tabs').addEventListener('keydown', e => {
-    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-    const tabs = $$('.axis-tabs [role=tab]'), i = tabs.findIndex(t => t.dataset.axis === axis);
-    const n = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
-    n.focus(); selectAxis(n.dataset.axis);
+  function renderDS() {
+    const t = thirdAxis();
+    drawCells();
+    cross.style.setProperty('--x', norm(pair[0], LOC[pair[0]]));
+    cross.style.setProperty('--y', norm(pair[1], LOC[pair[1]]));
+    third.style.setProperty('--u', norm(t, LOC[t]));
+    third.querySelector('span').textContent = `${t} ${signed(t, LOC[t])}`;
+    map.setAttribute('aria-valuetext', `weight ${Math.round(LOC.wght)}, grade ${Math.round(LOC.GRAD)}, watch ${Math.round(LOC.WTCH)}`);
+    const v = fvs(LOC.wght, LOC.GRAD, LOC.WTCH);
+    dsText.style.fontVariationSettings = v;
+    dsText.style.color = titanium(LOC.wght);
+    dsText.style.fontStyle = dsGhost.style.fontStyle = LOC.ital ? 'italic' : 'normal';
+    dsGhost.style.fontVariationSettings = fvs(LOC.wght, 0, LOC.WTCH);
+    dsStage.classList.toggle('graded', Math.round(LOC.GRAD) !== 0);
+    for (const a in AX) {
+      const s = $('#s-' + a);
+      if (+s.value !== Math.round(LOC[a])) s.value = Math.round(LOC[a]);
+      $('#o-' + a).textContent = a === 'wght' && NAMES[Math.round(LOC.wght)] ? `${Math.round(LOC.wght)} ${NAMES[Math.round(LOC.wght)]}` : signed(a, LOC[a]);
+    }
+    $('#s-wght').style.accentColor = titanium(LOC.wght);
+    pressSwitch($('#ds-it'), $('#ds-up'), LOC.ital);
+    $('#ds-css').textContent = `font-variation-settings: ${v};${LOC.ital ? ' font-style: italic;' : ''}`;
+    $$('#ds-presets button').forEach(b => {
+      const p = PRESETS[b.dataset.i][1];
+      b.setAttribute('aria-pressed', Object.keys(p).every(k => Math.round(LOC[k]) === p[k]));
+    });
+  }
+  subs.push(renderDS);
+
+  // moving: the map, the keyboard, the wheel, the sliders, the presets, the fly-through
+  let flying = false, tween = null;
+  const stop = () => { flying = false; tween = null; $('#ds-fly').setAttribute('aria-pressed', false); $('#ds-fly').textContent = '▶ Fly through'; };
+  function fromPointer(e) {
+    const r = map.getBoundingClientRect();
+    setLoc({ [pair[0]]: denorm(pair[0], (e.clientX - r.left) / r.width), [pair[1]]: denorm(pair[1], (e.clientY - r.top) / r.height) });
+  }
+  map.addEventListener('pointerdown', e => { stop(); map.setPointerCapture(e.pointerId); fromPointer(e); });
+  map.addEventListener('pointermove', e => { if (map.hasPointerCapture(e.pointerId)) fromPointer(e); });
+  map.addEventListener('wheel', e => {
+    e.preventDefault(); stop();
+    const t = thirdAxis(), span = AX[t][1] - AX[t][0];
+    setLoc({ [t]: LOC[t] - Math.sign(e.deltaY) * Math.min(Math.abs(e.deltaY), 60) / 600 * span });
+  }, { passive: false });
+  map.addEventListener('keydown', e => {
+    const step = e.shiftKey ? 0.1 : 0.02, t = thirdAxis();
+    const mv = { ArrowLeft: [pair[0], -step], ArrowRight: [pair[0], step], ArrowUp: [pair[1], -step], ArrowDown: [pair[1], step], PageUp: [t, 0.05], PageDown: [t, -0.05] }[e.key];
+    if (!mv) return;
+    e.preventDefault(); stop();
+    setLoc({ [mv[0]]: LOC[mv[0]] + mv[1] * (AX[mv[0]][1] - AX[mv[0]][0]) });
   });
-  range.addEventListener('input', renderAxis);
-  line.addEventListener('input', () => { ghost.textContent = line.textContent; });
-  selectAxis('wght');
+  for (const a in AX) $('#s-' + a).addEventListener('input', e => { stop(); setLoc({ [a]: +e.target.value }); });
+  $$('.ds-pairs button').forEach(b => b.addEventListener('click', () => {
+    pair = b.dataset.pair.split(',');
+    $$('.ds-pairs button').forEach(o => o.setAttribute('aria-pressed', o === b));
+    $('#ds-xlabel').textContent = `${pair[0]} →`; $('#ds-ylabel').textContent = `${pair[1]} ↓`;
+    cellKey = ''; renderDS();
+  }));
+  $('#ds-up').addEventListener('click', () => setLoc({ ital: false }));
+  $('#ds-it').addEventListener('click', () => setLoc({ ital: true }));
+  dsText.addEventListener('input', () => { dsGhost.textContent = dsText.textContent; });
+
+  const PRESETS = [
+    ['Thin', { wght: 100, GRAD: 0, WTCH: 0 }], ['Regular', { wght: 400, GRAD: 0, WTCH: 0 }], ['Bold', { wght: 700, GRAD: 0, WTCH: 0 }],
+    ['Black', { wght: 900, GRAD: 0, WTCH: 0 }], ['The watch', { wght: 600, GRAD: 0, WTCH: 100 }],
+    ['Light on dark', { wght: 400, GRAD: -50, WTCH: 0 }], ['Glance at night', { wght: 400, GRAD: -100, WTCH: 0 }],
+    ['The far corner', { wght: 900, GRAD: 100, WTCH: 100 }],
+  ];
+  PRESETS.forEach(([name], i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.dataset.i = i; b.textContent = name;
+    b.addEventListener('click', () => glide(PRESETS[i][1]));
+    $('#ds-presets').appendChild(b);
+  });
+  function glide(to) {
+    stop();
+    if (reduce) { setLoc(to); return; }
+    const from = { wght: LOC.wght, GRAD: LOC.GRAD, WTCH: LOC.WTCH }, t0 = performance.now(), me = tween = {};
+    (function step(t) {
+      if (tween !== me) return;
+      const u = clamp((t - t0) / 700, 0, 1), e = u < 0.5 ? 4 * u * u * u : 1 - (-2 * u + 2) ** 3 / 2;
+      setLoc(Object.fromEntries(Object.keys(to).map(k => [k, from[k] + (to[k] - from[k]) * e])));
+      if (u < 1) requestAnimationFrame(step);
+    })(t0);
+  }
+  $('#ds-fly').addEventListener('click', e => {
+    if (flying) { stop(); return; }
+    tween = null; flying = true;
+    e.currentTarget.setAttribute('aria-pressed', true); e.currentTarget.textContent = '■ Stop';
+    const t0 = performance.now(), base = { ...LOC };
+    // a slow Lissajous through all three axes, starting from where you are
+    const ph = { w: Math.asin(clamp((base.wght - 500) / 400, -1, 1)), g: Math.asin(clamp(base.GRAD / 100, -1, 1)), x: Math.asin(clamp((base.WTCH - 50) / 50, -1, 1)) };
+    (function fly(t) {
+      if (!flying) return;
+      const s = (t - t0) / 1000;
+      setLoc({ wght: 500 + 400 * Math.sin(ph.w + s * 0.55), GRAD: 100 * Math.sin(ph.g + s * 0.83), WTCH: 50 + 50 * Math.sin(ph.x + s * 0.37) });
+      requestAnimationFrame(fly);
+    })(t0);
+  });
+  $('#ds-copy').addEventListener('click', e => copy($('#ds-css').textContent, e.currentTarget, 'Copy'));
+
+  /* ------------------------------------------------------------ the italic */
+  const PAIRS = 'aefgksy';
+  const pairs = $('#it-pairs');
+  [...PAIRS].forEach(ch => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'it-pair';
+    b.setAttribute('aria-label', `${ch}, upright and italic`);
+    b.innerHTML = '<span class="it-up"></span><span class="it-it"><span class="it-g"></span><span class="it-over" aria-hidden="true"></span></span>';
+    b.querySelector('.it-up').textContent = ch; b.querySelector('.it-g').textContent = ch; b.querySelector('.it-over').textContent = ch;
+    b.addEventListener('click', () => b.classList.toggle('show'));
+    pairs.appendChild(b);
+  });
+
+  // the wave: each letter's weight follows the pointer (or drifts by itself)
+  const wave = $('#it-wave'), waveText = wave.textContent;
+  let letters = [], centres = [];
+  function layoutWave() {
+    const words = waveText.split(' '), size = parseFloat(getComputedStyle(wave).fontSize);
+    const per = Math.max(14, Math.floor(wave.clientWidth / (size * 0.6)));
+    const lines = [];
+    for (const w of words) {
+      if (lines.length && (lines[lines.length - 1] + ' ' + w).length <= per) lines[lines.length - 1] += ' ' + w;
+      else lines.push(w);
+    }
+    wave.textContent = '';
+    lines.forEach((ln, i) => {
+      const line = document.createElement('span');
+      line.className = 'it-line';
+      [...ln].forEach(ch => { const s = document.createElement('span'); s.textContent = ch; line.appendChild(s); });
+      wave.appendChild(line);
+    });
+    letters = $$('.it-line span', wave);
+    letters.forEach(s => { s.style.fontVariationSettings = fvs(300, 0, 0); });
+    centres = letters.map(s => { const r = s.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; });
+    const r0 = wave.getBoundingClientRect();
+    centres = centres.map(([x, y]) => [x - r0.left, y - r0.top]);
+  }
+  function waveAt(px, py) {
+    letters.forEach((s, i) => {
+      const dx = (centres[i][0] - px) / 110, dy = (centres[i][1] - py) / 70;
+      const w = 250 + 650 * Math.exp(-(dx * dx + dy * dy));
+      s.style.fontVariationSettings = fvs(w, 0, 0);
+      s.style.color = w > 520 ? titanium(w) : '';
+    });
+  }
+  let waveLive = false, waveTouched = false, waveSeen = false;
+  wave.addEventListener('pointermove', e => { waveTouched = true; const r = wave.getBoundingClientRect(); waveAt(e.clientX - r.left, e.clientY - r.top); });
+  wave.addEventListener('pointerleave', () => { waveTouched = false; });
+  if ('IntersectionObserver' in window) new IntersectionObserver(es => { waveSeen = es[0].isIntersecting; }).observe(wave);
+  function drift(t) {
+    if (!reduce && waveSeen && !waveTouched && letters.length) {
+      const s = t / 1000, W = wave.clientWidth, H = wave.clientHeight;
+      waveAt(W * (0.5 + 0.48 * Math.sin(s * 0.45)), H * (0.5 + 0.45 * Math.sin(s * 0.9)));
+    }
+    requestAnimationFrame(drift);
+  }
+  document.fonts.ready.then(() => { layoutWave(); waveLive = true; requestAnimationFrame(drift); });
+  let rsz; addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(() => { if (waveLive) layoutWave(); }, 200); });
+
+  // the nine weights, in italic
+  const iw = $('#it-weights');
+  for (let w = 100; w <= 900; w += 100) {
+    const row = document.createElement('div');
+    row.className = 'it-wrow';
+    row.innerHTML = '<span class="it-wlabel"><i></i></span><span class="it-wtext">Neon rain over Sector 7</span>';
+    row.querySelector('i').style.background = TI[w / 100 - 1];
+    row.querySelector('.it-wlabel').append(`${w} ${NAMES[w]}`);
+    row.querySelector('.it-wtext').style.fontVariationSettings = fvs(w, 0, 0);
+    iw.appendChild(row);
+  }
 
   /* ------------------------------------------------------------ films: play in view */
   const vids = $$('video');
@@ -130,60 +289,89 @@
     FONT = f;
     $$('[data-font=version]').forEach(el => { el.textContent = f.version; });
     $$('[data-font=chars]').forEach(el => { el.textContent = f.chars.length.toLocaleString('en-US'); });
-    buildSpecimen(f);
-  }).catch(() => buildSpecimen(null));
+    buildSpecimen(f.chars);
+  }).catch(() => buildSpecimen([...'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'].map(ch => [ch.codePointAt(0), '', 'Basic Latin'])));
 
   /* ------------------------------------------------------------ specimen */
-  const GROUPS = [
-    ['Latin', ['Basic Latin', 'Latin', 'Marks']], ['Cyrillic', ['Cyrillic']], ['Greek', ['Greek']],
-    ['Figures', ['Figures', 'Currency', 'Letterlike']], ['Punctuation', ['Punctuation']], ['Arrows', ['Arrows']],
-    ['Maths', ['Mathematics', 'Technical']], ['Shapes', ['Shapes', 'Dingbats']], ['Terminal', ['Terminal']], ['Braille', ['Braille']],
-  ];
-  const canvas = $('#card-canvas'), ctx = canvas.getContext('2d');
-  let chars = [], group = null, sel = 0x41;
-  const show = c => {
-    const ch = String.fromCodePoint(c);
-    return /\p{M}/u.test(ch) ? '◌' + ch : ch;
-  };
+  // groups by what a reader would look for: ASCII digits and punctuation
+  // join their own groups rather than leading the Latin
+  function groupOf([cp, , block]) {
+    const ch = String.fromCodePoint(cp);
+    if (block === 'Basic Latin' || (block === 'Latin' && cp < 0x100)) {
+      if (/\p{L}/u.test(ch)) return 'Latin';
+      if (/\p{N}/u.test(ch) || /\p{Sc}/u.test(ch)) return 'Figures';
+      if (/\p{Sm}/u.test(ch)) return 'Maths';
+      return 'Punctuation';
+    }
+    return { Latin: 'Latin', Marks: 'Latin', Cyrillic: 'Cyrillic', Greek: 'Greek', Figures: 'Figures', Currency: 'Figures', Letterlike: 'Figures',
+      Punctuation: 'Punctuation', Arrows: 'Arrows', Mathematics: 'Maths', Technical: 'Maths', Shapes: 'Shapes', Dingbats: 'Shapes',
+      Terminal: 'Terminal', Braille: 'Braille' }[block] || 'Shapes';
+  }
+  // within a group, the everyday alphabet first, then the rest by code point
+  function rank(cp, g) {
+    if (g === 'Latin') return cp < 0x80 ? 0 : cp < 0x100 ? 1 : /\p{M}/u.test(String.fromCodePoint(cp)) ? 3 : 2;
+    if (g === 'Cyrillic') return cp >= 0x410 && cp <= 0x44F ? 0 : cp === 0x401 || cp === 0x451 ? 0 : cp < 0x460 ? 1 : 2;
+    if (g === 'Greek') return (cp >= 0x391 && cp <= 0x3A9) || (cp >= 0x3B1 && cp <= 0x3C9) ? 0 : cp < 0x400 ? 1 : 2;
+    if (g === 'Figures') return cp >= 0x30 && cp <= 0x39 ? 0 : 1;
+    return 0;
+  }
+  // Ё and ё sit with their alphabet, after Е and е
+  const key = cp => (cp === 0x401 ? 0x415 + 0.5 : cp === 0x451 ? 0x435 + 0.5 : cp);
+  const ORDER = ['Latin', 'Cyrillic', 'Greek', 'Figures', 'Punctuation', 'Arrows', 'Maths', 'Shapes', 'Terminal', 'Braille'];
+  const groups = {};
+  let group = null, sel = 0x41, card = { ital: false };
+  const show = cp => { const ch = String.fromCodePoint(cp); return /\p{M}/u.test(ch) ? '◌' + ch : ch; };
+  const byCp = new Map();
 
-  function buildSpecimen(f) {
-    chars = f ? f.chars : [...'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'].map(ch => [ch.codePointAt(0), '', 'Basic Latin']);
-    const g = $('#groups');
-    GROUPS.forEach(([name, blocks]) => {
-      const n = chars.filter(c => blocks.includes(c[2])).length;
-      if (!n) return;
+  function buildSpecimen(chars) {
+    chars.forEach(c => {
+      byCp.set(c[0], c);
+      if (c[0] <= 0x20 || c[0] === 0xA0 || /\p{Cf}|\p{Zs}/u.test(String.fromCodePoint(c[0]))) return;
+      const g = groupOf(c);
+      (groups[g] = groups[g] || []).push(c[0]);
+    });
+    for (const g in groups) groups[g].sort((a, b) => rank(a, g) - rank(b, g) || key(a) - key(b));
+    const bar = $('#groups');
+    ORDER.filter(g => groups[g]).forEach(g => {
       const b = document.createElement('button');
-      b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.group = name;
-      b.innerHTML = `${name}<small>${n}</small>`;
-      b.addEventListener('click', () => openGroup(name));
-      g.appendChild(b);
+      b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.group = g;
+      b.innerHTML = `${g}<small>${groups[g].length}</small>`;
+      b.addEventListener('click', () => openGroup(g));
+      bar.appendChild(b);
     });
     openGroup('Latin');
-    select(0x41);
   }
 
-  function openGroup(name) {
-    group = name;
-    $$('#groups button').forEach(b => b.setAttribute('aria-selected', b.dataset.group === name));
-    const blocks = GROUPS.find(g => g[0] === name)[1];
-    const grid = $('#grid');
+  let opening = 0;
+  async function openGroup(g) {
+    const me = ++opening, list = groups[g], grid = $('#grid');
+    group = g;
+    $$('#groups button').forEach(b => b.setAttribute('aria-selected', b.dataset.group === g));
+    // the full font loads on first use; show the set only once its glyphs are here
+    const sample = list.slice(0, 40).map(show).join('');
+    if (!document.fonts.check('400 24px Arris', sample)) {
+      grid.innerHTML = `<p class="grid-wait">Loading ${g}…</p>`;
+      try { await document.fonts.load('400 24px Arris', sample); } catch (e) { /* draw with what is there */ }
+      if (me !== opening) return;
+    }
     grid.textContent = '';
     const frag = document.createDocumentFragment();
-    chars.filter(c => blocks.includes(c[2]) && c[0] > 0x20 && c[0] !== 0xA0).forEach(c => {
+    list.forEach(cp => {
       const b = document.createElement('button');
-      b.type = 'button'; b.setAttribute('role', 'option'); b.dataset.cp = c[0];
-      b.textContent = show(c[0]);
-      b.title = `U+${c[0].toString(16).toUpperCase().padStart(4, '0')} ${c[1]}`;
-      b.setAttribute('aria-selected', c[0] === sel);
+      b.type = 'button'; b.setAttribute('role', 'option'); b.dataset.cp = cp;
+      b.textContent = show(cp);
+      b.title = `U+${cp.toString(16).toUpperCase().padStart(4, '0')} ${byCp.get(cp)[1]}`;
       frag.appendChild(b);
     });
     grid.appendChild(frag);
     grid.scrollTop = 0;
+    select(list.includes(sel) ? sel : list[0]);
   }
 
   $('#grid').addEventListener('click', e => { const b = e.target.closest('button'); if (b) select(+b.dataset.cp); });
   $('#grid').addEventListener('keydown', e => {
     const keys = { ArrowRight: 1, ArrowLeft: -1 }, bs = $$('#grid button');
+    if (!bs.length) return;
     const cols = Math.round($('#grid').clientWidth / bs[0].clientWidth) || 1;
     keys.ArrowDown = cols; keys.ArrowUp = -cols;
     if (!(e.key in keys)) return;
@@ -195,41 +383,45 @@
   function select(cp) {
     sel = cp;
     $$('#grid button').forEach(b => b.setAttribute('aria-selected', +b.dataset.cp === cp));
-    const c = chars.find(c => c[0] === cp) || [cp, '', ''];
+    const c = byCp.get(cp) || [cp, '', ''];
     $('#card-cp').textContent = 'U+' + cp.toString(16).toUpperCase().padStart(4, '0');
-    $('#card-block').textContent = c[2];
+    $('#card-block').textContent = group || c[2];
     $('#card-name').textContent = c[1];
+    $('#card-ch').textContent = show(cp);
     drawCard();
   }
 
-  function drawCard() {
-    const ch = show(sel), w = loc.wght;
-    const font = `${w} 100px Arris`;
-    document.fonts.load(font, ch).then(() => {
-      const W = canvas.width = 1000, H = canvas.height = 1000;
-      const M = FONT ? FONT.metrics : { upm: 1000, ascender: 975, descender: -250, cap: 720, x: 540 };
-      const S = 600, base = 120 + M.ascender / M.upm * S;
-      const y = v => base - v / M.upm * S;
-      ctx.clearRect(0, 0, W, H);
-      ctx.lineWidth = 2;
-      ctx.font = '22px "Arris Mono", monospace';
-      ctx.textBaseline = 'bottom';
-      [['ASCENDER', M.ascender], ['CAP HEIGHT', M.cap], ['X-HEIGHT', M.x], ['BASELINE', 0], ['DESCENDER', M.descender]].forEach(([n, v]) => {
-        ctx.strokeStyle = v === 0 ? 'rgba(255,176,0,.75)' : 'rgba(241,235,221,.16)';
-        ctx.beginPath(); ctx.moveTo(0, y(v)); ctx.lineTo(W, y(v)); ctx.stroke();
-        ctx.fillStyle = 'rgba(241,235,221,.45)';
-        ctx.fillText(`${n} ${v}`, 6, y(v) - 6);
-      });
-      ctx.font = `${w} ${S}px Arris`;
-      ctx.fillStyle = '#f1ebdd';
-      ctx.textBaseline = 'alphabetic';
-      const m = ctx.measureText(ch);
-      ctx.fillText(ch, (W - m.width) / 2, base);
-      $('#card-metrics').textContent = `ADVANCE ${Math.round(m.width / S * M.upm)} · wght ${w}`;
-    });
+  // the card: live text on the font's metrics, at the shared place in the designspace
+  const stage = $('#card-stage'), glyph = $('#card-glyph'), chEl = $('#card-ch'), linesEl = $('#card-lines');
+  const METRICS = [['ASCENDER', 'ascender'], ['CAP HEIGHT', 'cap'], ['X-HEIGHT', 'x'], ['BASELINE', null], ['DESCENDER', 'descender']];
+  function layoutCard() {
+    const M = FONT ? FONT.metrics : { upm: 1000, ascender: 975, descender: -250, cap: 720, x: 540 };
+    const H = stage.clientHeight, S = H * 0.66 / ((M.ascender - M.descender) / M.upm), top = (H - S * (M.ascender - M.descender) / M.upm) / 2;
+    glyph.style.fontSize = S + 'px';
+    glyph.style.top = top + 'px';
+    glyph.style.lineHeight = (M.ascender - M.descender) / M.upm;
+    linesEl.innerHTML = METRICS.map(([n, k]) => {
+      const v = k ? M[k] : 0, y = top + (M.ascender - v) / M.upm * S;
+      return `<div class="${k ? '' : 'base'}" style="top:${y.toFixed(1)}px"><span>${n} ${v}</span></div>`;
+    }).join('');
+    return { M, S };
   }
-  // the card follows the weight chosen above
-  range.addEventListener('change', () => { if (axis === 'wght') drawCard(); });
+  let cardM = null;
+  function drawCard() {
+    if (!cardM) cardM = layoutCard();
+    glyph.style.fontVariationSettings = fvs(LOC.wght, LOC.GRAD, LOC.WTCH);
+    glyph.style.fontStyle = LOC.ital ? 'italic' : 'normal';
+    pressSwitch($('#card-it'), $('#card-up'), LOC.ital);
+    const adv = Math.round(chEl.getBoundingClientRect().width / cardM.S * cardM.M.upm);
+    $('#card-metrics').textContent = `ADVANCE ${adv} · wght ${Math.round(LOC.wght)} · GRAD ${signed('GRAD', LOC.GRAD)} · WTCH ${Math.round(LOC.WTCH)}`;
+  }
+  subs.push(() => drawCard());
+  addEventListener('resize', () => { cardM = layoutCard(); drawCard(); });
+  $('#card-up').addEventListener('click', () => setLoc({ ital: false }));
+  $('#card-it').addEventListener('click', () => {
+    setLoc({ ital: true });
+    document.fonts.load('italic 400 24px Arris', chEl.textContent).then(drawCard);
+  });
 
   /* ------------------------------------------------------------ features */
   const FEATS = [
@@ -284,13 +476,13 @@
   }
 
   /* ------------------------------------------------------------ copy */
-  $('#copy-css').addEventListener('click', e => {
-    const t = $('#css-snippet').textContent, b = e.currentTarget;
-    navigator.clipboard.writeText(t).then(() => { b.textContent = 'Copied'; }, () => {
-      getSelection().selectAllChildren($('#css-snippet')); b.textContent = 'Selected: press Ctrl+C';
-    });
-    setTimeout(() => { b.textContent = 'Copy CSS'; }, 2400);
-  });
+  function copy(text, button, label) {
+    navigator.clipboard.writeText(text).then(() => { button.textContent = 'Copied'; }, () => { button.textContent = 'Select and copy'; });
+    setTimeout(() => { button.textContent = label; }, 2200);
+  }
+  $('#copy-css').addEventListener('click', e => copy($('#css-snippet').textContent, e.currentTarget, 'Copy CSS'));
+
+  setLoc({});
 
   /* ------------------------------------------------------------ for whoever opens the console */
   console.log('%c┌──────────────────────────┐\n│ DOCK 07 · MANIFEST       │\n│ 0347 KAPA      14.2 %  ? │\n│ logged 03:47 · bay 09    │\n└──────────────────────────┘',

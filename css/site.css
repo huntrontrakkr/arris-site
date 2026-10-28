@@ -224,7 +224,24 @@ body.past .bar nav .dl { color: var(--amber); }
 .m-stage { position: relative; font-size: clamp(64px, 9vw, 120px); line-height: 1.225; height: 1.225em; white-space: nowrap; overflow: hidden; }
 .m-line { position: absolute; left: 0; right: 0; top: calc((975 - var(--v)) / 1000 * 1em); height: 0; border-top: 1px solid var(--cut); opacity: .55; }
 .m-line.base { opacity: .9; }
-.m-over span { position: relative; font-variation-settings: "wght" 500, "GRAD" 0, "WTCH" 0; letter-spacing: .02em; }
+.m-head { display: flex; justify-content: space-between; align-items: center; gap: 12px 24px; flex-wrap: wrap; margin-bottom: 18px; }
+.m-head .sub { margin: 0; max-width: 52ch; }
+.m-grid { --mx: 0; }
+.m-num { position: absolute; top: 4px; font-family: var(--mono); font-size: 13px; font-weight: 400; color: var(--cut); }
+.m-over .m-hs { font-variation-settings: "wght" 400, "GRAD" 0, "WTCH" var(--mx); }
+.m-over .m-num { right: 150px; }
+.lens { position: absolute; right: 6px; top: 50%; width: 128px; height: 128px; margin-top: -64px; border-radius: 50%; overflow: hidden;
+  border: 2px solid var(--cut); background: var(--paper); }
+.lens-in { position: absolute; line-height: 1.225; white-space: nowrap; color: var(--ink); }
+.lens-line { position: absolute; left: -10em; width: 30em; top: .255em; height: 0; border-top: 1px solid var(--cut); }
+.m-centre span { font-variation-settings: "wght" 300, "GRAD" 0, "WTCH" var(--mx); letter-spacing: .04em; }
+.m-centre .m-num { right: 0; }
+.m-line.mid { border-top-style: dashed; opacity: .9; }
+.m-small { display: flex; gap: .7em; align-items: flex-start; height: auto; }
+.m-col { display: inline-flex; flex-direction: column; font-variation-settings: "wght" 500, "GRAD" 0, "WTCH" 0; }
+.m-col small { font-family: var(--mono); font-size: 12px; line-height: 1; color: var(--cut); margin-top: -.6em; font-variation-settings: normal; }
+.frac-sub { font-feature-settings: "subs" 1; }
+.m-scaled > span > span { font-size: .62em; position: relative; top: .18em; }
 .m-bars { display: flex; gap: .7em; }
 .m-bars span { position: relative; }
 .m-bars small { position: absolute; left: 100%; bottom: .3em; margin-left: .15em; font-family: var(--mono); font-size: 13px; color: var(--cut); font-variation-settings: normal; }

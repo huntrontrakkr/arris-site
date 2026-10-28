@@ -533,6 +533,31 @@
   };
   sqIn.addEventListener('input', squint); addEventListener('resize', squint); squint();
 
+  // corrected, or the watch's own drawing (WTCH 100, pixel-exact: no
+  // overshoot, no raised middle); numbers measured from the 1.002 release
+  const mg = $('#m-grid');
+  function corrected(on) {
+    mg.style.setProperty('--mx', on ? 0 : 100);
+    pressSwitch($('#m-on'), $('#m-off'), on);
+    $('#m-over-num').textContent = on ? '+3 units' : 'on the line';
+    $('#m-centre-num').textContent = on ? '+20 units' : 'on the middle';
+    requestAnimationFrame(placeLens);
+  }
+  $('#m-on').addEventListener('click', () => corrected(true));
+  $('#m-off').addEventListener('click', () => corrected(false));
+  // the lens: the same two letters at MAG times the size, placed so that the
+  // middle of S's top edge (half its advance in, on the cap line) is at its centre
+  const lens = $('#lens'), lensIn = $('#lens-in'), MAG = 30;
+  function placeLens() {
+    const stage = $('#m-over'), sR = $('#m-s').getBoundingClientRect(), stR = stage.getBoundingClientRect();
+    const fs = parseFloat(getComputedStyle(stage).fontSize), R = lens.clientWidth / 2;
+    const fx = sR.left - stR.left + sR.width / 2, fy = 0.255 * fs;
+    lensIn.style.fontSize = fs * MAG + 'px';
+    lensIn.style.left = (R - fx * MAG) + 'px';
+    lensIn.style.top = (R - fy * MAG) + 'px';
+  }
+  document.fonts.ready.then(placeLens); addEventListener('resize', placeLens);
+
   /* ------------------------------------------------------------ the arris */
   const crossing = $('#crossing'), sticky = $('.crossing-sticky');
   function onScroll() {

@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Arris</title>
+<meta name="description" content="Arris is a chamfered sans: octagonal and monoline, every outer corner cut at 45 degrees. Nine weights, upright, italic and mono, three variable axes. Free under the SIL Open Font License.">
+<meta property="og:title" content="Arris">
+<meta property="og:description" content="A chamfered sans. Nine weights, three axes, 2,170 characters. Free under the OFL.">
+<meta property="og:image" content="media/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preload" href="fonts/arris-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/arris-mono-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+
+<header class="bar">
+  <a class="tab" href="#top" aria-label="Arris, back to top">A</a>
+  <span class="bar-name">Arris <sup class="ver" data-font="version">1.002</sup></span>
+  <nav>
+    <a href="#specimen">Specimen</a>
+    <a href="#features">Features</a>
+    <a href="#in-use">In use</a>
+    <a href="https://github.com/huntrontrakkr/arris-type">Source ↗</a>
+    <a class="dl" href="#download">↓ Download</a>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- ============================================================ PAPER: the workshop -->
+<div class="face-paper">
+
+<section class="hero">
+  <h1 class="mark" id="mark" aria-label="Arris">Arris</h1>
+  <div class="readout" aria-hidden="true">
+    <span>wght <b id="r-wght">700</b></span>
+    <span>GRAD <b id="r-grad">0</b></span>
+    <span>WTCH <b id="r-wtch">0</b></span>
+  </div>
+  <p class="lede">A chamfered sans: octagonal and monoline, every outer corner cut at 45&nbsp;degrees. Nine weights, upright, italic and mono, and three variable axes.</p>
+  <p class="note">Move across the name. Left to right is weight; top to bottom is the watch's own stroke balance.</p>
+
+  <div class="placard" role="group" aria-label="Arris at a glance">
+    <div><span>Family</span><b>Arris</b></div>
+    <div><span>Classification</span><b>Chamfered sans</b></div>
+    <div><span>Weights</span><b>100–900</b></div>
+    <div><span>Axes</span><b>wght · GRAD · WTCH</b></div>
+    <div><span>Characters</span><b data-font="chars">2,170</b></div>
+    <div><span>Version</span><b data-font="version">1.002</b></div>
+    <div><span>Licence</span><b>SIL OFL 1.1</b></div>
+  </div>
+</section>
+
+<section class="origin" id="origin">
+  <div class="watch-wrap">
+    <div class="watch" id="watch" aria-label="A watch face showing the time in Arris">
+      <div class="watch-date" id="watch-date">WED 28</div>
+      <div class="watch-time" id="watch-time">10:08</div>
+      <div class="watch-foot">ARRIS · CHAMFER</div>
+    </div>
+    <div class="switch" role="group" aria-label="How the watch draws its figures">
+      <button type="button" id="pix-off" aria-pressed="true">Outlines</button>
+      <button type="button" id="pix-on" aria-pressed="false">Pixels <code>ss20</code></button>
+    </div>
+  </div>
+  <div class="origin-copy">
+    <h2>Ten figures on a watch face, every corner cut</h2>
+    <p>Arris began as the figures of the Dymaxion watch face, drawn on a grid of 9&nbsp;×&nbsp;12 pixels. Every outer corner was cut at 45&nbsp;degrees, the notch in the 2 and the waist in the 3 were kept, and a whole alphabet grew in the same language.</p>
+    <p class="note">The watch keeps your time. <code>ss20</code> draws the figures as the watch did, one square per pixel. Between figures, <code>calt</code> sets the watch's time colon.</p>
+  </div>
+</section>
+
+<section class="space" id="axes">
+  <h2>Three axes, one at a time</h2>
+  <div class="axis-tabs" role="tablist" aria-label="Axis">
+    <button role="tab" id="tab-wght" aria-selected="true" aria-controls="axis-panel" data-axis="wght">Weight <code>wght</code></button>
+    <button role="tab" id="tab-grad" aria-selected="false" aria-controls="axis-panel" data-axis="GRAD">Grade <code>GRAD</code></button>
+    <button role="tab" id="tab-wtch" aria-selected="false" aria-controls="axis-panel" data-axis="WTCH">Watch <code>WTCH</code></button>
+  </div>
+  <div class="axis-panel" id="axis-panel" role="tabpanel">
+    <div class="axis-stage" id="axis-stage">
+      <p class="axis-line" id="axis-line" contenteditable="true" spellcheck="false">Gate 8 closes at 21:47</p>
+      <p class="axis-line ghost" id="axis-ghost" aria-hidden="true">Gate 8 closes at 21:47</p>
+    </div>
+    <div class="axis-control">
+      <label for="axis-range" id="axis-label">Weight</label>
+      <input type="range" id="axis-range" min="100" max="900" step="1" value="400">
+      <output id="axis-out" for="axis-range">400</output>
+    </div>
+    <p class="note" id="axis-note">Nine named weights from Thin to Black, and every weight between. Each colour is the shade a titanium oxide film takes as it thickens; here it only ever means weight.</p>
+  </div>
+  <figure class="field">
+    <video id="field-video" muted loop playsinline preload="none" poster="media/weight-field.jpg" aria-label="A field of eights where every outline point takes its own weight">
+      <source src="media/weight-field.mp4" type="video/mp4">
+    </video>
+    <figcaption class="note">The outlines are parameters. Here every point of every eight takes its own weight, through the variable font's own deltas.</figcaption>
+  </figure>
+</section>
+
+<section class="specimen" id="specimen">
+  <h2>The character set</h2>
+  <div class="spec">
+    <div class="card" id="card">
+      <div class="card-head"><span id="card-cp">U+0041</span><span id="card-block">Basic Latin</span></div>
+      <canvas id="card-canvas" width="600" height="600" aria-label="The selected character, large, on Arris's metrics"></canvas>
+      <div class="card-name" id="card-name">LATIN CAPITAL LETTER A</div>
+      <div class="card-metrics" id="card-metrics"></div>
+    </div>
+    <div class="spec-side">
+      <div class="groups" id="groups" role="tablist" aria-label="Scripts and sets"></div>
+      <div class="grid" id="grid" role="listbox" aria-label="Characters"></div>
+    </div>
+  </div>
+  <p class="note"><span data-font="chars">2,170</span> characters: Latin with Vietnamese and pinyin, Cyrillic, Greek, symbols, arrows, mathematics, box drawing, blocks and Braille. Characters outside Latin load when you open them.</p>
+</section>
+
+<section class="features" id="features">
+  <h2>Features</h2>
+  <p class="sub">Each pair shows the text without the feature, then with it.</p>
+  <div class="feat-list" id="feat-list"></div>
+</section>
+
+</div>
+
+<!-- ============================================================ THE ARRIS -->
+<section class="crossing" id="crossing" aria-label="The arris: from the workshop to the Belt">
+  <div class="crossing-sticky">
+    <div class="cface cface-paper" aria-hidden="true"><span>Specimen</span></div>
+    <div class="cface cface-cut" aria-hidden="true"></div>
+    <div class="cface cface-night" aria-hidden="true"><span>In use</span></div>
+    <p class="slogan" id="slogan">cutting corners where we can</p>
+  </div>
+</section>
+
+<!-- ============================================================ NIGHT: the Belt -->
+<div class="face-night" id="in-use">
+
+<section class="prop-row">
+  <div class="prop dock" aria-label="A loading dock floor, painted in Arris">
+    <div class="dock-head">DOCK <span class="dock-langs">ДОК · ΑΠΟΒΑΘΡΑ · BẾN</span></div>
+    <div class="bay"><b>07</b><span>BAY 07 · 48 t · LEVELLER</span></div>
+    <div class="bay"><b>08</b><span>BAY 08 · 48 t · LEVELLER</span></div>
+    <div class="bay"><b>09</b><span>BAY 09 · 32 t · <a class="leak" href="kapa/" id="kapa-link" title="manifest">MANIFEST 0347</a></span></div>
+  </div>
+  <div class="prop-side">
+    <video muted loop playsinline preload="none" poster="media/dock.jpg" aria-label="DOCK 07, a worn loading dock from above"><source src="media/dock.mp4" type="video/mp4"></video>
+    <p class="note">Tabular figures by default, at every weight, so numbers line up in signs, tables and timers. Latin, Cyrillic, Greek and Vietnamese in one face.</p>
+  </div>
+</section>
+
+<section class="prop-row reverse">
+  <div class="prop survey" aria-label="A survey readout set in Arris Mono">
+    <div class="survey-head"><span>0347 KAPA</span><span>SLICE <b id="slice">33</b>/33</span></div>
+    <div class="survey-sub">C-TYPE ASTEROID · 2.8 × 1.9 × 1.7 km · ТИП C · TIỂU HÀNH TINH</div>
+    <table>
+      <thead><tr><th>#</th><th>Composition</th><th>%</th></tr></thead>
+      <tbody>
+        <tr><td>01</td><td>NiFe metal</td><td>41.8</td></tr>
+        <tr><td>02</td><td>Olivine</td><td>22.0</td></tr>
+        <tr><td>03</td><td>Water ice</td><td>12.6</td></tr>
+        <tr><td>04</td><td>Carbonaceous</td><td>9.4</td></tr>
+        <tr class="leak-row"><td>05</td><td>Unclassified</td><td>14.2</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="prop-side">
+    <video muted loop playsinline preload="none" poster="media/survey.jpg" aria-label="SURVEY, a layered glass display drawing an asteroid in slices"><source src="media/survey.mp4" type="video/mp4"></video>
+    <p class="note">Mono for data: every character in its cell, figures and units that line up down a column.</p>
+  </div>
+</section>
+
+<section class="prop-row">
+  <pre class="prop term" aria-label="A ship's log in Arris Mono with its ligatures"><code><span class="c">// relay log, ring 4</span>
+fn route(p: &amp;Packet) -&gt; Bay {
+    match p.dest {
+        Dest::Ceres =&gt; Bay::new(7),
+        d if d != Dest::Home =&gt; Bay::hold(d),
+        _ =&gt; Bay::new(8),
+    }
+}
+<span class="c">// 03:47  courier jacked in · bay 09</span></code></pre>
+  <div class="prop-side">
+    <p class="note">Arris Mono puts every glyph on the figures' 10-module pitch. Its ligatures (<code>-&gt;</code> <code>=&gt;</code> <code>!=</code> <code>|&gt;</code> <code>&lt;/&gt;</code>) keep each character in its own cell, so columns never drift.</p>
+  </div>
+</section>
+
+<section class="prop-row reverse">
+  <div class="prop shopfront" aria-label="Storefront lettering in Arris Italic">
+    <div class="shop-name">Noodles, all night</div>
+    <div class="shop-sub">Лапша · Mì · Ζυμαρικά</div>
+    <div class="shop-hours">Ring 3 · Spinward · 0.3 g</div>
+  </div>
+  <div class="prop-side">
+    <p class="note">The italic is drawn, not slanted: ten degrees, every chamfer a curve, a single-storey a and a descending f, while every point the upright keeps sharp stays sharp.</p>
+  </div>
+</section>
+
+<section class="build" id="build">
+  <h2>Built from code</h2>
+  <p>Every glyph in Arris is a construction in code, drawn from the watch's pixel masters, measured instead of eyeballed, and checked before each release.</p>
+  <ul class="checks">
+    <li><b>Strokes certified</b>: no crossing outlines, nothing below the stroke floor, no swelling, upright and italic.</li>
+    <li><b>Openings kept</b>: counters that would close at heavy weights are found and opened.</li>
+    <li><b>Interpolation checked</b>: 7,667 places per glyph in the variable fonts, so no weight in between swings past the drawings.</li>
+    <li><b>Fontbakery</b>: no FAILs and no ERRORs on the static, variable and Mono fonts.</li>
+  </ul>
+  <p class="note">The drawing engine, the build and every check are open, under the same licence as the fonts. <a href="https://github.com/huntrontrakkr/arris-type">github.com/huntrontrakkr/arris-type</a></p>
+</section>
+
+<section class="download" id="download">
+  <h2>Download</h2>
+  <a class="dl-button" href="https://github.com/huntrontrakkr/arris-type/releases/download/v1.002/Arris-1.002.zip">↓ Arris <span data-font="version">1.002</span> <small>ZIP · 28.4 MB</small></a>
+  <div class="dl-grid">
+    <div>
+      <h3>In the zip</h3>
+      <ul>
+        <li>Static fonts (TTF): Arris, Italic, Watch, Mono and Mono Italic, nine weights each</li>
+        <li>Variable fonts: <code>Arris[GRAD,WTCH,wght]</code> and the italic</li>
+        <li>Web fonts (WOFF2)</li>
+        <li>The licence and a README</li>
+      </ul>
+    </div>
+    <div>
+      <h3>On the web</h3>
+<pre class="css" id="css-snippet"><code>@font-face {
+  font-family: "Arris";
+  src: url("Arris[GRAD,WTCH,wght].woff2") format("woff2");
+  font-weight: 100 900;
+}
+body {
+  font-family: "Arris", sans-serif;
+  font-variation-settings: "GRAD" -40; /* light text on dark */
+}</code></pre>
+      <button type="button" class="copy" id="copy-css">Copy CSS</button>
+    </div>
+  </div>
+  <p class="licence">Free and open under the SIL Open Font License 1.1, with no Reserved Font Name. Use it for anything, commercial work included; embed it in apps, documents and websites; modify and share it. The fonts can't be sold on their own, and modified versions stay under the licence.</p>
+</section>
+
+<footer class="foot">
+  <span>Arris by huntrontrakkr. Fonts and source under the SIL Open Font License 1.1.</span>
+  <span class="foot-serial">SN-AR00 · <span data-font="version">1.002</span></span>
+</footer>
+
+</div>
+</main>
+
+<script src="js/site.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>0347 KAPA</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="../css/fonts.css">
+<style>
+  :root { --void: #04080b; --ink: #d8f6ff; --dim: #4f7480; --leak: #3fd6ff; --line: #12303a; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; min-height: 100svh; background: var(--void); color: var(--ink); font-family: "Arris Mono", ui-monospace, monospace;
+    display: grid; place-content: center; gap: 22px; padding: 32px max(20px, env(safe-area-inset-right, 0px)) 32px max(20px, env(safe-area-inset-left, 0px)); }
+  h1 { margin: 0; font-family: "Arris", sans-serif; font-weight: 700; font-size: clamp(48px, 12vw, 120px); line-height: .9; font-variation-settings: "GRAD" -60; }
+  img { display: block; width: min(100%, 880px); height: auto; opacity: .5; filter: saturate(.4) hue-rotate(-10deg);
+    clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 24px 100%, 0 calc(100% - 24px)); }
+  dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 24px; margin: 0; font-size: 14px; }
+  dt { color: var(--dim); } dd { margin: 0; }
+  .blink { color: var(--leak); animation: b 1.2s steps(1) infinite; }
+  @keyframes b { 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .blink { animation: none; } }
+  a { color: var(--dim); font-size: 13px; }
+</style>
+</head>
+<body>
+  <h1>0347 KAPA</h1>
+  <img src="../media/survey.jpg" alt="The survey display, dimmed">
+  <dl>
+    <dt>SURVEY</dt><dd>4-A</dd>
+    <dt>SLICE</dt><dd>33 / 33</dd>
+    <dt>UNCLASSIFIED</dt><dd>14.2 %</dd>
+    <dt>MANIFEST</dt><dd>DOCK 07 · BAY 09 · 03:47</dd>
+    <dt>ACCESS</dt><dd class="blink">PENDING</dd>
+  </dl>
+  <a href="../">← back to the dock</a>
+</body>
+</html>

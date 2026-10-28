@@ -17,6 +17,13 @@ loop() {  # name, start s, length s
 loop survey 0 8
 loop dock 0 6
 loop weight-field 0 7.5
+# the LED board, a two-second pull-back played there and back so it loops
+# without a seam (it sits small inside the night-train article)
+ffmpeg -v error -y -ss 2.3 -t 2 -i "$SRC/boarding.mp4" -an -filter_complex \
+  "[0:v]scale=960:-2,format=yuv420p,split[a][b];[b]reverse[r];[a][r]concat=n=2:v=1:a=0" \
+  -c:v libx264 -preset slow -crf 25 -movflags +faststart "$OUT/board.mp4"
+ffmpeg -v error -y -ss 1.9 -i "$OUT/board.mp4" -frames:v 1 -q:v 4 "$OUT/board.jpg"
+echo "board: $(du -k "$OUT/board.mp4" | cut -f1) kB"
 # the survey opens on a dark frame: its stills come from the YouTube thumbnail
 cp "$SRC/youtube/survey.jpg" "$OUT/survey.jpg"
 # the page closes on the deck's last poster, Garden in orbit, without its chrome

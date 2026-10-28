@@ -58,7 +58,7 @@ tools/media.sh ../arris-films/presentation
 | `css/fonts.css` | written by `tools/fonts.py` |
 | `js/site.js` | the name, the watch, the designspace, the italic, the specimen, the features, the crossing |
 | `js/mono.js` | Arris Mono: the code window, the ligature board, the terminal |
-| `js/belt.js` | the paperwork and the long read whose lines fill in as you reach them |
+| `js/belt.js` | the paperwork, and the two long reads (one sheet, turned by the clipping in its margin) whose lines fill in as you reach them |
 | `data/font.json` | written by `tools/fonts.py` |
 | `media/` | written by `tools/media.sh` |
 | `kapa/` | not linked from the navigation; `sealed.json` is written by `tools/seal.mjs` |

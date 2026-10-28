@@ -17,15 +17,15 @@
   const READ = 430, THIN = 100;
 
   /* ------------------------------------------------------------ paperwork: tap to straighten */
-  $$('.doc').forEach(d => d.addEventListener('click', e => {
+  $$('.desk .doc').forEach(d => d.addEventListener('click', e => {
     if (e.target.closest('a')) return;
     const was = d.classList.contains('lift');
-    $$('.doc.lift').forEach(o => o.classList.remove('lift'));
+    $$('.desk .doc.lift').forEach(o => o.classList.remove('lift'));
     if (!was) d.classList.add('lift');
   }));
 
   /* ------------------------------------------------------------ the long read */
-  const paras = $$('#sheet-body .taper');
+  const paras = $$('.sheet .taper');
   if (!paras.length) return;
   paras.forEach(p => { p._text = p.textContent.replace(/\s+/g, ' ').trim(); p._marks = new Set(); });
 
@@ -49,7 +49,7 @@
   let lines = [];
   function layout() {
     lines = [];
-    paras.forEach(p => {
+    paras.filter(p => !p.closest('.sheet').hidden).forEach(p => {
       const words = [...p._text.matchAll(/\S+/g)].map(m => [m.index, m[0]]);
       p.innerHTML = words.map(([, w]) => `<span>${esc(w)}</span>`).join(' ');
       const tops = [...p.children].map(s => s.offsetTop);
@@ -77,8 +77,28 @@
   }
 
   let near = false, queued = false;
-  const sheet = $('#glasshouse');
-  new IntersectionObserver(es => { near = es[0].isIntersecting; if (near) update(); }, { rootMargin: '200px 0px' }).observe(sheet);
+  const wrap = $('.sheet-wrap');
+  new IntersectionObserver(es => { near = es[0].isIntersecting; if (near) update(); }, { rootMargin: '200px 0px' }).observe(wrap);
+
+  // the clipping in the margin turns the sheet over to its article, and
+  // becomes the clipping of the one you left
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  $$('.snip', wrap).forEach(b => b.addEventListener('click', () => {
+    const from = $('.sheet:not([hidden])', wrap), to = $('#' + b.dataset.to);
+    if (!to || to === from) return;
+    const swap = () => {
+      from.hidden = true; from.classList.remove('turn-out');
+      to.hidden = false;
+      $$('.snip', wrap).forEach(o => { o.hidden = o.dataset.to === to.id; });
+      layout();
+      if (!still) { to.classList.add('turn-in'); to.getBoundingClientRect(); to.classList.remove('turn-in'); }
+      const top = wrap.getBoundingClientRect().top;
+      if (top < 0) scrollBy({ top: top - 80, behavior: still ? 'auto' : 'smooth' });
+    };
+    if (still) { swap(); return; }
+    from.classList.add('turn-out');
+    setTimeout(swap, 300);
+  }));
   addEventListener('scroll', () => {
     if (!near || queued) return;
     queued = true;

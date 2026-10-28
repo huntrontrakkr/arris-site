@@ -3,7 +3,8 @@
  * attached file are encrypted with it (AES-GCM, an IV each). The message
  * also carries the attachments' names, captions and IVs, so the repository
  * holds only ciphertext and numbered blobs (base64 text, which any host
- * serves), and reading the page's source gives nothing away. kapa/index.html opens it with the same derivation.
+ * serves), and reading the page's source gives nothing away.
+ * kapa/index.html opens it with the same derivation.
  * Keep the plaintexts and their codes out of the repository.
  *
  * usage: node tools/seal.mjs CODE OUTDIR MESSAGE.txt [FILE "CAPTION"] ...

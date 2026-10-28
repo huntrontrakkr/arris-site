@@ -79,7 +79,7 @@
   }
   async function show(key, files) {
     for (const f of files) {
-      const ct = await (await fetch(f.file)).arrayBuffer();
+      const ct = b64((await (await fetch(f.file)).text()).trim());
       const url = URL.createObjectURL(new Blob([await open(key, f.iv, ct)], { type: f.type }));
       const fig = document.createElement('figure'), a = document.createElement('a'), img = document.createElement('img'), cap = document.createElement('figcaption');
       a.href = url; a.target = '_blank'; a.rel = 'noopener';

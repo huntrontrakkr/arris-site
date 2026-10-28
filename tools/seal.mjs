@@ -2,12 +2,12 @@
  * is derived from the access code (PBKDF2-SHA-256); the message and each
  * attached file are encrypted with it (AES-GCM, an IV each). The message
  * also carries the attachments' names, captions and IVs, so the repository
- * holds only ciphertext and numbered blobs, and reading the page's source
- * gives nothing away. kapa/index.html opens it with the same derivation.
+ * holds only ciphertext and numbered blobs (base64 text, which any host
+ * serves), and reading the page's source gives nothing away. kapa/index.html opens it with the same derivation.
  * Keep the plaintexts and their codes out of the repository.
  *
  * usage: node tools/seal.mjs CODE OUTDIR MESSAGE.txt [FILE "CAPTION"] ...
- *        writes OUTDIR/sealed.json and OUTDIR/sealed/1.bin, 2.bin, ...
+ *        writes OUTDIR/sealed.json and OUTDIR/sealed/1.txt, 2.txt, ...
  *        (CODE is compared as upper-case letters and digits only) */
 import { webcrypto as crypto } from 'node:crypto';
 import { readFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
@@ -36,8 +36,8 @@ const TYPES = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png'
 const files = [];
 for (let i = 0; i < rest.length; i += 2) {
   const { iv, ct } = await seal(readFileSync(rest[i]));
-  const file = `${files.length + 1}.bin`;
-  writeFileSync(join(blobs, file), ct);
+  const file = `${files.length + 1}.txt`;
+  writeFileSync(join(blobs, file), b64(ct) + '\n');
   files.push({ file: `sealed/${file}`, iv, type: TYPES[extname(rest[i]).toLowerCase()] || 'application/octet-stream', caption: rest[i + 1] });
 }
 const message = JSON.stringify({ text: readFileSync(messagePath, 'utf8'), files });

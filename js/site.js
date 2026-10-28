@@ -335,7 +335,7 @@
   }
 
   /* ------------------------------------------------------------ films: play in view */
-  const vids = $$('video');
+  const vids = $$('video:not([data-scrub])');   // a scrubbed film follows the scroll instead (belt.js)
   if (!reduce && 'IntersectionObserver' in window) {
     const io = new IntersectionObserver(es => es.forEach(e => {
       if (e.isIntersecting) { e.target.preload = 'auto'; e.target.play().catch(() => {}); } else e.target.pause();

@@ -18,10 +18,13 @@ download.
 
 ## Running it
 
-Any static server from the repository root:
+Any static server from the repository root that answers byte-range
+requests (every real host does), since the board film is scrubbed by the
+scroll and a browser cannot seek a video without them. Python's
+`http.server` does not; `npx serve` does:
 
 ```
-python3 -m http.server 8000
+npx serve .
 ```
 
 ## Fonts and media

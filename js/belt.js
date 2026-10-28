@@ -6,6 +6,8 @@
  * near the bottom, filling to the reading weight by the middle, so the
  * text fills in as you reach it without ever reflowing.
  *
+ * A film marked data-scrub plays with the scroll, not the clock.
+ *
  * In the paragraphs marked data-clue a few letters keep the reading weight
  * whatever their line does. Read them in order while the text is still
  * thin. */
@@ -110,4 +112,36 @@
     lastW = innerWidth; clearTimeout(rsz); rsz = setTimeout(layout, 150);
   });
   document.fonts.ready.then(layout);
+
+  /* ------------------------------------------------------------ films that follow the scroll */
+  // the film's time is its place in the window: at the start as it comes up
+  // from the bottom, at the end by the time it nears the top; the shown time
+  // eases toward that, so the scrub glides rather than steps
+  $$('video[data-scrub]').forEach(v => {
+    let shown = 0, aim = 0, running = false, near = false;
+    const fps = 24;
+    function target() {
+      const r = v.getBoundingClientRect(), H = innerHeight;
+      return clamp((H * 0.95 - r.top) / (H * 0.75), 0, 1) * Math.max(0, (v.duration || 0) - 1 / fps);
+    }
+    function tick() {
+      shown += (aim - shown) * 0.22;
+      if (Math.abs(aim - shown) < 0.5 / fps) shown = aim;
+      if (Math.abs(v.currentTime - shown) >= 0.5 / fps && !v.seeking) v.currentTime = shown;
+      running = shown !== aim;
+      if (running) requestAnimationFrame(tick);
+    }
+    function onScroll() {
+      if (!near || !v.duration) return;
+      aim = target();
+      if (!running) { running = true; requestAnimationFrame(tick); }
+    }
+    new IntersectionObserver(es => {
+      near = es[0].isIntersecting;
+      if (near && v.preload !== 'auto') { v.preload = 'auto'; v.load(); }
+      onScroll();
+    }, { rootMargin: '300px 0px' }).observe(v);
+    v.addEventListener('loadedmetadata', onScroll);
+    addEventListener('scroll', onScroll, { passive: true });
+  });
 })();

@@ -19,3 +19,5 @@ loop dock 0 6
 loop weight-field 0 7.5
 # the survey opens on a dark frame: its stills come from the YouTube thumbnail
 cp "$SRC/youtube/survey.jpg" "$OUT/survey.jpg"
+# the page closes on the deck's last poster, Garden in orbit, without its chrome
+python3 -c "from PIL import Image; Image.open('$SRC/slides/41-garden.png').convert('RGB').crop((56, 84, 1852, 1064)).save('$OUT/garden.jpg', quality=86, optimize=True, progressive=True)"

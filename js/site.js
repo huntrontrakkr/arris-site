@@ -31,30 +31,47 @@
   }
 
   /* ------------------------------------------------------------ the name */
+  // the name hangs on a spring: the pointer (or the opening sweep) pulls the
+  // target, the name follows with a little overshoot, and when the pointer
+  // leaves it springs back to rest at Bold
   const mark = $('#mark'), rw = $('#r-wght'), rx = $('#r-wtch');
-  function setMark(w, x) {
-    w = Math.round(w); x = Math.round(x);
+  const REST = { w: 700, x: 0 }, K = 70, C = 2 * Math.sqrt(70) * 0.42;
+  const cur = reduce ? { ...REST } : { w: 100, x: 0 }, vel = { w: 0, x: 0 }, aim = { ...REST };
+  let springing = false, last = 0, sweep = !reduce;
+  function draw() {
+    const w = Math.round(clamp(cur.w, 100, 900)), x = Math.round(clamp(cur.x, 0, 100));
     mark.style.setProperty('--w', w); mark.style.setProperty('--x', x);
     rw.textContent = w; rx.textContent = x;
   }
-  let idle = !reduce;
+  function spring(t) {
+    const dt = Math.min(0.034, (t - last) / 1000 || 0.016); last = t;
+    for (const k of ['w', 'x']) {
+      vel[k] += (K * (aim[k] - cur[k]) - C * vel[k]) * dt;
+      cur[k] += vel[k] * dt;
+    }
+    draw();
+    const still = Math.abs(aim.w - cur.w) < 0.5 && Math.abs(vel.w) < 0.5 && Math.abs(aim.x - cur.x) < 0.2 && Math.abs(vel.x) < 0.2;
+    if (still) { cur.w = aim.w; cur.x = aim.x; draw(); springing = false; return; }
+    requestAnimationFrame(spring);
+  }
+  function pull(w, x) {
+    aim.w = w; aim.x = x;
+    if (reduce) { cur.w = w; cur.x = x; draw(); return; }
+    if (!springing) { springing = true; last = performance.now(); requestAnimationFrame(spring); }
+  }
   function point(e) {
-    idle = false;
+    sweep = false;
     const r = mark.getBoundingClientRect();
-    setMark(100 + 800 * clamp((e.clientX - r.left) / r.width, 0, 1), 100 * clamp((e.clientY - r.top) / r.height, 0, 1));
+    pull(100 + 800 * clamp((e.clientX - r.left) / r.width, 0, 1), 100 * clamp((e.clientY - r.top) / r.height, 0, 1));
   }
   mark.addEventListener('pointermove', point);
   mark.addEventListener('pointerdown', point);
-  if (idle) {
-    const t0 = performance.now();
-    // one slow pass from Thin to Black and back, then it rests at Bold
-    (function tick(t) {
-      if (!idle) return;
-      const s = (t - t0) / 1000;
-      if (s > 6) { setMark(700, 0); return; }
-      setMark(500 - 400 * Math.cos(s / 6 * 2 * Math.PI), 50 - 50 * Math.cos(s / 6 * 2 * Math.PI));
-      requestAnimationFrame(tick);
-    })(t0);
+  mark.addEventListener('pointerleave', () => { sweep = false; pull(REST.w, REST.x); });
+  draw();
+  if (sweep) {
+    // the opening: up to Black with the watch's balance, then let go
+    pull(900, 100);
+    setTimeout(() => { if (sweep) pull(REST.w, REST.x); }, 1500);
   }
 
   /* ------------------------------------------------------------ the watch */
@@ -186,19 +203,63 @@
       if (u < 1) requestAnimationFrame(step);
     })(t0);
   }
+  // the fly-through follows the Lorenz attractor (sigma 10, rho 28, beta 8/3):
+  // x is weight, y grade, z the watch (upward on the map, so the butterfly
+  // stands the right way up), drawing its trail on the map.
+  const trailEl = $('#ds-trail'), tctx = trailEl.getContext('2d');
+  let trail = [];
+  const L = { x: 19.5, y: 27, z: 48 };
+  const toLoc = ([x, y, z]) => ({ wght: 500 + 400 * clamp(x / L.x, -1, 1), GRAD: 100 * clamp(y / L.y, -1, 1), WTCH: 100 * clamp(1 - z / L.z, 0, 1) });
+  const lorenz = ([x, y, z]) => [10 * (y - x), x * (28 - z) - y, x * y - (8 / 3) * z];
+  function rk4(p, h) {
+    const add = (a, b, k) => a.map((v, i) => v + b[i] * k);
+    const k1 = lorenz(p), k2 = lorenz(add(p, k1, h / 2)), k3 = lorenz(add(p, k2, h / 2)), k4 = lorenz(add(p, k3, h));
+    return p.map((v, i) => v + h / 6 * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]));
+  }
+  function drawTrail() {
+    const dpr = devicePixelRatio || 1, W = trailEl.clientWidth, H = trailEl.clientHeight;
+    if (trailEl.width !== Math.round(W * dpr)) { trailEl.width = Math.round(W * dpr); trailEl.height = Math.round(H * dpr); }
+    tctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    tctx.clearRect(0, 0, W, H);
+    if (trail.length < 2) return;
+    const px = l => (norm(pair[0], l[pair[0]]) * (NX - 1) + 0.5) / NX * W, py = l => (norm(pair[1], l[pair[1]]) * (NY - 1) + 0.5) / NY * H;
+    tctx.lineWidth = 1.8; tctx.lineJoin = 'round';
+    const bands = 24, n = trail.length;
+    for (let b = 0; b < bands; b++) {
+      const i0 = Math.floor(b * n / bands), i1 = Math.min(n - 1, Math.floor((b + 1) * n / bands) + 1);
+      tctx.strokeStyle = `rgba(255,176,0,${(0.14 + 0.8 * (b + 1) / bands).toFixed(3)})`;
+      tctx.beginPath(); tctx.moveTo(px(trail[i0]), py(trail[i0]));
+      for (let i = i0 + 1; i <= i1; i++) tctx.lineTo(px(trail[i]), py(trail[i]));
+      tctx.stroke();
+    }
+  }
+  subs.push(drawTrail);
+  addEventListener('resize', drawTrail);
+  map.addEventListener('pointerdown', () => { if (!flying) { trail = []; drawTrail(); } });
+  // a point already on the attractor (from (1, 1, 1) after 25 units of
+  // time); a flight glides there first, then picks up where the last left off
+  let onAttractor = [1, 1, 1];
+  for (let i = 0; i < 6250; i++) onAttractor = rk4(onAttractor, 0.004);
   $('#ds-fly').addEventListener('click', e => {
     if (flying) { stop(); return; }
-    tween = null; flying = true;
-    e.currentTarget.setAttribute('aria-pressed', true); e.currentTarget.textContent = '■ Stop';
-    const t0 = performance.now(), base = { ...LOC };
-    // a slow Lissajous through all three axes, starting from where you are
-    const ph = { w: Math.asin(clamp((base.wght - 500) / 400, -1, 1)), g: Math.asin(clamp(base.GRAD / 100, -1, 1)), x: Math.asin(clamp((base.WTCH - 50) / 50, -1, 1)) };
-    (function fly(t) {
-      if (!flying) return;
-      const s = (t - t0) / 1000;
-      setLoc({ wght: 500 + 400 * Math.sin(ph.w + s * 0.55), GRAD: 100 * Math.sin(ph.g + s * 0.83), WTCH: 50 + 50 * Math.sin(ph.x + s * 0.37) });
-      requestAnimationFrame(fly);
-    })(t0);
+    const btn = e.currentTarget;
+    trail = []; drawTrail();
+    glide(toLoc(onAttractor));
+    setTimeout(() => {
+      tween = null; flying = true;
+      btn.setAttribute('aria-pressed', true); btn.textContent = '■ Stop';
+      let last = performance.now();
+      const H = 0.004, RATE = 0.42;           // attractor time per second
+      (function fly(t) {
+        if (!flying) return;
+        const steps = Math.max(1, Math.round(RATE * Math.min(0.05, (t - last) / 1000) / H)); last = t;
+        for (let i = 0; i < steps; i++) onAttractor = rk4(onAttractor, H);
+        const l = toLoc(onAttractor);
+        trail.push(l); if (trail.length > 1500) trail.shift();
+        setLoc(l);
+        requestAnimationFrame(fly);
+      })(last);
+    }, reduce ? 0 : 720);
   });
   $('#ds-copy').addEventListener('click', e => copy($('#ds-css').textContent, e.currentTarget, 'Copy'));
 

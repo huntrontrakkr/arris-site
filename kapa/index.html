@@ -29,6 +29,12 @@
   .denied { color: var(--cut); }
   pre { margin: 0; white-space: pre-wrap; font: inherit; font-size: clamp(13px, 1.8vw, 16px); line-height: 1.7; color: var(--leak); min-height: 1em; }
   a { color: var(--dim); font-size: 13px; }
+  .frames { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 14px; }
+  .frames figure { margin: 0; animation: in .6s ease-out both; }
+  .frames img { opacity: 1; filter: none; }
+  .frames figcaption { font-size: 11px; color: var(--dim); margin-top: 6px; letter-spacing: .06em; }
+  @keyframes in { from { opacity: 0; transform: translateY(8px); } }
+  @media (prefers-reduced-motion: reduce) { .frames figure { animation: none; } }
   @media (prefers-reduced-motion: reduce) { .blink { animation: none; } }
 </style>
 </head>
@@ -50,33 +56,50 @@
     <p class="hint">ASK AT THE GLASSHOUSE. READ IT BEFORE IT FILLS IN.</p>
   </form>
   <pre id="out" aria-live="polite"></pre>
+  <div class="frames" id="frames"></div>
   <a href="../">← back to the dock</a>
 </main>
 <script>
 (() => {
   const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
-  const state = document.getElementById('state'), out = document.getElementById('out'), form = document.getElementById('gate');
-  async function open(code) {
-    const sealed = await (await fetch('sealed.json')).json();
+  const state = document.getElementById('state'), out = document.getElementById('out'), form = document.getElementById('gate'), frames = document.getElementById('frames');
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  async function keyFor(code, sealed) {
     const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(code), 'PBKDF2', false, ['deriveKey']);
-    const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt: b64(sealed.salt), iterations: sealed.iter }, base,
+    return crypto.subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt: b64(sealed.salt), iterations: sealed.iter }, base,
       { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
-    return new TextDecoder().decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(sealed.iv) }, key, b64(sealed.ct)));
   }
+  const open = (key, iv, ct) => crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(iv) }, key, ct);
   function type(text) {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { out.textContent = text; return; }
-    let i = 0;
-    (function step() { out.textContent = text.slice(0, i); i += 2; if (i <= text.length + 1) setTimeout(step, 18); })();
+    return new Promise(done => {
+      if (still) { out.textContent = text; done(); return; }
+      let i = 0;
+      (function step() { out.textContent = text.slice(0, i); i += 2; if (i <= text.length + 1) setTimeout(step, 18); else done(); })();
+    });
+  }
+  async function show(key, files) {
+    for (const f of files) {
+      const ct = await (await fetch(f.file)).arrayBuffer();
+      const url = URL.createObjectURL(new Blob([await open(key, f.iv, ct)], { type: f.type }));
+      const fig = document.createElement('figure'), a = document.createElement('a'), img = document.createElement('img'), cap = document.createElement('figcaption');
+      a.href = url; a.target = '_blank'; a.rel = 'noopener';
+      img.src = url; img.alt = f.caption; cap.textContent = f.caption;
+      a.appendChild(img); fig.append(a, cap); frames.appendChild(fig);
+      if (!still) await new Promise(r => setTimeout(r, 450));
+    }
   }
   form.addEventListener('submit', async e => {
     e.preventDefault();
     const code = document.getElementById('code').value.toUpperCase().replace(/[^A-Z0-9]/g, '');
     state.textContent = 'CHECKING'; state.className = 'blink';
     try {
-      const text = await open(code);
+      const sealed = await (await fetch('sealed.json')).json();
+      const key = await keyFor(code, sealed);
+      const msg = JSON.parse(new TextDecoder().decode(await open(key, sealed.iv, b64(sealed.ct))));
       state.textContent = 'GRANTED'; state.className = '';
       form.hidden = true;
-      type(text);
+      await type(msg.text);
+      await show(key, msg.files);
     } catch (err) {
       state.textContent = 'DENIED'; state.className = 'denied';
     }

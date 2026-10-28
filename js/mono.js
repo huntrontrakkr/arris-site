@@ -159,7 +159,7 @@ main = print (tonnage ["3000", "470"])` },
     if (e.key === 'Tab' && !e.shiftKey) { e.preventDefault(); document.execCommand('insertText', false, '    '); }
   });
 
-  const toggles = { 't-calt': ['no-calt', true], 't-ss03': ['ss03', false], 't-cells': ['cells', false], 't-bold': ['bold', false] };
+  const toggles = { 't-calt': ['no-calt', true], 't-ss03': ['ss03', false], 't-cells': ['cells', false], 't-bold': ['bold', false], 't-ital': ['ital', false] };
   Object.entries(toggles).forEach(([id, [cls, inverse]]) => {
     const b = $('#' + id);
     b.addEventListener('click', () => {

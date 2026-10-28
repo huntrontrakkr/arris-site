@@ -25,5 +25,3 @@ ffmpeg -v error -y -i "$OUT/board.mp4" -frames:v 1 -q:v 4 "$OUT/board.jpg"
 echo "board: $(du -k "$OUT/board.mp4" | cut -f1) kB"
 # the survey opens on a dark frame: its stills come from the YouTube thumbnail
 cp "$SRC/youtube/survey.jpg" "$OUT/survey.jpg"
-# the page closes on the deck's last poster, Garden in orbit, without its chrome
-python3 -c "from PIL import Image; Image.open('$SRC/slides/41-garden.png').convert('RGB').crop((56, 84, 1852, 1064)).save('$OUT/garden.jpg', quality=86, optimize=True, progressive=True)"

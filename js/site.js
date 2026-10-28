@@ -77,14 +77,18 @@
   /* ------------------------------------------------------------ the watch */
   const watch = $('#watch'), wt = $('#watch-time'), wd = $('#watch-date');
   const DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-  let leakUntil = 0;
+  // the colon as the watch lights it, for wherever ss20 is on (site.css .pxc)
+  const PXC = '<span class="pxc">:' + [3, 4, 8, 9].flatMap(r => [0, 1].map(c => `<i style="--r:${r};--c:${c}"></i>`)).join('') + '</span>';
+  const pxText = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/:/g, PXC);
+  let leakUntil = 0, shownTime = '';
   function tickWatch() {
     const d = new Date(), now = d.getTime();
     // now and then, for a moment, the watch shows another time
     if (now > leakUntil + 60000 && d.getSeconds() === 47 && Math.random() < 0.34) leakUntil = now + 1400;
     const leaking = now < leakUntil;
     watch.classList.toggle('leaking', leaking);
-    wt.textContent = leaking ? '03:47' : `${two(d.getHours())}:${two(d.getMinutes())}`;
+    const t = leaking ? '03:47' : `${two(d.getHours())}:${two(d.getMinutes())}`;
+    if (t !== shownTime) { shownTime = t; wt.innerHTML = pxText(t); }
     wd.textContent = `${DAYS[d.getDay()]} ${two(d.getDate())}`;
   }
   tickWatch(); setInterval(tickWatch, 250);
@@ -506,9 +510,28 @@
     d.querySelector('code').textContent = tag;
     d.querySelector('.off').style.fontFeatureSettings = onByDefault ? `"${tag}" 0` : 'normal';
     d.querySelector('.on').style.fontFeatureSettings = `"${tag}" 1`;
-    d.querySelector('.off').textContent = text; d.querySelector('.on').textContent = text; d.querySelector('.what').textContent = what;
+    d.querySelector('.off').textContent = text; d.querySelector('.what').textContent = what;
+    if (tag === 'ss20') { d.querySelector('.on').classList.add('pixels'); d.querySelector('.on').innerHTML = pxText(text); }
+    else d.querySelector('.on').textContent = text;
     fl.appendChild(d);
   });
+
+  /* ------------------------------------------------------------ measured, not eyeballed */
+  const mo = $('#m-open');
+  [100, 500, 900].forEach(w => {
+    const sp = document.createElement('span');
+    sp.textContent = '4ae'; sp.title = `${w} ${NAMES[w]}`;
+    sp.style.fontVariationSettings = fvs(w, 0, 0);
+    mo.appendChild(sp);
+  });
+  // the vision model squints with a Gaussian 5% of the cap height (0.72 em)
+  // wide; the slider's two-thirds mark is that, its end half again
+  const sq = $('#m-squint span'), sqIn = $('#squint');
+  const squint = () => {
+    const em = parseFloat(getComputedStyle(sq).fontSize);
+    sq.style.setProperty('--blur', (sqIn.value / 100 * 0.075 * 0.72 * em).toFixed(2) + 'px');
+  };
+  sqIn.addEventListener('input', squint); addEventListener('resize', squint); squint();
 
   /* ------------------------------------------------------------ the arris */
   const crossing = $('#crossing'), sticky = $('.crossing-sticky');

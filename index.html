@@ -24,6 +24,7 @@
     <a href="#italic">Italic</a>
     <a href="#specimen">Specimen</a>
     <a href="#features">Features</a>
+    <a href="#method">Method</a>
     <a href="#in-use">In use</a>
     <a href="#mono">Mono</a>
     <a href="https://github.com/huntrontrakkr/arris-type">Source ↗</a>
@@ -173,6 +174,35 @@
 <section class="features" id="features">
   <h2>Features</h2>
   <div class="feat-list" id="feat-list"></div>
+</section>
+
+<section class="method" id="method">
+  <h2>Measured, not eyeballed</h2>
+  <div class="m-grid">
+    <figure class="m">
+      <div class="m-stage m-over" aria-label="O, H, s, o, 0 and 8 between their guide lines">
+        <i class="m-line" style="--v: 720"></i><i class="m-line" style="--v: 540"></i><i class="m-line base" style="--v: 0"></i>
+        <span>OHso08</span>
+      </div>
+      <figcaption><b>No overshoot.</b> Round letters usually rise past the flat ones to look as tall. A chamfered bowl's flat top already reads as tall as a square one, so Arris's touch the line and stop.</figcaption>
+    </figure>
+    <figure class="m">
+      <div class="m-stage m-bars" aria-label="H at Thin and at Black, with their bars' share of the stem">
+        <span style="font-variation-settings: 'wght' 100, 'GRAD' 0, 'WTCH' 0">H<small>0.90</small></span>
+        <span style="font-variation-settings: 'wght' 900, 'GRAD' 0, 'WTCH' 0">H<small>0.85</small></span>
+      </div>
+      <figcaption><b>Bars thinner than stems.</b> A horizontal looks heavier than a vertical of the same width. Bars are 0.90 of the stem at Thin and 0.85 at Black, as the measured faces do.</figcaption>
+    </figure>
+    <figure class="m">
+      <div class="m-stage m-open" id="m-open" aria-label="4, a and e from Thin to Black"></div>
+      <figcaption><b>Openings kept.</b> Heavier strokes grow inward. As they do, the 4's clip deepens, the a's bowl lowers and the e's bar rises, so nothing closes at Black.</figcaption>
+    </figure>
+    <figure class="m">
+      <div class="m-stage m-squint" id="m-squint" aria-label="a, e, s, 8 and @ at Black, blurred as you squint"><span>aes8@</span></div>
+      <div class="m-ctl"><label for="squint">Squint</label><input id="squint" type="range" min="0" max="100" value="67"></div>
+      <figcaption><b>White that reads when you squint.</b> Blurred to 5% of the cap height, every counter must stay clearly open; where a weight would close one, the glyph moves until it reads.</figcaption>
+    </figure>
+  </div>
 </section>
 
 </div>
@@ -395,7 +425,7 @@
 
 <section class="build" id="build">
   <h2>Built from code</h2>
-  <p>Every glyph in Arris is a construction in code, drawn from the watch's pixel masters, measured instead of eyeballed, and checked before each release.</p>
+  <p>Every glyph is a construction in code, checked before each release.</p>
   <ul class="checks">
     <li><b>Strokes certified</b>: no crossing outlines, nothing below the stroke floor, no swelling, upright and italic.</li>
     <li><b>Openings kept</b>: counters that would close at heavy weights are found and opened.</li>
@@ -435,12 +465,8 @@ body {
   <p class="licence">Free and open under the SIL Open Font License 1.1, with no Reserved Font Name. Use it for anything, commercial work included; embed it in apps, documents and websites; modify and share it. The fonts can't be sold on their own, and modified versions stay under the licence.</p>
 </section>
 
-<figure class="garden" aria-label="Saturn and two roses, drawn in characters: Garden in orbit">
-  <img src="media/garden.jpg" alt="Saturn, seen by Cassini, behind two of Redouté's roses, all drawn in characters set in Arris, with the line per aspera ad astra" loading="lazy">
-</figure>
-
 <footer class="foot">
-  <span>Arris by huntrontrakkr. Fonts and source under the SIL Open Font License 1.1. Saturn: NASA/JPL/Space Science Institute. Roses: Pierre-Joseph Redouté.</span>
+  <span>Arris by huntrontrakkr. Fonts and source under the SIL Open Font License 1.1.</span>
   <span class="foot-serial">SN-AR00 · <span data-font="version">1.002</span></span>
 </footer>
 

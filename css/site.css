@@ -212,6 +212,38 @@ body.past .bar nav .dl { color: var(--amber); }
 .feat .arrow { color: var(--dim); font-size: 14px; }
 .feat .what { grid-column: 2 / -1; font-family: var(--mono); font-size: 12.5px; color: var(--dim); margin-top: -4px; }
 
+/* measured, not eyeballed: each method shown in the font itself. A stage's
+   text sits in a 1.225 em line (the font's ascender to descender), so its
+   baseline is 0.975 em down and a guide at v units sits (975 - v) / 1000 em
+   down */
+.m-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 14px; }
+.m { margin: 0; background: var(--panel); padding: 18px 20px 20px; min-width: 0;
+  clip-path: polygon(0 0, calc(100% - var(--c)) 0, 100% var(--c), 100% 100%, 0 100%); }
+.m figcaption { font-size: 15px; line-height: 1.5; margin-top: 12px; }
+.m figcaption b { font-weight: inherit; font-variation-settings: "wght" 650, "GRAD" 0, "WTCH" 0; }
+.m-stage { position: relative; font-size: clamp(64px, 9vw, 120px); line-height: 1.225; height: 1.225em; white-space: nowrap; overflow: hidden; }
+.m-line { position: absolute; left: 0; right: 0; top: calc((975 - var(--v)) / 1000 * 1em); height: 0; border-top: 1px solid var(--cut); opacity: .55; }
+.m-line.base { opacity: .9; }
+.m-over span { position: relative; font-variation-settings: "wght" 500, "GRAD" 0, "WTCH" 0; letter-spacing: .02em; }
+.m-bars { display: flex; gap: .7em; }
+.m-bars span { position: relative; }
+.m-bars small { position: absolute; left: 100%; bottom: .3em; margin-left: .15em; font-family: var(--mono); font-size: 13px; color: var(--cut); font-variation-settings: normal; }
+.m-open { display: flex; justify-content: space-between; font-size: clamp(56px, 7vw, 96px); }
+.m-open span { letter-spacing: .02em; }
+.m-squint span { display: inline-block; font-variation-settings: "wght" 900, "GRAD" 0, "WTCH" 0; filter: blur(var(--blur, 0px)); }
+.m-ctl { display: flex; gap: 12px; align-items: center; font-family: var(--mono); font-size: 12px; color: var(--dim); }
+.m-ctl input { flex: 1; accent-color: var(--cut); }
+
+/* the watch's own colon, in pixels, wherever ss20 is on: the time colon
+   keeps its width; its dots are drawn as two 2 x 2 squares on the module
+   grid (a module is a twelfth of the 720-unit cap: 0.06 em), rows 3-4 and
+   8-9 from the cap's top, as the watch lights them */
+.pxc { position: relative; }
+.pxc i { display: none; position: absolute; width: var(--pxs, .048em); height: var(--pxs, .048em); background: currentColor;
+  left: calc(50% + (var(--c) - 1) * .06em + (.06em - var(--pxs, .048em)) / 2); top: calc(.255em + var(--r) * .06em + (.06em - var(--pxs, .048em)) / 2); }
+.pixels .pxc { -webkit-text-fill-color: transparent; }
+.pixels .pxc i { display: block; }
+
 /* ---------------------------------------------------------------- the arris */
 .crossing { max-width: none; padding: 0; height: 220vh; position: relative; background: var(--night); }
 .crossing-sticky { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; --p: 0; }
@@ -470,9 +502,7 @@ body.past .bar nav .dl { color: var(--amber); }
 .copy { font: inherit; font-family: var(--mono); font-size: 13px; padding: 7px 14px; background: none; color: var(--ink); border: 1px solid var(--ink); cursor: pointer; }
 .licence { font-size: 16px; color: var(--dim); }
 
-.garden { margin: 120px 0 0; max-width: none; }
-.garden img { display: block; width: 100%; height: auto; }
-.foot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin: 0 auto; max-width: calc(var(--max) + 40px);
+.foot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin: 96px auto 0; max-width: calc(var(--max) + 40px);
   padding: 18px var(--gut-r) calc(28px + env(safe-area-inset-bottom, 0px)) var(--gut); border-top: 1px solid var(--line); font-family: var(--mono); font-size: 12.5px; color: var(--dim); }
 
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }

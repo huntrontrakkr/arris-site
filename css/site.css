@@ -265,16 +265,6 @@ body.past .bar nav .dl { color: var(--amber); }
 .m-ctl { display: flex; gap: 12px; align-items: center; font-family: var(--mono); font-size: 12px; color: var(--dim); }
 .m-ctl input { flex: 1; accent-color: var(--cut); }
 
-/* the watch's own colon, in pixels, wherever ss20 is on: the time colon
-   keeps its width; its dots are drawn as two 2 x 2 squares on the module
-   grid (a module is a twelfth of the 720-unit cap: 0.06 em), rows 3-4 and
-   8-9 from the cap's top, as the watch lights them */
-.pxc { position: relative; }
-.pxc i { display: none; position: absolute; width: var(--pxs, .048em); height: var(--pxs, .048em); background: currentColor;
-  left: calc(50% + (var(--c) - 1) * .06em + (.06em - var(--pxs, .048em)) / 2); top: calc(.255em + var(--r) * .06em + (.06em - var(--pxs, .048em)) / 2); }
-.pixels .pxc { -webkit-text-fill-color: transparent; }
-.pixels .pxc i { display: block; }
-
 /* ---------------------------------------------------------------- the arris */
 .crossing { max-width: none; padding: 0; height: 220vh; position: relative; background: var(--night); }
 .crossing-sticky { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; --p: 0; }

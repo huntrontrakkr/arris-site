@@ -77,9 +77,6 @@
   /* ------------------------------------------------------------ the watch */
   const watch = $('#watch'), wt = $('#watch-time'), wd = $('#watch-date');
   const DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-  // the colon as the watch lights it, for wherever ss20 is on (site.css .pxc)
-  const PXC = '<span class="pxc">:' + [3, 4, 8, 9].flatMap(r => [0, 1].map(c => `<i style="--r:${r};--c:${c}"></i>`)).join('') + '</span>';
-  const pxText = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/:/g, PXC);
   let leakUntil = 0, shownTime = '';
   function tickWatch() {
     const d = new Date(), now = d.getTime();
@@ -88,7 +85,7 @@
     const leaking = now < leakUntil;
     watch.classList.toggle('leaking', leaking);
     const t = leaking ? '03:47' : `${two(d.getHours())}:${two(d.getMinutes())}`;
-    if (t !== shownTime) { shownTime = t; wt.innerHTML = pxText(t); }
+    if (t !== shownTime) { shownTime = t; wt.textContent = t; }
     wd.textContent = `${DAYS[d.getDay()]} ${two(d.getDate())}`;
   }
   tickWatch(); setInterval(tickWatch, 250);
@@ -596,8 +593,7 @@
     d.querySelector('.off').style.fontFeatureSettings = onByDefault ? `"${tag}" 0` : 'normal';
     d.querySelector('.on').style.fontFeatureSettings = `"${tag}" 1`;
     d.querySelector('.off').textContent = text; d.querySelector('.what').textContent = what;
-    if (tag === 'ss20') { d.querySelector('.on').classList.add('pixels'); d.querySelector('.on').innerHTML = pxText(text); }
-    else d.querySelector('.on').textContent = text;
+    d.querySelector('.on').textContent = text;
     fl.appendChild(d);
   });
 

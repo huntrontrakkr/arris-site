@@ -99,6 +99,129 @@
   $('#pix-on').addEventListener('click', () => { watch.classList.add('pixels'); pressSwitch($('#pix-on'), $('#pix-off'), true); });
   $('#pix-off').addEventListener('click', () => { watch.classList.remove('pixels'); pressSwitch($('#pix-on'), $('#pix-off'), false); });
 
+  /* ------------------------------------------------------------ from the watch to the alphabet */
+  // a figure and a letter that took its move, on one step u: 0 the watch's
+  // pixels, 1 the rule's outline (which Arris draws exactly at the watch's
+  // weight, wght 600 and WTCH 100), 2 Arris at Regular with its optics;
+  // data/transfer.json (tools/transfer.py) holds the pixels, the corners the
+  // rule cuts and fills, and its outline, in font units on the site's font
+  const tf = $('#tf');
+  if (tf) fetch('data/transfer.json').then(r => r.json()).then(T => {
+    const svg = $('#tf-svg'), range = $('#tf-u'), say = $('#tf-say'), also = $('#tf-also'), pairsEl = $('#tf-pairs'), steps = $$('.tf-ctl button', tf);
+    const NS = 'http://www.w3.org/2000/svg', GAP = 240, INSET = 7;
+    const SAY = [
+      ['Pixels', 'the watch’s drawing: twelve rows, strokes two pixels thick.'],
+      ['The rule', 'every exposed corner cut at 45°, every inside step filled on the same diagonal.'],
+      ['Arris', 'the same drawing as strokes, free to take any weight.'],
+    ];
+    const AMBER = [255, 176, 0], CREAM = [241, 235, 221];
+    const node = (tag, attrs, parent) => {
+      const e = document.createElementNS(NS, tag);
+      for (const k in attrs) e.setAttribute(k, attrs[k]);
+      return parent.appendChild(e);
+    };
+    const ramp = (v, a, b) => clamp((v - a) / (b - a), 0, 1);
+    const smooth = t => t * t * (3 - 2 * t);
+    let pair = 0, u = 0, parts = [], play = null, seen = false;
+
+    T.pairs.forEach((P, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.innerHTML = `<b>${P.glyphs[0].ch} → ${P.glyphs[1].ch}</b><span>${P.move}</span>`;
+      b.addEventListener('click', () => { pair = i; build(); if (seen) run(); });
+      pairsEl.appendChild(b);
+    });
+
+    function build() {
+      const P = T.pairs[pair];
+      svg.textContent = '';
+      parts = [];
+      let x = 0, right = 0;
+      P.glyphs.forEach(g => {
+        const [bx, by, W, H, M] = g.box, grp = node('g', { transform: `translate(${x} 0)` }, svg);
+        let grid = '', px = '';
+        for (let c = 0; c <= W; c++) grid += `M${bx + c * M} ${by}V${by + H * M}`;
+        for (let r = 0; r <= H; r++) grid += `M${bx} ${by + r * M}H${bx + W * M}`;
+        g.rows.forEach((row, r) => [...row].forEach((ch, c) => {
+          if (ch === '#') px += `M${bx + c * M + INSET} ${by + r * M + INSET}h${M - 2 * INSET}v${M - 2 * INSET}h${2 * INSET - M}Z`;
+        }));
+        const p = {
+          grid: node('path', { d: grid, class: 'tf-grid' }, grp),
+          px: node('path', { d: px, class: 'tf-px' }, grp),
+          rule: node('path', { d: g.rule, class: 'tf-rule' }, grp),
+          fill: node('path', { d: g.fill, class: 'tf-fill' }, grp),
+          cut: node('path', { d: g.cut, class: 'tf-cut' }, grp),
+          text: node('text', { x: 0, y: 0, 'font-size': 1000, class: 'tf-text' }, grp),
+        };
+        p.text.textContent = g.ch;
+        parts.push(p);
+        right = x + bx + W * M;
+        x += g.adv + GAP;
+      });
+      const [bx, by, , H, M] = P.glyphs[0].box;
+      svg.setAttribute('viewBox', `${bx - 30} ${by - 30} ${right - bx + 60} ${H * M + 60}`);
+      svg.setAttribute('aria-label', `${P.glyphs[0].ch} and ${P.glyphs[1].ch}, ${P.move}: from the watch's pixels to Arris`);
+      also.textContent = P.where;
+      $$('button', pairsEl).forEach((b, i) => b.setAttribute('aria-pressed', i === pair));
+      draw();
+    }
+
+    function draw() {
+      const k = smooth(ramp(u, 1, 2)), stop = u < 0.5 ? 0 : u < 1.5 ? 1 : 2;
+      const col = `rgb(${AMBER.map((a, i) => Math.round(a + (CREAM[i] - a) * k)).join(',')})`;
+      parts.forEach(p => {
+        p.grid.style.opacity = 1 - 0.7 * ramp(u, 1, 1.6);
+        p.px.style.opacity = (1 - 0.82 * ramp(u, 0.3, 0.9)) * (1 - ramp(u, 0.9, 1.05));
+        p.cut.style.opacity = ramp(u, 0.1, 0.35) * (1 - ramp(u, 0.6, 0.9));
+        p.cut.style.transform = `translate(0px, ${(50 * ramp(u, 0.6, 0.9)).toFixed(1)}px)`;   // knocked off
+        p.fill.style.opacity = ramp(u, 0.3, 0.55) * (1 - ramp(u, 0.85, 1));
+        p.rule.style.opacity = ramp(u, 0.55, 1) * (1 - ramp(u, 1.08, 1.22));   // under the font, which comes in first
+        p.text.style.opacity = ramp(u, 1, 1.08);
+        p.text.style.fontVariationSettings = fvs(600 - 200 * k, 0, 100 - 100 * k);
+        p.text.style.fill = col;
+      });
+      range.value = Math.round(u * 100);
+      steps.forEach((b, i) => b.setAttribute('aria-pressed', i === stop));
+      const note = stop === 2 && T.pairs[pair].note ? ' ' + T.pairs[pair].note : '';
+      say.innerHTML = `<b>${SAY[stop][0]}:</b> ${SAY[stop][1]}${note}`;
+    }
+
+    // a run: the pixels, the rule, then Arris, with a beat at each
+    function run(frames = [[0, 0], [700, 0], [3000, 1], [4100, 1], [5700, 2]]) {
+      if (reduce) { u = frames[frames.length - 1][1]; draw(); return; }
+      const t0 = performance.now(), id = {};
+      play = id;
+      (function step(t) {
+        if (play !== id) return;
+        const e = t - t0;
+        let i = 1;
+        while (i < frames.length - 1 && e > frames[i][0]) i++;
+        const [ta, ua] = frames[i - 1], [tb, ub] = frames[i];
+        u = ua + (ub - ua) * smooth(ramp(e, ta, tb));
+        draw();
+        if (e < frames[frames.length - 1][0]) requestAnimationFrame(step); else play = null;
+      })(t0);
+    }
+    steps.forEach(b => b.addEventListener('click', () => run([[0, u], [Math.max(250, 700 * Math.abs(+b.dataset.u - u)), +b.dataset.u]])));
+    range.addEventListener('input', () => { play = null; u = range.value / 100; draw(); });
+    if (!reduce) new IntersectionObserver((es, io) => {
+      if (es[0].isIntersecting) { seen = true; io.disconnect(); run(); }
+    }, { threshold: 0.45 }).observe($('.tf-stage', tf));
+    build();
+  });
+
+  // the nine weights, upright
+  const uw = $('#up-weights');
+  for (let w = 100; w <= 900; w += 100) {
+    const row = document.createElement('div');
+    row.className = 'it-wrow';
+    row.innerHTML = '<span class="it-wlabel"><i></i></span><span class="it-wtext">Survey ship back four days early</span>';
+    row.querySelector('i').style.background = TI[w / 100 - 1];
+    row.querySelector('.it-wlabel').append(`${w} ${NAMES[w]}`);
+    row.querySelector('.it-wtext').style.fontVariationSettings = fvs(w, 0, 0);
+    uw.appendChild(row);
+  }
+
   /* ------------------------------------------------------------ the designspace */
   const map = $('#ds-map'), cells = $('#ds-cells'), cross = $('#ds-cross'), third = $('#ds-third');
   const dsText = $('#ds-text'), dsGhost = $('#ds-ghost'), dsStage = $('#ds-stage');

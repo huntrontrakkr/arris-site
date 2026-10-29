@@ -45,6 +45,17 @@ symbols load only when they appear. It writes `css/fonts.css` and
 with its Unicode name), which the page reads for everything it states about
 the font.
 
+The upright section's figures and letters, from the watch's pixels through
+the Chamfer rule to Arris, are `data/transfer.json`, written by
+`tools/transfer.py` from an arris-type checkout (its pixel masters and the
+rule) laid on the site's own font at the watch's weight, wght 600 and
+WTCH 100. Rerun it after `tools/fonts.py`; it prints how far each glyph sits
+from the rule's outline:
+
+```
+uv run --project ../arris-type python tools/transfer.py ../arris-type
+```
+
 The films are cut to short silent loops with posters by `tools/media.sh`,
 from the arris-films repository:
 
@@ -59,10 +70,11 @@ tools/media.sh ../arris-films/presentation
 | `index.html` | the page |
 | `css/site.css` | the two faces, the props, the crossing |
 | `css/fonts.css` | written by `tools/fonts.py` |
-| `js/site.js` | the name, the watch, the designspace, the italic, the specimen, the features, the crossing |
+| `js/site.js` | the name, the watch, the upright, the designspace, the italic, the specimen, the features, the crossing |
 | `js/mono.js` | Arris Mono: the code window, the ligature board, the terminal |
 | `js/belt.js` | the paperwork, and the two long reads (one sheet, turned by the clipping in its margin) whose lines fill in as you reach them |
 | `data/font.json` | written by `tools/fonts.py` |
+| `data/transfer.json` | written by `tools/transfer.py` |
 | `media/` | written by `tools/media.sh` |
 | `kapa/` | not linked from the navigation; `sealed.json` is written by `tools/seal.mjs` |
 

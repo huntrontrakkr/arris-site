@@ -89,6 +89,35 @@ body.past .bar nav .dl { color: var(--amber); }
 .switch button { font: inherit; font-family: var(--mono); font-size: 13px; padding: 7px 14px; background: none; color: var(--ink); border: 0; cursor: pointer; }
 .switch button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
 
+/* the upright: from the watch to the alphabet, a figure and a letter taken
+   from the watch's pixels through the rule to Arris (site.js, transfer.json) */
+.up-kicker { font-family: var(--mono); font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--cut); margin-bottom: 8px; }
+.up-title { font-size: clamp(48px, 9vw, 136px); line-height: .95; letter-spacing: -.01em; max-width: 13ch; margin-bottom: 32px;
+  font-variation-settings: "wght" 800, "GRAD" 0, "WTCH" 0; }
+.tf { display: grid; gap: 14px; }
+.tf-stage { background: var(--night); padding: clamp(18px, 4vw, 44px) clamp(18px, 5vw, 64px);
+  clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px)); }
+#tf-svg { display: block; width: 100%; height: auto; max-height: 64vh; margin: 0 auto; overflow: visible; }
+.tf-grid { fill: none; stroke: var(--night-line); stroke-width: 2; }
+.tf-px, .tf-rule { fill: var(--amber); }
+.tf-fill { fill: var(--night-ink); }
+.tf-cut { fill: var(--cut); }
+.tf-text { font-family: var(--sans); font-kerning: none; fill: var(--amber); }
+.tf-ctl { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; }
+.tf-ctl input { flex: 1; min-width: 160px; accent-color: var(--cut); }
+.tf-say { font-size: clamp(17px, 1.8vw, 20px); line-height: 1.45; max-width: 62ch; min-height: 2.9em; margin: 0; }
+.tf-say b { font-weight: inherit; font-variation-settings: "wght" 650, "GRAD" 0, "WTCH" 0; }
+.tf-pairs { display: flex; flex-wrap: wrap; gap: 8px; }
+.tf-pairs button { font: inherit; display: grid; gap: 2px; padding: 8px 14px 10px; background: none; color: var(--ink); border: 1px solid var(--line); cursor: pointer; text-align: left; }
+.tf-pairs b { font-weight: inherit; font-size: 26px; line-height: 1.1; font-variation-settings: "wght" 600, "GRAD" 0, "WTCH" 0; }
+.tf-pairs span { font-family: var(--mono); font-size: 11px; letter-spacing: .04em; color: var(--dim); }
+.tf-pairs button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.tf-pairs button[aria-pressed="true"] span { color: var(--paper-line); }
+.tf-also { display: flex; flex-wrap: wrap; gap: 4px 18px; align-items: baseline; margin: 10px 0 0; padding-top: 12px; border-top: 1px solid var(--line); }
+.tf-also span:first-child { font-family: var(--mono); font-size: 12px; color: var(--dim); }
+.tf-also-g { font-size: clamp(34px, 5vw, 60px); line-height: 1.1; word-spacing: .25em; font-variation-settings: "wght" 500, "GRAD" 0, "WTCH" 0; }
+.up-weights .it-wtext { font-style: normal; }
+
 /* the designspace: a dark instrument on the paper, so grade reads as it is
    meant to (light on dark) and the titanium colours keep their contrast */
 .ds { display: grid; gap: 14px; margin-top: 8px; }

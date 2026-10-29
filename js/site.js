@@ -31,15 +31,16 @@
   }
 
   /* ------------------------------------------------------------ the name */
-  // the name hangs on a spring: the pointer (or the opening sweep) pulls the
+  // the name hangs on a spring: the pointer (or the opening) pulls the
   // target, the name follows with a little overshoot, and when the pointer
-  // leaves it springs back to rest at Bold
+  // leaves it springs back to rest in the middle of the weights; the ends of
+  // the axes are hard stops, which the name lands on rather than sinks past
   const mark = $('#mark'), rw = $('#r-wght'), rx = $('#r-wtch');
-  const REST = { w: 700, x: 0 }, K = 70, C = 2 * Math.sqrt(70) * 0.42;
-  const cur = reduce ? { ...REST } : { w: 100, x: 0 }, vel = { w: 0, x: 0 }, aim = { ...REST };
+  const REST = { w: 500, x: 0 }, K = 70, C = 2 * Math.sqrt(70) * 0.42, ENDS = { w: [100, 900], x: [0, 100] };
+  const cur = reduce ? { ...REST } : { w: 900, x: 0 }, vel = { w: 0, x: 0 }, aim = reduce ? { ...REST } : { ...cur };
   let springing = false, last = 0, sweep = !reduce;
   function draw() {
-    const w = Math.round(clamp(cur.w, 100, 900)), x = Math.round(clamp(cur.x, 0, 100));
+    const w = Math.round(cur.w), x = Math.round(cur.x);
     mark.style.setProperty('--w', w); mark.style.setProperty('--x', x);
     rw.textContent = w; rx.textContent = x;
   }
@@ -48,8 +49,13 @@
     for (const k of ['w', 'x']) {
       vel[k] += (K * (aim[k] - cur[k]) - C * vel[k]) * dt;
       cur[k] += vel[k] * dt;
+      if (cur[k] < ENDS[k][0] || cur[k] > ENDS[k][1]) { cur[k] = clamp(cur[k], ...ENDS[k]); vel[k] = 0; }
     }
     draw();
+    if (sweep === true && aim.w === 100 && cur.w === 100) {
+      sweep = 'landed';
+      setTimeout(() => { if (sweep) { sweep = false; pull(REST.w, REST.x); } }, 160);
+    }
     const still = Math.abs(aim.w - cur.w) < 0.5 && Math.abs(vel.w) < 0.5 && Math.abs(aim.x - cur.x) < 0.2 && Math.abs(vel.x) < 0.2;
     if (still) { cur.w = aim.w; cur.x = aim.x; draw(); springing = false; return; }
     requestAnimationFrame(spring);
@@ -69,9 +75,9 @@
   mark.addEventListener('pointerleave', () => { sweep = false; pull(REST.w, REST.x); });
   draw();
   if (sweep) {
-    // the opening: up to Black with the watch's balance, then let go
-    pull(900, 100);
-    setTimeout(() => { if (sweep) pull(REST.w, REST.x); }, 1500);
+    // the opening, once the face is in: Black, dropped to Thin, and let go
+    // to rest in the middle
+    document.fonts.load('1em Arris').catch(() => {}).then(() => setTimeout(() => { if (sweep) pull(100, 0); }, 450));
   }
 
   /* ------------------------------------------------------------ the watch */
@@ -277,7 +283,10 @@
     pairs.appendChild(b);
   });
 
-  // the wave: each letter's weight follows the pointer (or drifts by itself)
+  // the wave: each letter's weight follows the pointer (or drifts by itself);
+  // a time is one piece, since its colon becomes the time colon (calt) only
+  // when it is shaped with its figures, and letters of differing weights
+  // are shaped apart
   const wave = $('#it-wave'), waveText = wave.textContent;
   let letters = [], centres = [];
   function layoutWave() {
@@ -292,7 +301,7 @@
     lines.forEach((ln, i) => {
       const line = document.createElement('span');
       line.className = 'it-line';
-      [...ln].forEach(ch => { const s = document.createElement('span'); s.textContent = ch; line.appendChild(s); });
+      ln.match(/\d+:\d+|./gu).forEach(ch => { const s = document.createElement('span'); s.textContent = ch; line.appendChild(s); });
       wave.appendChild(line);
     });
     letters = $$('.it-line span', wave);

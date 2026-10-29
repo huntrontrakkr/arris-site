@@ -64,7 +64,7 @@ body.past .bar nav .dl { color: var(--amber); }
 
 .hero { padding-top: clamp(40px, 7vw, 96px); }
 .mark { font-size: clamp(88px, 24vw, 330px); line-height: .86; letter-spacing: -.012em; margin-left: -.04em; user-select: none;
-  touch-action: pan-y; cursor: crosshair; font-variation-settings: "wght" var(--w, 700), "GRAD" 0, "WTCH" var(--x, 0); }
+  touch-action: pan-y; cursor: crosshair; font-variation-settings: "wght" var(--w, 900), "GRAD" 0, "WTCH" var(--x, 0); }
 .readout { display: flex; gap: 6px 24px; flex-wrap: wrap; margin: 18px 0 30px; font-family: var(--mono); font-size: 13px; color: var(--dim); }
 .readout b { font-weight: 400; color: var(--ink); display: inline-block; min-width: 3.5ch; font-variant-numeric: tabular-nums; }
 .lede { font-size: clamp(21px, 2.4vw, 28px); line-height: 1.35; max-width: 30ch; font-variation-settings: "wght" 350, "GRAD" 0, "WTCH" 0; }

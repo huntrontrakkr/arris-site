@@ -1,0 +1,75 @@
+# Email for arristype.com, through Cloudflare Email Routing: every address at
+# the domain (a catch-all) forwards to one inbox. Run by hand, once; running
+# it again changes nothing that is already so.
+#
+# Needs the repository secret CLOUDFLARE_API_TOKEN with, on the zone, Zone
+# Read, DNS Edit and Email Routing Rules Edit, and on the account Email
+# Routing Addresses Edit. The first run sends a verification email to the
+# inbox; until it is confirmed, Cloudflare holds the forwarding.
+name: Email
+
+on:
+  workflow_dispatch:
+    inputs:
+      forward_to:
+        description: The inbox every address at the domain forwards to
+        type: string
+        default: wade@hunter.systems
+
+env:
+  ZONE: arristype.com
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+jobs:
+  email:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Email Routing
+        env:
+          TO: ${{ inputs.forward_to }}
+        run: |
+          set -euo pipefail
+          api() {  # api METHOD PATH [JSON]
+            curl -sS -X "$1" "https://api.cloudflare.com/client/v4$2" \
+              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" \
+              ${3:+--data "$3"}
+          }
+          ok() { jq -e '.success' > /dev/null <<< "$1" || { echo "$1" | jq '.errors'; return 1; }; }
+
+          zone=$(api GET "/zones?name=$ZONE")
+          ok "$zone"
+          ZID=$(jq -r '.result[0].id' <<< "$zone"); AID=$(jq -r '.result[0].account.id' <<< "$zone")
+          test -n "$ZID" -a "$ZID" != null || { echo "::error::the token cannot see the zone $ZONE"; exit 1; }
+          echo "zone $ZID, account $AID"
+
+          # 1. routing on (this adds the MX and SPF records); already on is fine
+          state=$(api GET "/zones/$ZID/email/routing"); ok "$state"
+          if [ "$(jq -r '.result.enabled' <<< "$state")" != true ]; then
+            r=$(api POST "/zones/$ZID/email/routing/enable"); ok "$r"
+            echo "routing enabled"
+          else
+            echo "routing was on"
+          fi
+
+          # 2. the destination inbox, verified or awaiting its email
+          addrs=$(api GET "/accounts/$AID/email/routing/addresses?per_page=50"); ok "$addrs"
+          if ! jq -e --arg to "$TO" '.result[] | select(.email == $to)' > /dev/null <<< "$addrs"; then
+            r=$(api POST "/accounts/$AID/email/routing/addresses" "$(jq -nc --arg e "$TO" '{email: $e}')"); ok "$r"
+            echo "destination $TO added: a verification email is on its way"
+          fi
+          verified=$(api GET "/accounts/$AID/email/routing/addresses?per_page=50" | jq -r --arg to "$TO" '.result[] | select(.email == $to) | .verified // "not yet"')
+          echo "destination $TO verified: $verified"
+
+          # 3. the catch-all: everything at the domain to that inbox
+          rule=$(jq -nc --arg to "$TO" '{name: "everything to the inbox", enabled: true,
+                                          matchers: [{type: "all"}], actions: [{type: "forward", value: [$to]}]}')
+          r=$(api PUT "/zones/$ZID/email/routing/rules/catch_all" "$rule"); ok "$r"
+          echo "catch-all: $(jq -c '.result | {enabled, actions}' <<< "$r")"
+
+          # what the domain now says
+          echo; echo "MX records:"; dig +short MX "$ZONE" || true
+          echo "TXT records:"; dig +short TXT "$ZONE" | grep -i spf || true
+          if [ "$verified" = "not yet" ]; then
+            echo "::notice::Confirm the verification email at $TO; forwarding starts when it is confirmed."
+          fi

@@ -48,10 +48,16 @@ jobs:
         if: steps.token.outputs.ok == 'true'
         # a new custom domain can take a few minutes for its certificate
         run: |
-          for i in $(seq 1 30); do
-            [ "$(curl -s -o /dev/null -w '%{http_code}' https://arristype.com/)" = 200 ] && break
-            echo "waiting for arristype.com ($i)"; sleep 20
-          done
+          ready() {
+            for i in $(seq 1 30); do
+              code=$(curl -s -o /dev/null -w '%{http_code}' "$1")
+              [ "$code" = "$2" ] && return 0
+              echo "waiting for $1 ($i: $code)"; sleep 20
+            done
+            return 1
+          }
+          ready https://arristype.com/ 200
+          ready https://www.arristype.com/kapa/ 301
           show() { printf '%-34s %s\n' "$1" "$2"; }
           show "https://arristype.com/" "$(curl -s -o /dev/null -w '%{http_code} %{content_type}' https://arristype.com/)"
           show "a byte range of the board film" "$(curl -s -o /dev/null -w '%{http_code}' -H 'Range: bytes=1000-1999' https://arristype.com/media/board.mp4) $(curl -s -D - -o /dev/null -H 'Range: bytes=1000-1999' https://arristype.com/media/board.mp4 | grep -i '^content-range' | tr -d '\r')"
@@ -61,3 +67,4 @@ jobs:
           test "$(curl -s -o /dev/null -w '%{http_code}' https://arristype.com/)" = 200
           test "$(curl -s -o /dev/null -w '%{http_code}' -H 'Range: bytes=1000-1999' https://arristype.com/media/board.mp4)" = 206
           test "$(curl -s -o /dev/null -w '%{http_code}' https://arristype.com/README.md)" = 404
+          test "$(curl -s -o /dev/null -w '%{redirect_url}' https://www.arristype.com/kapa/)" = https://arristype.com/kapa/

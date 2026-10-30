@@ -3,9 +3,10 @@
 # it again changes nothing that is already so.
 #
 # Needs the repository secret CLOUDFLARE_API_TOKEN with, on the zone, Zone
-# Read, DNS Edit and Email Routing Rules Edit, and on the account Email
-# Routing Addresses Edit. The first run sends a verification email to the
-# inbox; until it is confirmed, Cloudflare holds the forwarding.
+# Read, DNS Read, Zone Settings Edit (turning routing on is a zone setting)
+# and Email Routing Rules Edit, and on the account Email Routing Addresses
+# Edit. The first run sends a verification email to the inbox; until it is
+# confirmed, Cloudflare holds the forwarding.
 name: Email
 
 on:
@@ -25,15 +26,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: What the settings endpoints need (from the API reference)
-        continue-on-error: true
-        run: |
-          for m in get enable; do
-            echo "== email_routing/$m"
-            curl -sSL "https://developers.cloudflare.com/api/resources/email_routing/methods/$m/" \
-              | sed 's/<[^>]*>/ /g' | tr -s ' \n\t' ' ' \
-              | grep -oiE '.{0,160}permission.{0,240}' | head -5 || echo "(nothing found)"
-          done
       - name: Email Routing
         env:
           TO: ${{ inputs.forward_to }}
@@ -60,13 +52,11 @@ jobs:
           }
           echo "the token (id $(api GET /user/tokens/verify | jq -r '.result.id')) can reach:"
           probe "DNS records (Zone DNS Read)" "/zones/$ZID/dns_records?per_page=1"
-          probe "Email Routing settings" "/zones/$ZID/email/routing"
+          probe "Email Routing settings (Zone Settings Read)" "/zones/$ZID/email/routing"
           probe "Email Routing rules (Zone Email Routing Rules Read)" "/zones/$ZID/email/routing/rules?per_page=1"
           probe "destination addresses (Account Email Routing Addresses Read)" "/accounts/$AID/email/routing/addresses?per_page=1"
 
-          # 1. routing on (this adds the MX and SPF records); already on is fine.
-          # Read from the DNS records: the settings endpoint wants a permission
-          # the token need not have.
+          # 1. routing on (this adds the MX and SPF records); already on is fine
           mx=$(api GET "/zones/$ZID/dns_records?type=MX&per_page=10"); ok "$mx"
           if jq -e '.result[] | select(.content | test("mx.cloudflare.net"))' > /dev/null <<< "$mx"; then
             echo "routing was on (the MX records point at Cloudflare)"

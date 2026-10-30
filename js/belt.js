@@ -69,9 +69,34 @@
     el.style.setProperty('--rim', poly(1));
     el.classList.add('torn');
   }
-  const clip = $('.desk .clip'), receipt = $('.desk .receipt');
+  const clip = $('.desk .clip'), receipt = $('.desk .receipt'), flyer = $('.desk .flyer');
   if (clip) tear(clip, 7, 13, 7);
   if (receipt) tear(receipt, 11, 6, 0);
+  if (flyer) tear(flyer, 29, 11, 6);
+
+  /* ------------------------------------------------------------ the flyer's bowl */
+  // a rect per pixel, from a map: r the bowl, k its band, n noodles, h herbs,
+  // c chopsticks, s and t the steam's two frames (css alternates them)
+  const BOWL = [
+    '....st..st......c..c',
+    '....ts..ts.....c..c.',
+    '....st..st....c..c..',
+    '....ts..ts...c..c...',
+    '...nnnhnnnhncnncn...',
+    '.rrrrrrrrrrrrrrrrrr.',
+    '.krrkrrkrrkrrkrrkrr.',
+    '..rrrrrrrrrrrrrrrr..',
+    '...rrrrrrrrrrrrrr...',
+    '.....rrrrrrrrrr.....',
+    '.......rrrrrr.......',
+  ];
+  const bowl = $('.fl-px');
+  if (bowl) BOWL.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch === '.') return;
+    const r = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    Object.entries({ x, y, width: 1, height: 1, class: 'p' + ch }).forEach(([k, v]) => r.setAttribute(k, v));
+    bowl.appendChild(r);
+  }));
 
   /* ------------------------------------------------------------ the long read */
   const paras = $$('.sheet .taper');

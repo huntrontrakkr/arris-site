@@ -371,7 +371,7 @@ body.past .bar nav .dl { color: var(--amber); }
    straightens and comes to the top under the pointer */
 .desk { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 32px; align-items: end; }
 @media (max-width: 980px) { .desk { grid-template-columns: 1fr; } }
-.pile { position: relative; min-height: 760px; }
+.pile { position: relative; min-height: 1080px; }
 .doc { position: absolute; color: #1d1b17; box-shadow: 0 1px 0 rgba(0,0,0,.25), 0 18px 40px -12px rgba(0,0,0,.7); transform: rotate(var(--r, 0deg));
   transition: transform .35s cubic-bezier(.2,.9,.3,1.2), box-shadow .35s; cursor: default; }
 .doc:has(:focus-visible), .doc.lift { transform: rotate(0deg) translateY(-6px) scale(1.02); z-index: 10; box-shadow: 0 1px 0 rgba(0,0,0,.25), 0 30px 60px -14px rgba(0,0,0,.8); }
@@ -447,13 +447,46 @@ body.past .bar nav .dl { color: var(--amber); }
 .bd-role { font-style: italic; font-size: 15px; color: #2d5560; }
 .bd-num { font-size: 52px; line-height: 1; margin: 10px 0 6px; font-variation-settings: "wght" 600, "GRAD" 0, "WTCH" 100; color: #0c0e10; }
 .bd-foot { font-family: var(--mono); font-size: 9.5px; color: #4f7480; }
+/* a flyer for the noodle stall the receipt is from, torn off a post (belt.js
+   tears it), in Vietnamese: its mark a Black monogram with the Thin drawn over
+   it in the paper's colour, letter on letter, so it reads as an inline; the
+   bowl in pixels (belt.js draws it from a map, its steam in two frames); the
+   hours in the watch's pixels (ss20), its time colon lit as the watch lights it */
+.flyer { left: 37%; top: 605px; width: 260px; background: #f3efe4; padding: 14px 16px 26px; z-index: 6; }
+.flyer.torn { --torn-paper: #f3efe4; --torn-core: #fffdf6; }
+.fl-top { display: flex; gap: 10px; align-items: center; }
+.fl-logo { display: flex; gap: 1px; }
+.fl-logo span { display: grid; }
+.fl-logo b, .fl-logo i { grid-area: 1 / 1; justify-self: center; font-style: normal; font-weight: inherit; font-size: 46px; line-height: .9; }
+.fl-logo b { color: var(--cut); font-variation-settings: "wght" 900, "GRAD" 0, "WTCH" 0; }
+.fl-logo i { color: #f3efe4; font-variation-settings: "wght" 100, "GRAD" 0, "WTCH" 0; }
+.fl-name { display: grid; }
+.fl-name b { font-weight: inherit; font-size: 25px; line-height: 1; font-variation-settings: "wght" 800, "GRAD" 0, "WTCH" 0; }
+.fl-name span { font-family: var(--mono); font-size: 10px; color: #6b665c; margin-top: 4px; }
+.fl-px { display: block; width: 100%; height: auto; margin: 12px 0 8px; }
+.fl-px .pr { fill: var(--cut); } .fl-px .pk { fill: #1d1b17; } .fl-px .pn { fill: #f0cf7a; } .fl-px .ph { fill: #4f9b5a; }
+.fl-px .pc { fill: #1d1b17; } .fl-px .ps, .fl-px .pt { fill: #a59e90; } .fl-px .pt { opacity: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .fl-px .ps { animation: fl-steam 1.4s linear infinite; }
+  .fl-px .pt { animation: fl-steam 1.4s linear infinite -.7s; }
+}
+@keyframes fl-steam { 0%, 49.9% { opacity: 1; } 50%, 100% { opacity: 0; } }
+.fl-strip { background: #1d1b17; color: #f3efe4; font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-align: center; padding: 3px 0 2px; }
+.fl-rows { font-family: var(--mono); font-size: 12px; margin-top: 8px; }
+.fl-rows div { display: flex; justify-content: space-between; align-items: baseline; padding: 3px 0; border-bottom: 1px dotted #b8b1a2; }
+.fl-rows b { font-family: var(--sans); font-weight: inherit; font-size: 15px; font-variation-settings: "wght" 600, "GRAD" 0, "WTCH" 0; }
+.fl-hours { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 10px; }
+.fl-hours span { font-style: italic; font-size: 15px; font-variation-settings: "wght" 600, "GRAD" 0, "WTCH" 0; }
+.fl-hours b { font-weight: inherit; font-size: 27px; line-height: 1; white-space: nowrap; font-variation-settings: "wght" 600, "GRAD" 0, "WTCH" 100; }
+.fl-foot { display: grid; font-family: var(--mono); font-size: 9.5px; color: #6b665c; margin-top: 6px; }
 .desk-notes { display: grid; gap: 4px; }
 
 @media (max-width: 820px) {
   .pile { min-height: 0; display: grid; gap: 0; justify-items: center; }
   .doc { position: relative; left: auto; right: auto; top: auto; width: min(100%, 440px); margin-top: -18px; }
   .doc:first-child { margin-top: 0; }
-  .receipt, .badge, .ticket { width: min(86%, 330px); }
+  .receipt, .badge, .ticket, .flyer { width: min(86%, 330px); }
+  .flyer { margin-top: 8px; }
 }
 
 /* the article: a paper sheet on the dark; each line's weight is set by

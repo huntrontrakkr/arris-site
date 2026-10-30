@@ -33,11 +33,11 @@
     <a href="#upright">Upright</a>
     <a href="#axes">Axes</a>
     <a href="#italic">Italic</a>
-    <a href="#specimen">Specimen</a>
+    <a href="#mono">Mono</a>
+    <a href="#specimen">Characters</a>
     <a href="#features">Features</a>
     <a href="#method">Method</a>
     <a href="#in-use">In use</a>
-    <a href="#mono">Mono</a>
     <a href="https://github.com/huntrontrakkr/arris-type">Source ↗</a>
     <a class="dl" href="#download">↓ Download</a>
   </nav>
@@ -188,6 +188,35 @@
   </div>
 </section>
 
+<section class="mono" id="mono">
+  <h2>Arris Mono</h2>
+  <p class="mono-lede">Arris Mono uses the figures' 10-module pitch. Its 45 ligatures stay inside their cells.</p>
+
+  <div class="editor" id="editor">
+    <div class="ed-bar">
+      <div class="ed-tabs" role="tablist" aria-label="Code samples" id="ed-tabs"></div>
+      <div class="ed-tools" role="group" aria-label="Display">
+        <button type="button" id="t-calt" aria-pressed="true">Ligatures</button>
+        <button type="button" id="t-ss03" aria-pressed="false" title="ss03: &lt;= and &gt;= as their characters, for languages where they are arrows"><code>ss03</code></button>
+        <button type="button" id="t-cells" aria-pressed="false">Cells</button>
+        <button type="button" id="t-bold" aria-pressed="false">Bold</button>
+        <button type="button" id="t-ital" aria-pressed="false">Italic</button>
+      </div>
+    </div>
+    <div class="ed-body">
+      <pre class="ed-nums" id="ed-nums" aria-hidden="true"></pre>
+      <pre class="ed-code" id="ed-code" contenteditable="plaintext-only" spellcheck="false" aria-label="Editable code, set in Arris Mono"></pre>
+    </div>
+  </div>
+
+  <h3 class="lig-title">The ligatures</h3>
+  <div class="ligs" id="ligs"></div>
+  <div class="never">
+    <span class="never-label">Left alone</span>
+    <span id="never"></span>
+  </div>
+</section>
+
 <section class="specimen" id="specimen">
   <h2>The character set</h2>
   <div class="spec">
@@ -277,6 +306,18 @@
       <figcaption><b>Squint test.</b> Holes and slots are checked under a blur 5% of the cap height wide. White that would fill in gets opened up.</figcaption>
     </figure>
   </div>
+</section>
+
+<section class="build" id="build">
+  <h2>Built from code</h2>
+  <p>The glyphs are drawn by code, and the build checks them before a release.</p>
+  <ul class="checks">
+    <li><b>Strokes</b>: no crossing outlines, no strokes below the minimum, no swelling.</li>
+    <li><b>Openings</b>: counters that would close at heavy weights get opened.</li>
+    <li><b>Variable fonts</b>: checked against the drawings at 7,667 places in the designspace.</li>
+    <li><b>Fontbakery</b>: no FAILs or ERRORs on the static, variable and Mono fonts.</li>
+  </ul>
+  <p class="note">The engine, the build and the checks are open source, under the same licence as the fonts. <a href="https://github.com/huntrontrakkr/arris-type">github.com/huntrontrakkr/arris-type</a></p>
 </section>
 
 </div>
@@ -416,6 +457,17 @@
   </div>
 </section>
 
+<section class="prop-row">
+  <div class="prop shopfront" aria-label="Storefront lettering in Arris Italic">
+    <div class="shop-name">Noodles, all night</div>
+    <div class="shop-sub">Лапша · Mì · Ζυμαρικά</div>
+    <div class="shop-hours">Ring 3 · Spinward · 0.3 g</div>
+  </div>
+  <div class="prop-side">
+    <p class="note">A noodle shop sign in the italic.</p>
+  </div>
+</section>
+
 <section class="reading" id="reading">
   <div class="sheet-wrap">
     <button type="button" class="next" id="next" aria-label="Turn to: The rain never stops. Neither do the trains.">
@@ -471,59 +523,9 @@
   </div>
 </section>
 
-<section class="mono" id="mono">
-  <h2>Arris Mono</h2>
-  <p class="mono-lede">Arris Mono uses the figures' 10-module pitch. Its 45 ligatures stay inside their cells.</p>
-
-  <div class="editor" id="editor">
-    <div class="ed-bar">
-      <div class="ed-tabs" role="tablist" aria-label="Code samples" id="ed-tabs"></div>
-      <div class="ed-tools" role="group" aria-label="Display">
-        <button type="button" id="t-calt" aria-pressed="true">Ligatures</button>
-        <button type="button" id="t-ss03" aria-pressed="false" title="ss03: &lt;= and &gt;= as their characters, for languages where they are arrows"><code>ss03</code></button>
-        <button type="button" id="t-cells" aria-pressed="false">Cells</button>
-        <button type="button" id="t-bold" aria-pressed="false">Bold</button>
-        <button type="button" id="t-ital" aria-pressed="false">Italic</button>
-      </div>
-    </div>
-    <div class="ed-body">
-      <pre class="ed-nums" id="ed-nums" aria-hidden="true"></pre>
-      <pre class="ed-code" id="ed-code" contenteditable="plaintext-only" spellcheck="false" aria-label="Editable code, set in Arris Mono"></pre>
-    </div>
-  </div>
-
-  <h3 class="lig-title">The ligatures</h3>
-  <div class="ligs" id="ligs"></div>
-  <div class="never">
-    <span class="never-label">Left alone</span>
-    <span id="never"></span>
-  </div>
-
-  <h3 class="lig-title">In the terminal</h3>
+<section class="terminal" id="terminal" aria-label="A terminal in Arris Mono">
   <pre class="tui" id="tui" aria-label="A terminal interface drawn in Arris Mono's box drawing, blocks, Braille and Powerline glyphs"></pre>
-</section>
-
-<section class="prop-row reverse">
-  <div class="prop shopfront" aria-label="Storefront lettering in Arris Italic">
-    <div class="shop-name">Noodles, all night</div>
-    <div class="shop-sub">Лапша · Mì · Ζυμαρικά</div>
-    <div class="shop-hours">Ring 3 · Spinward · 0.3 g</div>
-  </div>
-  <div class="prop-side">
-    <p class="note">A noodle shop sign in the italic.</p>
-  </div>
-</section>
-
-<section class="build" id="build">
-  <h2>Built from code</h2>
-  <p>The glyphs are drawn by code, and the build checks them before a release.</p>
-  <ul class="checks">
-    <li><b>Strokes</b>: no crossing outlines, no strokes below the minimum, no swelling.</li>
-    <li><b>Openings</b>: counters that would close at heavy weights get opened.</li>
-    <li><b>Variable fonts</b>: checked against the drawings at 7,667 places in the designspace.</li>
-    <li><b>Fontbakery</b>: no FAILs or ERRORs on the static, variable and Mono fonts.</li>
-  </ul>
-  <p class="note">The engine, the build and the checks are open source, under the same licence as the fonts. <a href="https://github.com/huntrontrakkr/arris-type">github.com/huntrontrakkr/arris-type</a></p>
+  <p class="note">Arris Mono in the terminal: box drawing, blocks, Braille and Powerline.</p>
 </section>
 
 <section class="download" id="download">

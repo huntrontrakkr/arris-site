@@ -188,6 +188,23 @@ body.past .bar nav .dl { color: var(--amber); }
 .it-kicker { font-family: var(--mono); font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--cut); margin-bottom: 8px; }
 .it-title { font-style: italic; font-size: clamp(56px, 12vw, 176px); line-height: .95; letter-spacing: -.01em; outline: none;
   font-variation-settings: "wght" 800, "GRAD" 0, "WTCH" 0; margin-bottom: 26px; }
+/* a heading corrected on the page (js: corrections): the wrong word struck
+   through in cut red, then the right one written in after it. --p runs 0
+   to 1; the strike takes its first half, the writing its second, and the
+   struck word dims as the new one arrives. The new word's box reaches past
+   its glyphs (padding, taken back by margin) so the reveal never clips an
+   italic overhang or an ascender */
+.redline { --p: 0; --strike: clamp(0, calc(var(--p) * 2), 1); --write: clamp(0, calc(var(--p) * 2 - 1), 1); }
+.redline .red-old { position: relative; display: inline-block; text-decoration: none; opacity: calc(1 - .55 * var(--write)); }
+.redline .red-old::after { content: ""; position: absolute; left: -.06em; right: -.06em; top: 54%; height: max(3px, .075em);
+  background: var(--cut); transform-origin: 0 50%; transform: scaleX(var(--strike)); }
+.redline .red-new { display: inline-block; padding: .25em .3em .35em .12em; margin: -.25em -.3em -.35em -.12em;
+  clip-path: inset(0 calc((1 - var(--write)) * 100%) 0 0); }
+/* the italic's: the struck word is the upright slanted by the browser, small,
+   on a line of its own over the cursive */
+.it-title .red-old { display: table; font-style: normal; font-size: .46em; transform: skewX(-10deg); transform-origin: 0 100%;
+  margin-bottom: .12em; color: var(--dim); }
+.it-title .red-new { outline: none; }
 .it-lede { font-size: clamp(19px, 2vw, 23px); line-height: 1.45; max-width: 44ch; }
 .it-pairs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(150px, 45%), 1fr)); border-top: 1px solid var(--line); border-left: 1px solid var(--line); margin: 40px 0 14px; }
 .it-pair { display: flex; justify-content: center; align-items: baseline; gap: .18em; padding: 18px 6px; font: inherit; font-size: clamp(60px, 8vw, 104px); line-height: 1.1;

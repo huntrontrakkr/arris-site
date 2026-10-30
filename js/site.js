@@ -728,19 +728,37 @@
   tri.addEventListener('pointerup', () => { dragging = null; pending = null; });
   $('#tri-reset').addEventListener('click', () => { Object.assign(CL, { wght: 400, GRAD: 0, WTCH: 0 }); drawCard(); });
 
+  /* ------------------------------------------------------------ corrections */
+  // a heading corrected as it comes up the page (css .redline): --p runs
+  // from 0, as it rises past nine tenths of the window, to 1 by its middle:
+  // the strike over the first half, the word written in over the second.
+  // With reduced motion it is corrected already
+  $$('.redline').forEach(h => {
+    if (reduce) { h.style.setProperty('--p', 1); return; }
+    let queued = false;
+    const set = () => {
+      queued = false;
+      const top = h.getBoundingClientRect().top, H = innerHeight;
+      h.style.setProperty('--p', clamp((H * 0.9 - top) / (H * 0.4), 0, 1).toFixed(3));
+    };
+    addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(set); } }, { passive: true });
+    addEventListener('resize', set);
+    set();
+  });
+
   /* ------------------------------------------------------------ features */
   const FEATS = [
-    ['calt', '10:08', "The watch's time colon between figures, on by default", true],
-    ['ss20', '10:08', 'Watch pixels: the figures as the watch drew them'],
-    ['zero', '2001', 'A slashed zero, its slash square to the corners'],
-    ['ss01', '2001', 'A dotted zero'],
-    ['ss02', '5 6 5', 'The open five, which blurs least into a 6'],
+    ['calt', '10:08', 'Time colon between figures. On by default', true],
+    ['ss20', '10:08', "Figures in the watch's pixels"],
+    ['zero', '2001', 'Slashed zero'],
+    ['ss01', '2001', 'Dotted zero'],
+    ['ss02', '5 6 5', 'Open five, harder to mistake for a 6'],
     ['frac', '1/2 7/8', 'Fractions'],
     ['sups', 'x2 + y2', 'Superiors'],
     ['subs', 'H2O CO2', 'Inferiors'],
     ['case', '(A-Z) [HI]', 'Brackets and dashes raised for capitals'],
-    ['pnum', '1110', 'Proportional figures; tabular is the default'],
-    ['cv01', 'aaa', 'The single-storey a'],
+    ['pnum', '1110', 'Proportional figures. Tabular is the default'],
+    ['cv01', 'aaa', 'Single-storey a'],
   ];
   const fl = $('#feat-list');
   FEATS.forEach(([tag, text, what, onByDefault]) => {

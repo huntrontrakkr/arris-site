@@ -260,6 +260,8 @@ body.past .bar nav .dl { color: var(--amber); }
 .tri-handle { cursor: grab; outline: none; }
 .tri-handle polygon { fill: var(--night); stroke: var(--amber); stroke-width: 2; }
 .tri-handle:focus-visible polygon { fill: var(--amber); }
+.tri-handle.tri-off { opacity: .35; cursor: default; }
+.spec.is-mono .grid button { font-family: "Arris Mono", monospace; }
 .tri-reset { font: inherit; font-family: var(--mono); font-size: 11px; padding: 4px 10px; background: none; color: var(--night-dim); border: 1px solid var(--night-line); cursor: pointer; }
 .grid-wait { grid-column: 1 / -1; padding: 24px 14px; margin: 0; font-family: var(--mono); font-size: 13px; color: var(--dim); }
 .card-name { font-family: var(--mono); font-size: 13px; letter-spacing: .04em; min-height: 2.6em; }

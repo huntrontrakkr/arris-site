@@ -614,7 +614,10 @@
   // the card: live text on the font's metrics, at a place of its own (CL),
   // set by the triangle under it
   const stage = $('#card-stage'), glyph = $('#card-glyph'), chEl = $('#card-ch'), linesEl = $('#card-lines');
-  const CL = { wght: 400, GRAD: 0, WTCH: 0, ital: false };
+  const CL = { wght: 400, GRAD: 0, WTCH: 0, ital: false, mono: false };
+  // Mono is static: Regular and Bold, upright and italic. On the card the
+  // weight snaps to the nearer of the two and the other axes rest at 0
+  const monoW = w => (w < 550 ? 400 : 700);
   const METRICS = [['ASCENDER', 'ascender'], ['CAP HEIGHT', 'cap'], ['X-HEIGHT', 'x'], ['BASELINE', null], ['DESCENDER', 'descender']];
   function layoutCard() {
     const M = FONT ? FONT.metrics : { upm: 1000, ascender: 975, descender: -250, cap: 720, x: 540 };
@@ -631,19 +634,27 @@
   let cardM = null;
   function drawCard() {
     if (!cardM) cardM = layoutCard();
-    glyph.style.fontVariationSettings = fvs(CL.wght, CL.GRAD, CL.WTCH);
+    if (CL.mono) { CL.wght = monoW(CL.wght); CL.GRAD = CL.WTCH = 0; }
+    glyph.style.fontFamily = CL.mono ? '"Arris Mono", monospace' : '';
+    glyph.style.fontWeight = CL.mono ? CL.wght : '';
+    glyph.style.fontVariationSettings = CL.mono ? 'normal' : fvs(CL.wght, CL.GRAD, CL.WTCH);
     glyph.style.fontStyle = CL.ital ? 'italic' : 'normal';
     pressSwitch($('#card-it'), $('#card-up'), CL.ital);
+    pressSwitch($('#card-mono'), $('#card-arris'), CL.mono);
+    $('.spec').classList.toggle('is-mono', CL.mono);
     const adv = Math.round(chEl.getBoundingClientRect().width / cardM.S * cardM.M.upm);
-    $('#card-metrics').innerHTML = `<span>ADVANCE ${adv}</span><span>wght ${Math.round(CL.wght)}</span><span>GRAD ${signed('GRAD', CL.GRAD)}</span><span>WTCH ${Math.round(CL.WTCH)}</span>`;
+    $('#card-metrics').innerHTML = CL.mono
+      ? `<span>ADVANCE ${adv}</span><span>wght ${CL.wght} ${CL.wght === 400 ? 'Regular' : 'Bold'}</span><span>Mono: Regular and Bold</span>`
+      : `<span>ADVANCE ${adv}</span><span>wght ${Math.round(CL.wght)}</span><span>GRAD ${signed('GRAD', CL.GRAD)}</span><span>WTCH ${Math.round(CL.WTCH)}</span>`;
     drawTri();
   }
+  // the face the card needs, loaded before its advance is measured
+  const loadCard = () => document.fonts.load(`${CL.ital ? 'italic' : 'normal'} ${CL.mono ? CL.wght : 400} 24px ${CL.mono ? '"Arris Mono"' : 'Arris'}`, chEl.textContent).then(drawCard);
   addEventListener('resize', () => { cardM = layoutCard(); drawCard(); });
-  $('#card-up').addEventListener('click', () => { CL.ital = false; drawCard(); });
-  $('#card-it').addEventListener('click', () => {
-    CL.ital = true; drawCard();
-    document.fonts.load('italic 400 24px Arris', chEl.textContent).then(drawCard);
-  });
+  $('#card-up').addEventListener('click', () => { CL.ital = false; drawCard(); loadCard(); });
+  $('#card-it').addEventListener('click', () => { CL.ital = true; drawCard(); loadCard(); });
+  $('#card-arris').addEventListener('click', () => { CL.mono = false; drawCard(); });
+  $('#card-mono').addEventListener('click', () => { CL.mono = true; drawCard(); loadCard(); });
 
   // The triangle: each axis runs along a median, from the middle of the
   // opposite edge (t = 0) to its vertex (t = 1). The axes do not end alike,
@@ -678,7 +689,9 @@
       const d = { ArrowUp: 1, ArrowRight: 1, ArrowDown: -1, ArrowLeft: -1, PageUp: 10, PageDown: -10 }[e.key];
       if (!d) return;
       e.preventDefault();
-      CL[a] = clamp(Math.round(CL[a] + d * (a === 'wght' ? 10 : 2)), AX[a][0], AX[a][1]); drawCard();
+      if (CL.mono && a !== 'wght') return;
+      CL[a] = CL.mono ? (d > 0 ? 700 : 400) : clamp(Math.round(CL[a] + d * (a === 'wght' ? 10 : 2)), AX[a][0], AX[a][1]); drawCard();
+      if (CL.mono) loadCard();
     });
   });
   function drawTri() {
@@ -687,6 +700,8 @@
     AXES.forEach((a, i) => {
       handles[a].setAttribute('transform', `translate(${pts[i][0].toFixed(1)} ${pts[i][1].toFixed(1)})`);
       handles[a].setAttribute('aria-valuenow', Math.round(CL[a]));
+      handles[a].classList.toggle('tri-off', CL.mono && a !== 'wght');
+      handles[a].setAttribute('aria-disabled', CL.mono && a !== 'wght');
     });
   }
   // drag a handle along its median; a press elsewhere takes the nearest
@@ -699,7 +714,13 @@
     const m = TRI[a].m, v = TRI[a].v, dx = v[0] - m[0], dy = v[1] - m[1];
     return clamp(((p[0] - m[0]) * dx + (p[1] - m[1]) * dy) / (dx * dx + dy * dy), TRI[a].lo, 1);
   }
-  function moveTo(a, p) { CL[a] = clamp(TRI[a].from(tOn(a, p)), AX[a][0], AX[a][1]); drawCard(); }
+  function moveTo(a, p) {
+    if (CL.mono && a !== 'wght') return;
+    const v = clamp(TRI[a].from(tOn(a, p)), AX[a][0], AX[a][1]);
+    const was = CL[a];
+    CL[a] = CL.mono ? monoW(v) : v; drawCard();
+    if (CL.mono && CL[a] !== was) loadCard();          // the other Mono face, before its advance is measured
+  }
   function take(a, p) { dragging = a; pending = null; handles[a].focus({ preventScroll: true }); moveTo(a, p); }
   tri.addEventListener('pointerdown', e => {
     const p = svgPoint(e);

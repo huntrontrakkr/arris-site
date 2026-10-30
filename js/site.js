@@ -837,13 +837,14 @@
   document.fonts.ready.then(placeLens); addEventListener('resize', placeLens);
 
   /* ------------------------------------------------------------ the arris */
-  const crossing = $('#crossing'), sticky = $('.crossing-sticky');
+  const crossing = $('#crossing'), sticky = $('.crossing-sticky'), steel = $('.face-steel');
   function onScroll() {
     const r = crossing.getBoundingClientRect();
     const p = reduce ? 0.5 : clamp(-r.top / (r.height - innerHeight), 0, 1);
     sticky.style.setProperty('--p', p.toFixed(4));
     sticky.style.setProperty('--o', Math.max(0, 1 - Math.abs(p - 0.5) * 2.6).toFixed(3));
     document.body.classList.toggle('past', r.top + r.height * 0.45 < 0);
+    document.body.classList.toggle('steel', steel.getBoundingClientRect().top < 44);
   }
   addEventListener('scroll', onScroll, { passive: true });
   addEventListener('resize', onScroll);

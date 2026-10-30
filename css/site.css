@@ -1,11 +1,12 @@
 /* Arris: two faces, one edge. Paper above (the workshop), Night below (the
- * Belt), and the arris between them. The faces are fixed by design, not by
- * the visitor's theme. Colour is for data: amber is live, red is the cut,
+ * Belt), and the arris between them; a band of steel at the foot, for the
+ * colophon. The faces are fixed by design, not by the visitor's theme. Colour is for data: amber is live, red is the cut,
  * cyan is the world leaking through, the titanium colours are weight. */
 
 :root {
   --paper: #f3eee3; --paper-ink: #151412; --paper-dim: #7a7368; --paper-line: #d9d1c1; --paper-panel: #ebe5d8;
   --night: #0c0e10; --night-ink: #f1ebdd; --night-dim: #8a847a; --night-line: #24282c; --night-panel: #121518;
+  --steel: #9a9c97; --steel-ink: #131416; --steel-dim: #3f423f; --steel-line: #7d807b; --steel-panel: #a7a9a4;
   --amber: #ffb000; --cut: #e0402a; --leak: #3fd6ff;
   --t100: #a8804c; --t200: #804799; --t300: #4554cc; --t400: #4087e6; --t500: #a8cced;
   --t600: #f2cc61; --t700: #e67891; --t800: #9e66d1; --t900: #45c7a8;
@@ -54,6 +55,8 @@ section { padding: clamp(64px, 10vw, 128px) var(--gut-r) 0 var(--gut); max-width
 .bar nav .dl { color: var(--cut); }
 body.past .bar { --bar-bg: var(--night); --bar-ink: var(--night-ink); --bar-line: var(--night-line); }
 body.past .bar nav .dl { color: var(--amber); }
+body.steel .bar { --bar-bg: var(--steel); --bar-ink: var(--steel-ink); --bar-line: var(--steel-line); }
+body.steel .bar nav .dl { color: var(--steel-ink); }
 @media (max-width: 640px) { .bar nav a:not(.dl) { display: none; } }
 
 /* ---------------------------------------------------------------- paper */
@@ -61,6 +64,9 @@ body.past .bar nav .dl { color: var(--amber); }
   background: var(--bg); color: var(--ink); padding-bottom: clamp(64px, 10vw, 128px); color-scheme: light; }
 .face-night { --bg: var(--night); --ink: var(--night-ink); --dim: var(--night-dim); --line: var(--night-line); --panel: var(--night-panel); --accent: var(--amber);
   background: var(--bg); color: var(--ink); color-scheme: dark; font-variation-settings: "wght" 400, "GRAD" -50, "WTCH" 0; }
+.face-steel { --bg: var(--steel); --ink: var(--steel-ink); --dim: var(--steel-dim); --line: var(--steel-line); --panel: var(--steel-panel); --accent: var(--cut);
+  background: var(--bg); color: var(--ink); color-scheme: light; }
+.face-steel .checks b { color: var(--ink); }
 
 .hero { padding-top: clamp(40px, 7vw, 96px); }
 .mark { font-size: clamp(88px, 24vw, 330px); line-height: .86; letter-spacing: -.012em; margin-left: -.04em; user-select: none;

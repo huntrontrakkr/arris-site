@@ -1,6 +1,7 @@
 # Published: everything in the repository but these (.gitignore syntax).
 # The README and tools/ would give the layer underneath away.
 .git
+.github/
 .gitignore
 .assetsignore
 .wrangler

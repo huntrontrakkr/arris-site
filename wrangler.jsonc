@@ -1,7 +1,7 @@
 // The site, as a Worker that serves its files (Cloudflare Workers static
-// assets). Every push to main is built and deployed by Workers Builds with
-// `npx wrangler deploy`; .assetsignore keeps the repository's own files
-// (this one, the README, tools/, worker/) off the site. The Worker's own
+// assets). Every push to main is deployed by .github/workflows/deploy.yml
+// with `wrangler deploy`; .assetsignore keeps the repository's own files
+// (this one, the README, tools/, worker/, .github/) off the site. The Worker's own
 // code (worker/index.js) runs first only for the films and their posters,
 // to answer byte ranges; everything else is served as it is.
 {

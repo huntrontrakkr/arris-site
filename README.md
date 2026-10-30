@@ -67,13 +67,18 @@ tools/media.sh ../arris-films/presentation
 
 The site is at https://arristype.com: a Cloudflare Worker that serves the
 repository's files (`wrangler.jsonc`), deployed on every push to `main` by
-Workers Builds (`npx wrangler deploy`). Everything is published but what
-`.assetsignore` lists: this README, `tools/`, `worker/` and the
+`.github/workflows/deploy.yml`, which then checks the live site from
+outside. It needs the repository secrets `CLOUDFLARE_API_TOKEN` (the Edit
+Cloudflare Workers template, plus DNS edit, for the arristype.com zone)
+and `CLOUDFLARE_ACCOUNT_ID`. Everything is published but what
+`.assetsignore` lists: this README, `tools/`, `worker/`, `.github/` and the
 configuration, which would give the layer underneath away. A wrong address
 gets `404.html`. The Worker's own code, `worker/index.js`, runs first only
 for `media/`, to answer the byte-range requests the asset server answers
 with whole files: Safari plays no film without them, and the board film
-seeks as the page scrolls. `npx wrangler dev` runs all of it locally.
+seeks as the page scrolls. `www.arristype.com` is a second, tiny Worker
+(`worker/www.jsonc`) that sends every address to arristype.com.
+`npx wrangler dev` runs the site locally.
 
 ## Layout
 
@@ -90,7 +95,8 @@ seeks as the page scrolls. `npx wrangler dev` runs all of it locally.
 | `media/` | written by `tools/media.sh` |
 | `kapa/` | not linked from the navigation; `sealed.json` is written by `tools/seal.mjs` |
 | `404.html` | what a wrong address gets |
-| `wrangler.jsonc`, `.assetsignore`, `worker/` | the Worker: what it publishes, and the byte ranges it answers for the films |
+| `wrangler.jsonc`, `.assetsignore`, `worker/` | the Worker: what it publishes, the byte ranges it answers for the films, and www |
+| `.github/workflows/deploy.yml` | deploys both Workers on every push to `main`, then checks the live site |
 
 ## The layer underneath
 

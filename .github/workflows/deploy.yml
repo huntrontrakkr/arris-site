@@ -1,0 +1,58 @@
+# Every push to main deploys arristype.com: the site (wrangler.jsonc) and the
+# www Worker that sends www.arristype.com to it (worker/www.jsonc). Then it
+# looks at the live site from outside: the page, a byte range of a film,
+# www, and that the repository's own files stay off it.
+#
+# Needs two repository secrets: CLOUDFLARE_API_TOKEN (the Edit Cloudflare
+# Workers template, plus DNS edit, for the arristype.com zone) and
+# CLOUDFLARE_ACCOUNT_ID. Without them it deploys nothing and says so.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      WRANGLER: npx --yes wrangler@4.156.0
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Token
+        id: token
+        run: |
+          if [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"
+          else echo "::notice::The CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID secrets are not set yet, so nothing is deployed."; fi
+      - name: The site
+        if: steps.token.outputs.ok == 'true'
+        run: $WRANGLER deploy
+      - name: www
+        if: steps.token.outputs.ok == 'true'
+        run: $WRANGLER deploy --config worker/www.jsonc
+      - name: The live site
+        if: steps.token.outputs.ok == 'true'
+        # a new custom domain can take a few minutes for its certificate
+        run: |
+          for i in $(seq 1 30); do
+            [ "$(curl -s -o /dev/null -w '%{http_code}' https://arristype.com/)" = 200 ] && break
+            echo "waiting for arristype.com ($i)"; sleep 20
+          done
+          show() { printf '%-34s %s\n' "$1" "$2"; }
+          show "https://arristype.com/" "$(curl -s -o /dev/null -w '%{http_code} %{content_type}' https://arristype.com/)"
+          show "a byte range of the board film" "$(curl -s -o /dev/null -w '%{http_code}' -H 'Range: bytes=1000-1999' https://arristype.com/media/board.mp4) $(curl -s -D - -o /dev/null -H 'Range: bytes=1000-1999' https://arristype.com/media/board.mp4 | grep -i '^content-range' | tr -d '\r')"
+          show "https://www.arristype.com/kapa/" "$(curl -s -o /dev/null -w '%{http_code} -> %{redirect_url}' https://www.arristype.com/kapa/)"
+          show "/README.md (kept back)" "$(curl -s -o /dev/null -w '%{http_code}' https://arristype.com/README.md)"
+          show "/nope (the 404 page)" "$(curl -s -o /dev/null -w '%{http_code}' https://arristype.com/nope)"
+          test "$(curl -s -o /dev/null -w '%{http_code}' https://arristype.com/)" = 200
+          test "$(curl -s -o /dev/null -w '%{http_code}' -H 'Range: bytes=1000-1999' https://arristype.com/media/board.mp4)" = 206
+          test "$(curl -s -o /dev/null -w '%{http_code}' https://arristype.com/README.md)" = 404

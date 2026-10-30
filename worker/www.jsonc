@@ -1,0 +1,10 @@
+// www.arristype.com, a Worker of its own that sends every address to the
+// same one on arristype.com (deployed after the site by
+// .github/workflows/deploy.yml: `wrangler deploy --config worker/www.jsonc`).
+{
+  "$schema": "https://unpkg.com/wrangler@4.156.0/config-schema.json",
+  "name": "arristype-www",
+  "main": "www.js",
+  "compatibility_date": "2026-10-01",
+  "routes": [{ "pattern": "www.arristype.com", "custom_domain": true }]
+}

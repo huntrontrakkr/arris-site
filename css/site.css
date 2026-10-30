@@ -257,17 +257,38 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
   -webkit-mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent); mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent); }
 .card-ctl { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: center; margin-top: 10px; }
 .card-side { display: grid; gap: 10px; justify-items: start; }
+@media (max-width: 560px) { .card-ctl { grid-template-columns: 1fr; } .tri { max-width: 300px; margin: 6px auto 0; } .card-side { grid-template-columns: 1fr auto; align-items: center; column-gap: 18px; } }
 .card-metrics { display: grid; gap: 2px; }
-.tri { display: block; width: 100%; max-width: 240px; height: auto; touch-action: none; cursor: crosshair; overflow: visible; }
-.tri-edge { fill: rgba(241,235,221,.03); stroke: rgba(241,235,221,.28); stroke-width: 1; }
-.tri-median { stroke: rgba(241,235,221,.16); stroke-dasharray: 3 4; }
+.tri { display: block; width: 100%; max-width: 268px; height: auto; touch-action: none; overflow: visible; }
+.tri-edge { fill: rgba(241,235,221,.03); stroke: rgba(241,235,221,.2); stroke-width: 1; }
+.ax-wght { --ax: var(--amber); } .ax-GRAD { --ax: var(--t500); } .ax-WTCH { --ax: var(--t900); }
+.tri-track { stroke: rgba(241,235,221,.16); stroke-width: 2; stroke-linecap: round; }
+.tri-tick { stroke: rgba(241,235,221,.5); stroke-width: 1; }
+.tri-tick-mono { stroke: var(--amber); opacity: 0; transition: opacity .15s; }
+.tri.mono .tri-tick-mono { opacity: 1; }
+.tri-fill { stroke: var(--ax); stroke-width: 3; stroke-linecap: round; }
 .tri-label { font-family: var(--mono); font-size: 9.5px; fill: var(--night-dim); }
-.tri-shape { fill: rgba(255,176,0,.2); stroke: var(--amber); stroke-width: 1.2; stroke-linejoin: round; }
+.tri-shape { fill: rgba(255,176,0,.1); stroke: rgba(255,176,0,.55); stroke-width: 1; stroke-linejoin: round; }
 .tri-handle { cursor: grab; outline: none; }
-.tri-handle polygon { fill: var(--night); stroke: var(--amber); stroke-width: 2; }
-.tri-handle:focus-visible polygon { fill: var(--amber); }
-.tri-handle.tri-off { opacity: .35; cursor: default; }
-.spec.is-mono .grid button { font-family: "Arris Mono", monospace; }
+.tri-handle.drag { cursor: grabbing; }
+.tri-lead { stroke: var(--ax); stroke-width: 1; opacity: .8; }
+.tri-dot { fill: var(--ax); }
+.tri-knob circle { fill: var(--night); stroke: var(--ax); stroke-width: 2; transition: fill .15s; }
+.tri-knob text { font-family: var(--mono); font-size: 10.5px; fill: var(--ax); pointer-events: none; }
+.tri-handle:focus-visible .tri-knob circle, .tri-handle.drag .tri-knob circle { fill: var(--ax); }
+.tri-handle:focus-visible .tri-knob text, .tri-handle.drag .tri-knob text { fill: var(--night); }
+@media (hover: hover) { .tri-handle:hover .tri-knob circle { fill: var(--ax); } .tri-handle:hover .tri-knob text { fill: var(--night); } }
+.tri-val { font-family: var(--mono); font-size: 10px; fill: var(--night-ink); opacity: 0; transition: opacity .15s; paint-order: stroke; stroke: var(--night); stroke-width: 3px; }
+.tri-handle:focus-visible .tri-val, .tri-handle.drag .tri-val { opacity: 1; }
+.tri-off { opacity: .28; }
+.tri-handle.tri-off { cursor: default; }
+.card-metrics .ax-wght, .card-metrics .ax-GRAD, .card-metrics .ax-WTCH { color: var(--ax); }
+.toggle { display: inline-flex; align-items: center; gap: 9px; font: inherit; font-family: var(--mono); font-size: 12px; padding: 4px 0; background: none; border: 0; color: var(--night-dim); cursor: pointer; }
+.toggle i { position: relative; width: 32px; height: 18px; border: 1px solid var(--night-dim); clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%); transition: border-color .15s; }
+.toggle i::after { content: ""; position: absolute; top: 3px; left: 3px; width: 10px; height: 10px; background: var(--night-dim); transition: transform .15s, background .15s; }
+.toggle[aria-checked="true"] { color: var(--night-ink); }
+.toggle[aria-checked="true"] i { border-color: var(--amber); }
+.toggle[aria-checked="true"] i::after { transform: translateX(14px); background: var(--amber); }
 .tri-reset { font: inherit; font-family: var(--mono); font-size: 11px; padding: 4px 10px; background: none; color: var(--night-dim); border: 1px solid var(--night-line); cursor: pointer; }
 .grid-wait { grid-column: 1 / -1; padding: 24px 14px; margin: 0; font-family: var(--mono); font-size: 13px; color: var(--dim); }
 .card-name { font-family: var(--mono); font-size: 13px; letter-spacing: .04em; min-height: 2.6em; }

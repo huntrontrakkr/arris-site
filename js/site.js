@@ -640,12 +640,12 @@
     glyph.style.fontVariationSettings = CL.mono ? 'normal' : fvs(CL.wght, CL.GRAD, CL.WTCH);
     glyph.style.fontStyle = CL.ital ? 'italic' : 'normal';
     pressSwitch($('#card-it'), $('#card-up'), CL.ital);
-    pressSwitch($('#card-mono'), $('#card-arris'), CL.mono);
+    $('#card-mono').setAttribute('aria-checked', CL.mono);
     $('.spec').classList.toggle('is-mono', CL.mono);
     const adv = Math.round(chEl.getBoundingClientRect().width / cardM.S * cardM.M.upm);
     $('#card-metrics').innerHTML = CL.mono
-      ? `<span>ADVANCE ${adv}</span><span>wght ${CL.wght} ${CL.wght === 400 ? 'Regular' : 'Bold'}</span><span>Mono: Regular and Bold</span>`
-      : `<span>ADVANCE ${adv}</span><span>wght ${Math.round(CL.wght)}</span><span>GRAD ${signed('GRAD', CL.GRAD)}</span><span>WTCH ${Math.round(CL.WTCH)}</span>`;
+      ? `<span>ADVANCE ${adv}</span><span class="ax-wght">wght ${CL.wght} ${CL.wght === 400 ? 'Regular' : 'Bold'}</span><span>Mono: Regular and Bold</span>`
+      : `<span>ADVANCE ${adv}</span><span class="ax-wght">wght ${Math.round(CL.wght)}</span><span class="ax-GRAD">GRAD ${signed('GRAD', CL.GRAD)}</span><span class="ax-WTCH">WTCH ${Math.round(CL.WTCH)}</span>`;
     drawTri();
   }
   // the face the card needs, loaded before its advance is measured
@@ -653,38 +653,59 @@
   addEventListener('resize', () => { cardM = layoutCard(); drawCard(); });
   $('#card-up').addEventListener('click', () => { CL.ital = false; drawCard(); loadCard(); });
   $('#card-it').addEventListener('click', () => { CL.ital = true; drawCard(); loadCard(); });
-  $('#card-arris').addEventListener('click', () => { CL.mono = false; drawCard(); });
-  $('#card-mono').addEventListener('click', () => { CL.mono = true; drawCard(); loadCard(); });
+  $('#card-mono').addEventListener('click', () => { CL.mono = !CL.mono; drawCard(); if (CL.mono) loadCard(); });
 
   // The triangle: each axis runs along a median, from the middle of the
   // opposite edge (t = 0) to its vertex (t = 1). The axes do not end alike,
   // so each is placed by its default: the centroid (t = 1/3) is Regular,
-  // wght 400, GRAD 0 and WTCH 0 at once, and the three handles meet there.
-  // Weight and grade run on below it, to Thin and to -100; the watch starts
-  // there. The shape the handles draw is the place's signature.
+  // wght 400, GRAD 0 and WTCH 0 at once. Weight and grade run on below it,
+  // to Thin and to -100; the watch starts there. Each axis is a track with
+  // a tick at its default, a knob beside the track (to its right, so the
+  // three sit apart when they share the centre) and a bar from the default
+  // to the knob; the shape the three points draw is the place's signature.
   const TRI = {
-    wght: { v: [120, 14], to: v => v <= 400 ? (v - 100) / 900 : 1 / 3 + (v - 400) / 750, from: t => t <= 1 / 3 ? 100 + t * 900 : 400 + (t - 1 / 3) * 750, lo: 0, label: 'wght 900' },
-    GRAD: { v: [16, 194], to: v => v <= 0 ? (v + 100) / 300 : 1 / 3 + v / 150, from: t => t <= 1 / 3 ? -100 + t * 300 : (t - 1 / 3) * 150, lo: 0, label: 'GRAD +100' },
-    WTCH: { v: [224, 194], to: v => 1 / 3 + v / 150, from: t => (t - 1 / 3) * 150, lo: 1 / 3, label: 'WTCH 100' },
+    wght: { v: [120, 14], to: v => v <= 400 ? (v - 100) / 900 : 1 / 3 + (v - 400) / 750, from: t => t <= 1 / 3 ? 100 + t * 900 : 400 + (t - 1 / 3) * 750, lo: 0, name: 'Weight', ends: ['100', '900'] },
+    GRAD: { v: [16, 194], to: v => v <= 0 ? (v + 100) / 300 : 1 / 3 + v / 150, from: t => t <= 1 / 3 ? -100 + t * 300 : (t - 1 / 3) * 150, lo: 0, name: 'Grade', ends: ['-100', '+100'] },
+    WTCH: { v: [224, 194], to: v => 1 / 3 + v / 150, from: t => (t - 1 / 3) * 150, lo: 1 / 3, name: 'Watch', ends: ['0', '100'] },
   };
-  const AXES = ['wght', 'GRAD', 'WTCH'];
-  AXES.forEach(a => { const [o1, o2] = AXES.filter(b => b !== a).map(b => TRI[b].v); TRI[a].m = [(o1[0] + o2[0]) / 2, (o1[1] + o2[1]) / 2]; });
+  const AXES = ['wght', 'GRAD', 'WTCH'], LETTER = { wght: 'W', GRAD: 'G', WTCH: 'T' }, KNOB = 14;
+  AXES.forEach(a => {
+    const [o1, o2] = AXES.filter(b => b !== a).map(b => TRI[b].v);
+    TRI[a].m = [(o1[0] + o2[0]) / 2, (o1[1] + o2[1]) / 2];
+    const dx = TRI[a].v[0] - TRI[a].m[0], dy = TRI[a].v[1] - TRI[a].m[1], L = Math.hypot(dx, dy);
+    TRI[a].n = [-dy / L, dx / L];                      // the track's right-hand side
+  });
   const at = (a, t) => [TRI[a].m[0] + t * (TRI[a].v[0] - TRI[a].m[0]), TRI[a].m[1] + t * (TRI[a].v[1] - TRI[a].m[1])];
   const tri = $('#tri'), NS = 'http://www.w3.org/2000/svg';
   const el = (name, attrs, parent = tri) => { const e = document.createElementNS(NS, name); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; };
+  const f1 = v => v.toFixed(1);
   el('polygon', { points: AXES.map(a => TRI[a].v.join(',')).join(' '), class: 'tri-edge' });
+  const parts = {};
+  const tick = (a, t, r, cls, parent) => { const q = at(a, t), n = TRI[a].n; return el('line', { x1: f1(q[0] - n[0] * r), y1: f1(q[1] - n[1] * r), x2: f1(q[0] + n[0] * r), y2: f1(q[1] + n[1] * r), class: cls }, parent); };
   AXES.forEach(a => {
-    el('line', { x1: TRI[a].m[0], y1: TRI[a].m[1], x2: TRI[a].v[0], y2: TRI[a].v[1], class: 'tri-median' });
-    const [lx, ly, anchor] = a === 'wght' ? [TRI[a].v[0] - 14, TRI[a].v[1] + 4, 'end'] : [TRI[a].v[0] + (a === 'GRAD' ? -6 : 6), TRI[a].v[1] + 15, a === 'GRAD' ? 'start' : 'end'];
-    el('text', { x: lx, y: ly, class: 'tri-label', 'text-anchor': anchor }).textContent = TRI[a].label;
+    const p0 = at(a, TRI[a].lo), p1 = at(a, 1), n = TRI[a].n;
+    const track = el('line', { x1: f1(p0[0]), y1: f1(p0[1]), x2: f1(p1[0]), y2: f1(p1[1]), class: `tri-track ax-${a}` });
+    tick(a, 1 / 3, 4, 'tri-tick');                      // the default
+    if (a === 'wght') { tick(a, TRI.wght.to(400), 5, 'tri-tick tri-tick-mono'); tick(a, TRI.wght.to(700), 5, 'tri-tick tri-tick-mono'); }   // where Mono snaps
+    const fill = el('line', { class: `tri-fill ax-${a}` });
+    parts[a] = { track, fill };
   });
+  // the ends: the axis at its vertex, the low end at the foot
+  const label = (x, y, anchor, text, cls = 'tri-label') => { const t = el('text', { x: f1(x), y: f1(y), 'text-anchor': anchor, class: cls }); t.textContent = text; return t; };
+  label(120, 14 - 9, 'middle', 'Weight 900'); label(120, 194 + 13, 'middle', '100');
+  label(16 - 4, 194 + 13, 'start', 'Grade +100'); label(172 + 8, 104 + 3.5, 'start', '-100');
+  label(224 + 4, 194 + 13, 'end', 'Watch 100');
   const shape = el('polygon', { class: 'tri-shape' });
-  const handles = {};
   AXES.forEach(a => {
-    const h = el('g', { class: 'tri-handle', tabindex: 0, role: 'slider', 'aria-label': { wght: 'Weight', GRAD: 'Grade', WTCH: 'Watch' }[a],
-      'aria-valuemin': AX[a][0], 'aria-valuemax': AX[a][1] });
-    el('polygon', { points: '-3.3,-8 3.3,-8 8,-3.3 8,3.3 3.3,8 -3.3,8 -8,3.3 -8,-3.3' }, h);
-    handles[a] = h;
+    const n = TRI[a].n;
+    const h = el('g', { class: `tri-handle ax-${a}`, tabindex: 0, role: 'slider', 'aria-label': TRI[a].name, 'aria-valuemin': AX[a][0], 'aria-valuemax': AX[a][1] });
+    el('line', { x1: 0, y1: 0, x2: f1(n[0] * (KNOB - 9)), y2: f1(n[1] * (KNOB - 9)), class: 'tri-lead' }, h);
+    el('circle', { r: 2.4, class: 'tri-dot' }, h);
+    const knob = el('g', { class: 'tri-knob', transform: `translate(${f1(n[0] * KNOB)} ${f1(n[1] * KNOB)})` }, h);
+    el('circle', { r: 9 }, knob);
+    el('text', { 'text-anchor': 'middle', dy: 3.6 }, knob).textContent = LETTER[a];
+    const val = el('text', { x: f1(n[0] * (KNOB + 15)), y: f1(n[1] * (KNOB + 15) + 3.5), 'text-anchor': n[0] > 0 ? 'start' : 'end', class: 'tri-val' }, h);
+    parts[a].h = h; parts[a].val = val;
     h.addEventListener('keydown', e => {
       const d = { ArrowUp: 1, ArrowRight: 1, ArrowDown: -1, ArrowLeft: -1, PageUp: 10, PageDown: -10 }[e.key];
       if (!d) return;
@@ -696,58 +717,49 @@
   });
   function drawTri() {
     const pts = AXES.map(a => at(a, TRI[a].to(CL[a])));
-    shape.setAttribute('points', pts.map(p => p.map(v => v.toFixed(1)).join(',')).join(' '));
+    shape.setAttribute('points', pts.map(p => p.map(f1).join(',')).join(' '));
     AXES.forEach((a, i) => {
-      handles[a].setAttribute('transform', `translate(${pts[i][0].toFixed(1)} ${pts[i][1].toFixed(1)})`);
-      handles[a].setAttribute('aria-valuenow', Math.round(CL[a]));
-      handles[a].classList.toggle('tri-off', CL.mono && a !== 'wght');
-      handles[a].setAttribute('aria-disabled', CL.mono && a !== 'wght');
+      const [x, y] = pts[i], c = at(a, 1 / 3), off = CL.mono && a !== 'wght', P = parts[a];
+      P.fill.setAttribute('x1', f1(c[0])); P.fill.setAttribute('y1', f1(c[1])); P.fill.setAttribute('x2', f1(x)); P.fill.setAttribute('y2', f1(y));
+      P.h.setAttribute('transform', `translate(${f1(x)} ${f1(y)})`);
+      P.h.setAttribute('aria-valuenow', Math.round(CL[a]));
+      P.h.setAttribute('aria-disabled', off);
+      P.h.classList.toggle('tri-off', off); P.track.classList.toggle('tri-off', off); P.fill.classList.toggle('tri-off', off);
+      P.val.textContent = `${a} ${signed(a, CL[a])}`;
     });
+    tri.classList.toggle('mono', CL.mono);
   }
-  // drag a handle along its median; a press elsewhere takes the nearest
-  // median's handle. Where handles sit together (all three at Regular), the
-  // press waits for the drag's first few pixels and takes the axis whose
-  // median runs most nearly that way.
-  let dragging = null, pending = null;
-  function svgPoint(e) { const r = tri.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * 240, (e.clientY - r.top) / r.height * 214]; }
+  // a press on a knob picks it up; a press anywhere else takes the nearest
+  // track and moves its knob there; the drag follows along the median
+  let dragging = null;
+  function svgPoint(e) { const r = tri.getBoundingClientRect(), vb = tri.viewBox.baseVal; return [vb.x + (e.clientX - r.left) / r.width * vb.width, vb.y + (e.clientY - r.top) / r.height * vb.height]; }
   function tOn(a, p) {
     const m = TRI[a].m, v = TRI[a].v, dx = v[0] - m[0], dy = v[1] - m[1];
     return clamp(((p[0] - m[0]) * dx + (p[1] - m[1]) * dy) / (dx * dx + dy * dy), TRI[a].lo, 1);
   }
   function moveTo(a, p) {
     if (CL.mono && a !== 'wght') return;
-    const v = clamp(TRI[a].from(tOn(a, p)), AX[a][0], AX[a][1]);
-    const was = CL[a];
+    const v = clamp(TRI[a].from(tOn(a, p)), AX[a][0], AX[a][1]), was = CL[a];
     CL[a] = CL.mono ? monoW(v) : v; drawCard();
     if (CL.mono && CL[a] !== was) loadCard();          // the other Mono face, before its advance is measured
   }
-  function take(a, p) { dragging = a; pending = null; handles[a].focus({ preventScroll: true }); moveTo(a, p); }
+  const dist = (p, q) => Math.hypot(p[0] - q[0], p[1] - q[1]);
+  const knobAt = a => { const q = at(a, TRI[a].to(CL[a])), n = TRI[a].n; return [q[0] + n[0] * KNOB, q[1] + n[1] * KNOB]; };
   tri.addEventListener('pointerdown', e => {
-    const p = svgPoint(e);
+    const p = svgPoint(e), live = AXES.filter(a => !(CL.mono && a !== 'wght'));
     tri.setPointerCapture(e.pointerId);
-    const near = AXES.filter(a => { const q = at(a, TRI[a].to(CL[a])); return Math.hypot(q[0] - p[0], q[1] - p[1]) < 11; });
-    if (near.length > 1) { pending = { p, axes: near }; return; }
-    take(near[0] || AXES.map(a => { const q = at(a, tOn(a, p)); return [Math.hypot(q[0] - p[0], q[1] - p[1]), a]; })
-      .sort((x, y) => x[0] - y[0])[0][1], p);
+    const [dk, byKnob] = live.map(a => [dist(knobAt(a), p), a]).sort((x, y) => x[0] - y[0])[0];
+    const a = dk <= 13 ? byKnob : live.map(a => [dist(at(a, tOn(a, p)), p), a]).sort((x, y) => x[0] - y[0])[0][1];
+    dragging = a;
+    parts[a].h.classList.add('drag');
+    parts[a].h.focus({ preventScroll: true });
+    if (dk > 13) moveTo(a, p);
   });
-  tri.addEventListener('pointermove', e => {
-    if (!tri.hasPointerCapture(e.pointerId)) return;
-    const p = svgPoint(e);
-    if (pending) {
-      const dx = p[0] - pending.p[0], dy = p[1] - pending.p[1], d = Math.hypot(dx, dy);
-      if (d < 4) return;
-      // the median most nearly along the drag; the watch only runs toward its vertex
-      const best = pending.axes.map(a => {
-        const mx = TRI[a].v[0] - TRI[a].m[0], my = TRI[a].v[1] - TRI[a].m[1], c = (dx * mx + dy * my) / (d * Math.hypot(mx, my));
-        return [a === 'WTCH' && c < 0 && CL.WTCH <= 0 ? -1 : Math.abs(c), a];
-      }).sort((x, y) => y[0] - x[0])[0][1];
-      take(best, p);
-      return;
-    }
-    if (dragging) moveTo(dragging, p);
-  });
-  tri.addEventListener('pointerup', () => { dragging = null; pending = null; });
-  $('#tri-reset').addEventListener('click', () => { Object.assign(CL, { wght: 400, GRAD: 0, WTCH: 0 }); drawCard(); });
+  tri.addEventListener('pointermove', e => { if (dragging && tri.hasPointerCapture(e.pointerId)) moveTo(dragging, svgPoint(e)); });
+  const drop = () => { if (dragging) parts[dragging].h.classList.remove('drag'); dragging = null; };
+  tri.addEventListener('pointerup', drop);
+  tri.addEventListener('pointercancel', drop);
+  $('#tri-reset').addEventListener('click', () => { Object.assign(CL, { wght: 400, GRAD: 0, WTCH: 0 }); drawCard(); if (CL.mono) loadCard(); });
 
   /* ------------------------------------------------------------ corrections */
   // a heading corrected as it comes up the page (css .redline): --p runs

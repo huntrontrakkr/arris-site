@@ -26,6 +26,53 @@
     if (!was) d.classList.add('lift');
   }));
 
+  /* ------------------------------------------------------------ torn paper */
+  // the clipping is torn along its foot and its right side, the receipt
+  // along its foot: a line that wanders at two scales with a fibrous jitter
+  // over it, and just outside it a pale rim, the paper's core showing where
+  // it tore (css .torn draws both under the text, and the shadow follows
+  // them). Seeded, so a tear is the same on every visit; its depths are in
+  // pixels, so it keeps its size as the paper's width changes
+  function rand(seed) {
+    return () => (seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296;
+  }
+  function wander(r, n, every) {
+    const knots = Array.from({ length: Math.ceil(n / every) + 2 }, r);
+    return i => {
+      const t = i / every, k = Math.floor(t), s = (1 - Math.cos((t - k) * Math.PI)) / 2;
+      return knots[k] + (knots[k + 1] - knots[k]) * s;
+    };
+  }
+  // n points along an edge, each [the tear's depth, its rim's], in from the box
+  function edge(r, n, deep) {
+    const big = wander(r, n, 16), mid = wander(r, n, 5);
+    return Array.from({ length: n }, (_, i) => {
+      const d = Math.max(1.5, deep * (0.3 + 0.7 * big(i)) + deep * 0.45 * (mid(i) - 0.5) + (r() - 0.5) * 2.2);
+      return [d, Math.max(0, d - 1 - r() * 2.4)];
+    });
+  }
+  function tear(el, seed, foot, side) {
+    const r = rand(seed), F = edge(r, 96, foot), S = side ? edge(r, 64, side) : null;
+    const px = v => `${v.toFixed(1)}px`;
+    const poly = k => {
+      const pts = ['0 0'];
+      const right = S ? S[S.length - 1][k] : 0;
+      if (S) S.forEach((e, j) => pts.push(`calc(100% - ${px(e[k])}) ${j === S.length - 1 ? `calc(100% - ${px(F[0][k])})` : `${(j / (S.length - 1) * 100).toFixed(2)}%`}`));
+      else pts.push('100% 0');
+      F.forEach((e, i) => {
+        const t = 1 - i / (F.length - 1);
+        pts.push(`calc(${(t * 100).toFixed(2)}% - ${px(t * right)}) calc(100% - ${px(e[k])})`);
+      });
+      return `polygon(${pts.join(', ')})`;
+    };
+    el.style.setProperty('--tear', poly(0));
+    el.style.setProperty('--rim', poly(1));
+    el.classList.add('torn');
+  }
+  const clip = $('.desk .clip'), receipt = $('.desk .receipt');
+  if (clip) tear(clip, 7, 13, 7);
+  if (receipt) tear(receipt, 11, 6, 0);
+
   /* ------------------------------------------------------------ the long read */
   const paras = $$('.sheet .taper');
   if (!paras.length) return;
@@ -51,7 +98,7 @@
   let lines = [];
   function layout() {
     lines = [];
-    paras.filter(p => !p.closest('.sheet').hidden).forEach(p => {
+    paras.filter(p => p.closest('.sheet').classList.contains('front')).forEach(p => {
       const words = [...p._text.matchAll(/\S+/g)].map(m => [m.index, m[0]]);
       p.innerHTML = words.map(([, w]) => `<span>${esc(w)}</span>`).join(' ');
       const tops = [...p.children].map(s => s.offsetTop);
@@ -65,6 +112,7 @@
       lines.push(...$$('.tl', p));
     });
     lines.forEach(l => { l._w = -1; });
+    sizeBack();
     update();
   }
 
@@ -82,25 +130,35 @@
   const wrap = $('.sheet-wrap');
   new IntersectionObserver(es => { near = es[0].isIntersecting; if (near) update(); }, { rootMargin: '200px 0px' }).observe(wrap);
 
-  // the clipping in the margin turns the sheet over to its article, and
-  // becomes the clipping of the one you left
+  // the two long reads lie one on the other. The one behind is kept as tall
+  // as the one you read, so the stack never makes the page longer, and shows
+  // its head above it; turning to it shuffles them: the page you read slides
+  // down and away as the other rises, and they change places at the top of
+  // the rise (css .away, .rise)
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  $$('.snip', wrap).forEach(b => b.addEventListener('click', () => {
-    const from = $('.sheet:not([hidden])', wrap), to = $('#' + b.dataset.to);
-    if (!to || to === from) return;
+  function sizeBack() {
+    const front = $('.sheet.front', wrap), back = $('.sheet.back', wrap);
+    if (!front || !back) return;
+    front.style.height = '';
+    back.style.height = `${front.offsetHeight}px`;
+  }
+  function turn() {
+    const front = $('.sheet.front', wrap), back = $('.sheet.back', wrap);
+    if (!front || !back || wrap.classList.contains('turning')) return;
     const swap = () => {
-      from.hidden = true; from.classList.remove('turn-out');
-      to.hidden = false;
-      $$('.snip', wrap).forEach(o => { o.hidden = o.dataset.to === to.id; });
+      front.classList.remove('front', 'away'); front.classList.add('back');
+      back.classList.remove('back', 'rise'); back.classList.add('front');
       layout();
-      if (!still) { to.classList.add('turn-in'); to.getBoundingClientRect(); to.classList.remove('turn-in'); }
       const top = wrap.getBoundingClientRect().top;
-      if (top < 0) scrollBy({ top: top - 80, behavior: still ? 'auto' : 'smooth' });
+      if (top < 0) scrollBy({ top: top - 40, behavior: still ? 'auto' : 'smooth' });
     };
     if (still) { swap(); return; }
-    from.classList.add('turn-out');
-    setTimeout(swap, 300);
-  }));
+    wrap.classList.add('turning');
+    front.classList.add('away');
+    back.classList.add('rise');
+    setTimeout(() => { swap(); setTimeout(() => wrap.classList.remove('turning'), 520); }, 330);
+  }
+  $$('.sheet-turn', wrap).forEach(b => b.addEventListener('click', turn));
   addEventListener('scroll', () => {
     if (!near || queued) return;
     queued = true;

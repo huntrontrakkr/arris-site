@@ -68,41 +68,50 @@
   </div>
 </section>
 
-<section class="origin" id="origin">
-  <div class="watch-wrap">
-    <div class="watch" id="watch" aria-label="A watch face showing the time in Arris">
-      <div class="watch-date" id="watch-date">WED 28</div>
-      <div class="watch-time" id="watch-time">10:08</div>
-      <div class="watch-foot">ARRIS · CHAMFER</div>
-    </div>
-    <div class="switch" role="group" aria-label="How the watch draws its figures">
-      <button type="button" id="pix-off" aria-pressed="true">Outlines</button>
-      <button type="button" id="pix-on" aria-pressed="false">Pixels <code>ss20</code></button>
-    </div>
-  </div>
-  <div class="origin-copy">
-    <h2>Ten figures on a watch face, every corner cut</h2>
-    <p>Arris began on a watch face: ten clock figures, each drawn on a grid of 9&nbsp;×&nbsp;12 pixels, with strokes two pixels thick. One rule turned the pixels into outlines, and the notch in the 2 and the waist in the 3 came out of it. The alphabet was drawn the same way.</p>
-  </div>
-</section>
-
 <section class="upright" id="upright">
   <p class="up-kicker">Arris</p>
   <h2 class="up-title">From the watch to the alphabet</h2>
 
-  <div class="tf" id="tf">
-    <div class="tf-stage"><svg id="tf-svg" role="img" aria-label=""></svg></div>
-    <div class="tf-ctl">
-      <div class="switch small" role="group" aria-label="Step">
-        <button type="button" data-u="0" aria-pressed="true">Pixels</button>
-        <button type="button" data-u="1" aria-pressed="false">The rule</button>
-        <button type="button" data-u="2" aria-pressed="false">Arris</button>
-      </div>
-      <input type="range" id="tf-u" min="0" max="200" value="0" aria-label="From the pixels to Arris">
+  <div class="inst" id="inst">
+    <div class="switch inst-tabs" role="tablist" aria-label="The watch, and how its figures became Arris">
+      <button type="button" role="tab" id="tab-watch" aria-controls="panel-watch" aria-selected="true">The watch</button>
+      <button type="button" role="tab" id="tab-built" aria-controls="panel-built" aria-selected="false" tabindex="-1">How it’s built</button>
     </div>
-    <p class="tf-say" id="tf-say" aria-live="polite"></p>
-    <div class="tf-pairs" id="tf-pairs" role="group" aria-label="A figure, and a letter that took its move"></div>
-    <p class="tf-also"><span>The same move</span><span class="tf-also-g" id="tf-also"></span></p>
+
+    <div class="inst-panel origin" role="tabpanel" id="panel-watch" aria-labelledby="tab-watch">
+      <div class="watch-wrap">
+        <div class="watch" id="watch" aria-label="A watch face showing the time in Arris">
+          <div class="watch-date" id="watch-date">WED 28</div>
+          <div class="watch-time" id="watch-time">10:08</div>
+          <div class="watch-foot">ARRIS · CHAMFER</div>
+        </div>
+        <div class="switch" role="group" aria-label="How the watch draws its figures">
+          <button type="button" id="pix-off" aria-pressed="true">Outlines</button>
+          <button type="button" id="pix-on" aria-pressed="false">Pixels <code>ss20</code></button>
+        </div>
+      </div>
+      <div class="origin-copy">
+        <h3 class="origin-hed">Ten figures on a watch face, every corner cut</h3>
+        <p>Arris began on a watch face: ten clock figures, each drawn on a grid of 9&nbsp;×&nbsp;12 pixels, with strokes two pixels thick. One rule turned the pixels into outlines, and the notch in the 2 and the waist in the 3 came out of it. The alphabet was drawn the same way.</p>
+      </div>
+    </div>
+
+    <div class="inst-panel" role="tabpanel" id="panel-built" aria-labelledby="tab-built" hidden>
+      <div class="tf" id="tf">
+        <div class="tf-stage"><svg id="tf-svg" role="img" aria-label=""></svg></div>
+        <div class="tf-ctl">
+          <div class="switch small" role="group" aria-label="Step">
+            <button type="button" data-u="0" aria-pressed="true">Pixels</button>
+            <button type="button" data-u="1" aria-pressed="false">The rule</button>
+            <button type="button" data-u="2" aria-pressed="false">Arris</button>
+          </div>
+          <input type="range" id="tf-u" min="0" max="200" value="0" aria-label="From the pixels to Arris">
+        </div>
+        <p class="tf-say" id="tf-say" aria-live="polite"></p>
+        <div class="tf-pairs" id="tf-pairs" role="group" aria-label="A figure, and a letter that took its move"></div>
+        <p class="tf-also"><span>The same move</span><span class="tf-also-g" id="tf-also"></span></p>
+      </div>
+    </div>
   </div>
 
   <div class="it-weights up-weights" id="up-weights"></div>
@@ -387,19 +396,8 @@
 
 <section class="reading" id="reading">
   <div class="sheet-wrap">
-    <button type="button" class="doc snip" data-to="nighttrain" style="--r: 6deg" aria-label="Turn to: The rain never stops. Neither do the trains.">
-      <span class="snip-kicker">Transit · Night shift</span>
-      <span class="snip-hed">The rain never stops. Neither do the trains.</span>
-      <span class="snip-dek">Couriers, coders and noodle cooks ride the 03:47 maglev from Arcology 7 to the docks.</span>
-      <span class="snip-cta">Turn to this story ↻</span>
-    </button>
-    <button type="button" class="doc snip" data-to="glasshouse" style="--r: -5deg" hidden aria-label="Turn to: Roses take their time at four hundred kilometres.">
-      <span class="snip-kicker">Station life · The Glasshouse</span>
-      <span class="snip-hed">Roses take their time at four hundred kilometres.</span>
-      <span class="snip-dek">The only flowers for a million kilometres, at the end of the night line.</span>
-      <span class="snip-cta">Turn to this story ↻</span>
-    </button>
-    <article class="sheet" id="glasshouse">
+    <article class="sheet front" id="glasshouse">
+      <button type="button" class="sheet-turn" aria-label="Turn to: Roses take their time at four hundred kilometres."></button>
       <div class="sheet-kicker">Station life · The Glasshouse</div>
       <h3 class="sheet-hed">Roses take their time at four hundred kilometres.</h3>
       <p class="sheet-dek">In the ring’s quietest module a horticulturist and two retired pilots grow the only flowers for a million kilometres. They will not tell you their secret, but they will let you water.</p>
@@ -420,7 +418,8 @@
         <p class="taper">If you go, and you should, take the 03:47, ask for a lower pod, and get off at the end of the line. Water the old roses first.</p>
       </div>
     </article>
-    <article class="sheet" id="nighttrain" hidden>
+    <article class="sheet back" id="nighttrain">
+      <button type="button" class="sheet-turn" aria-label="Turn to: The rain never stops. Neither do the trains."></button>
       <div class="sheet-kicker">Transit · Night shift</div>
       <h3 class="sheet-hed">The rain never stops. Neither do the trains.</h3>
       <p class="sheet-dek">Couriers, coders and noodle cooks ride the 03:47 maglev from Arcology 7 to the docks. We rode along to see how.</p>

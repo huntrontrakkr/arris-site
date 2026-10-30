@@ -99,6 +99,30 @@
   $('#pix-on').addEventListener('click', () => { watch.classList.add('pixels'); pressSwitch($('#pix-on'), $('#pix-off'), true); });
   $('#pix-off').addEventListener('click', () => { watch.classList.remove('pixels'); pressSwitch($('#pix-on'), $('#pix-off'), false); });
 
+  // the watch, and how it's built: two tabs on one instrument (arrow keys
+  // move between them); opening how it's built runs it from the pixels
+  const tabs = $$('.inst-tabs [role="tab"]');
+  function showTab(t) {
+    tabs.forEach(b => {
+      const on = b === t;
+      b.setAttribute('aria-selected', on);
+      b.tabIndex = on ? 0 : -1;
+      $('#' + b.getAttribute('aria-controls')).hidden = !on;
+    });
+    if (t.id === 'tab-built') $('#tf').dispatchEvent(new Event('show'));
+  }
+  tabs.forEach((b, i) => {
+    b.addEventListener('click', () => showTab(b));
+    b.addEventListener('keydown', e => {
+      const k = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+      if (!k) return;
+      const n = tabs[(i + k + tabs.length) % tabs.length];
+      n.focus();
+      showTab(n);
+      e.preventDefault();
+    });
+  });
+
   /* ------------------------------------------------------------ from the watch to the alphabet */
   // a figure and a letter that took its move, on one step u: 0 the watch's
   // pixels, 1 the rule's outline (which Arris draws exactly at the watch's
@@ -204,10 +228,12 @@
     }
     steps.forEach(b => b.addEventListener('click', () => run([[0, u], [Math.max(250, 700 * Math.abs(+b.dataset.u - u)), +b.dataset.u]])));
     range.addEventListener('input', () => { play = null; u = range.value / 100; draw(); });
-    if (!reduce) new IntersectionObserver((es, io) => {
-      if (es[0].isIntersecting) { seen = true; io.disconnect(); run(); }
-    }, { threshold: 0.45 }).observe($('.tf-stage', tf));
+    // it runs from the pixels whenever its tab opens (and if it opened
+    // while this was still loading, now)
+    const open = () => { seen = true; if (!reduce) run(); };
+    tf.addEventListener('show', open);
     build();
+    if (!tf.closest('[hidden]')) open();
   });
 
   // the nine weights, upright

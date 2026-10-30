@@ -88,9 +88,9 @@ seeks as the page scrolls. `www.arristype.com` is a second, tiny Worker
 | `index.html` | the page |
 | `css/site.css` | the two faces, the props, the crossing |
 | `css/fonts.css` | written by `tools/fonts.py` |
-| `js/site.js` | the name, the watch, the upright, the designspace, the italic, the specimen, the features, the crossing |
+| `js/site.js` | the name, the upright (the watch, how it's built, the weights), the designspace, the italic, the specimen, the features, the crossing |
 | `js/mono.js` | Arris Mono: the code window, the ligature board, the terminal |
-| `js/belt.js` | the paperwork, and the two long reads (one sheet, turned by the clipping in its margin) whose lines fill in as you reach them |
+| `js/belt.js` | the paperwork and its torn edges, and the two long reads (two pages, one on the other, shuffled by a click on the one behind) whose lines fill in as you reach them |
 | `data/font.json` | written by `tools/fonts.py` |
 | `data/transfer.json` | written by `tools/transfer.py` |
 | `media/` | written by `tools/media.sh` |

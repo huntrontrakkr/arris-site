@@ -445,7 +445,8 @@ body.past .bar nav .dl { color: var(--amber); }
 .sheet-wrap { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center;
   --x: clamp(-60px, -4vw, 0px); --tilt: -.6deg; }
 .sheet { grid-area: 2 / 1; position: relative; z-index: 2; width: min(100%, 760px); min-width: 0; background: #f1ece0; color: #1a1915;
-  padding: clamp(24px, 5vw, 64px) clamp(20px, 5vw, 72px) clamp(32px, 5vw, 64px); box-shadow: 0 30px 70px -20px rgba(0,0,0,.8);
+  padding: clamp(24px, 5vw, 64px) clamp(20px, 5vw, 72px) clamp(32px, 5vw, 64px);
+  clip-path: polygon(0 0, calc(100% - var(--c)) 0, 100% var(--c), 100% 100%, 0 100%);
   transform-origin: 50% 0; transform: translateX(var(--x)) perspective(1800px) rotateX(0deg) rotate(var(--tilt));
   transition: transform .55s cubic-bezier(.2,.8,.2,1), opacity .4s; }
 .sheet-kicker { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--cut); }
@@ -468,8 +469,8 @@ body.past .bar nav .dl { color: var(--amber); }
    head rise over the page's top edge, off to the right and square to the
    page (the same lean), and the rest goes down behind the page and on
    down its side, a shade off the night that darkens into it, so it sits a
-   layer down. The tab is cut like the letters; its height is --lip, its
-   width --tab. It rises a little under the pointer; a tap drops it behind
+   layer down. The tab is cut like the letters, and so is the page's top
+   right corner, by --c; the tab's height is --lip, its width --tab. It rises a little under the pointer; a tap drops it behind
    as the page folds away, and it comes back up with the story you left
    (belt.js) */
 .sheet-wrap { --card: min(380px, calc(100% - 24px)); --tuck: 28px; --lip: 30px; --tab: 132px; --c: 14px; }

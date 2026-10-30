@@ -129,17 +129,17 @@
   const wrap = $('.sheet-wrap');
   new IntersectionObserver(es => { near = es[0].isIntersecting; if (near) update(); }, { rootMargin: '200px 0px' }).observe(wrap);
 
-  // the next story stands on the horizon of the one you read (css .next),
-  // its head and byline on a bar; turning to it folds the page you read
+  // the next story is a card over the top corner of the one you read (css
+  // .next): its head and its summary; turning to it folds the page you read
   // away over its top edge and brings the next up over the same edge into
-  // its place, and the bar then offers the one you left
+  // its place, and the card then offers the one you left
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const next = $('#next', wrap), sheets = $$('.sheet', wrap);
   function offer(sheet) {
     const text = sel => $(sel, sheet).textContent.trim();
     $('.next-kicker', next).textContent = text('.sheet-kicker');
     $('.next-hed', next).textContent = text('.sheet-hed');
-    $('.next-by', next).textContent = text('.sheet-by');
+    $('.next-dek', next).textContent = sheet.dataset.summary || text('.sheet-dek');
     $('.next-n', next).textContent = `${String(sheets.indexOf(sheet) + 1).padStart(2, '0')} / ${String(sheets.length).padStart(2, '0')}`;
     next.setAttribute('aria-label', `Turn to: ${text('.sheet-hed')}`);
   }

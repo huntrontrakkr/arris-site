@@ -447,13 +447,35 @@ body.past .bar nav .dl { color: var(--amber); }
 .bd-role { font-style: italic; font-size: 15px; color: #2d5560; }
 .bd-num { font-size: 52px; line-height: 1; margin: 10px 0 6px; font-variation-settings: "wght" 600, "GRAD" 0, "WTCH" 100; color: #0c0e10; }
 .bd-foot { font-family: var(--mono); font-size: 9.5px; color: #4f7480; }
+/* a telegram home, under the others (tap it up): a form printed in green,
+   the message on strips of tape pasted onto it a little askew, in Mono
+   capitals so the Vietnamese marks stack over them, and the office's stamp */
+.telegram { right: 0; top: 262px; width: 310px; background: #dfe6dc; color: #22382c; padding: 14px 16px 64px; z-index: 0; }
+.telegram.torn { --torn-paper: #dfe6dc; --torn-core: #f2f5ef; }
+.tg-head { display: grid; justify-items: center; border-bottom: 3px double #22382c; padding-bottom: 6px; }
+.tg-head b { font-weight: inherit; font-size: 27px; line-height: 1.15; letter-spacing: .24em; margin-right: -.24em; font-variation-settings: "wght" 850, "GRAD" 0, "WTCH" 0; }
+.tg-head span { font-family: var(--mono); font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; }
+.tg-fields { margin: 8px 0 10px; display: grid; gap: 3px; font-size: 13px; }
+.tg-fields div { display: grid; grid-template-columns: 34px 1fr; align-items: baseline; border-bottom: 1px solid rgba(34,56,44,.35); padding-bottom: 2px; }
+.tg-fields dt { font-family: var(--mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .08em; }
+.tg-fields dd { margin: 0; font-variation-settings: "wght" 500, "GRAD" 0, "WTCH" 0; }
+.tg-tape { display: grid; justify-items: start; gap: 5px; padding: 4px 0; }
+.tg-tape span { background: #f6f1dc; color: #1d1b17; font-family: var(--mono); font-size: 11px; line-height: 1.75; letter-spacing: .02em;
+  padding: 0 6px; box-shadow: 0 1px 1px rgba(0,0,0,.18); white-space: nowrap; transform: translateX(var(--dx, 0)) rotate(var(--rt, 0deg)); }
+.tg-tape span:nth-child(1) { --dx: -2px; --rt: -.7deg; } .tg-tape span:nth-child(2) { --dx: 3px; --rt: .4deg; }
+.tg-tape span:nth-child(3) { --dx: 0; --rt: -.3deg; } .tg-tape span:nth-child(4) { --dx: 5px; --rt: .8deg; }
+.tg-tape span:nth-child(5) { --dx: 1px; --rt: -.5deg; } .tg-tape span:nth-child(6) { --dx: 4px; --rt: .3deg; }
+.tg-foot { display: flex; justify-content: space-between; gap: 8px; margin-top: 8px; font-family: var(--mono); font-size: 9.5px; }
+.tg-foot span:last-child { font-style: italic; }
+.tg-stamp { position: absolute; right: 18px; bottom: 24px; font-family: var(--mono); font-size: 13px; letter-spacing: .12em; padding: 2px 8px; transform: rotate(-11deg); }
 .desk-notes { display: grid; gap: 4px; }
 
 @media (max-width: 820px) {
   .pile { min-height: 0; display: grid; gap: 0; justify-items: center; }
   .doc { position: relative; left: auto; right: auto; top: auto; width: min(100%, 440px); margin-top: -18px; }
   .doc:first-child { margin-top: 0; }
-  .receipt, .badge, .ticket { width: min(86%, 330px); }
+  .receipt, .badge, .ticket, .telegram { width: min(86%, 330px); }
+  .telegram { --r: 1.5deg !important; margin: 14px 0 22px; }
 }
 
 /* the article: a paper sheet on the dark; each line's weight is set by

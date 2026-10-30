@@ -69,9 +69,10 @@
     el.style.setProperty('--rim', poly(1));
     el.classList.add('torn');
   }
-  const clip = $('.desk .clip'), receipt = $('.desk .receipt');
+  const clip = $('.desk .clip'), receipt = $('.desk .receipt'), telegram = $('.desk .telegram');
   if (clip) tear(clip, 7, 13, 7);
   if (receipt) tear(receipt, 11, 6, 0);
+  if (telegram) tear(telegram, 41, 8, 0);
 
   /* ------------------------------------------------------------ the long read */
   const paras = $$('.sheet .taper');

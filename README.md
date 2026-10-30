@@ -33,7 +33,7 @@ The fonts come from a release zip, never by hand:
 
 ```
 pip install fonttools brotli
-python3 tools/fonts.py Arris-1.003.zip
+python3 tools/fonts.py Arris-1.004.zip
 ```
 
 `tools/fonts.py` copies the variable fonts and Mono, cuts a first-paint

@@ -13,7 +13,7 @@ Also copies Mono Regular, Bold, Italic and Bold Italic whole, writes data/font.j
 axes, features, code points with their Unicode names and blocks) and the
 @font-face rules to css/fonts.css.
 
-usage: python3 tools/fonts.py Arris-1.003.zip
+usage: python3 tools/fonts.py Arris-1.004.zip
 """
 from __future__ import annotations
 

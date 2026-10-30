@@ -307,29 +307,33 @@ body.past .bar nav .dl { color: var(--amber); }
 
 /* ---------------------------------------------------------------- the arris */
 .crossing { max-width: none; padding: 0; height: 220vh; position: relative; background: var(--night); }
-.crossing-sticky { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; --p: 0; }
+.crossing-sticky { position: sticky; top: 0; --h: 100vh; height: var(--h); overflow: hidden; --p: 0; }
+@supports (height: 100svh) { .crossing-sticky { --h: 100svh; } }
 .cface { position: absolute; inset: 0; display: grid; align-items: end; padding: 0 var(--gut-r) 48px var(--gut); }
 .cface span { font-size: clamp(56px, 13vw, 200px); line-height: .9; }
 .cface-paper { background: var(--paper); color: var(--paper-ink); font-variation-settings: "wght" 200, "GRAD" 0, "WTCH" 0; }
 /* the edge runs at 45 degrees: its top at X, its bottom at X minus the
-   viewport's height; X sweeps from past the right edge (all paper) to 0 */
-.crossing-sticky { --x: calc((1 - var(--p)) * (100vw + 100vh)); }
+   stage's own height (--h, the one it is drawn across: on a phone 100vh
+   and 100svh differ, and the edge leant off the slogan's 45); X sweeps
+   from past the right edge (all paper) to 0 */
+.crossing-sticky { --x: calc((1 - var(--p)) * (100vw + var(--h))); }
 .cface-night { background: var(--night); color: var(--amber); justify-items: end; align-items: start; padding-top: 96px;
   font-variation-settings: "wght" 850, "GRAD" -60, "WTCH" 0;
-  clip-path: polygon(var(--x) 0, 100% 0, 100% 100%, calc(var(--x) - 100vh) 100%); }
-.cface-cut { background: var(--cut); clip-path: polygon(calc(var(--x) - 7px) 0, 100% 0, 100% 100%, calc(var(--x) - 100vh - 7px) 100%); }
+  clip-path: polygon(var(--x) 0, 100% 0, 100% 100%, calc(var(--x) - var(--h)) 100%); }
+.cface-cut { background: var(--cut); clip-path: polygon(calc(var(--x) - 7px) 0, 100% 0, 100% 100%, calc(var(--x) - var(--h) - 7px) 100%); }
 /* the one line of slogan rides the cut, the scissors at the middle of the
    edge and a dashed cut line running on ahead of them, as on the deck's
    strip; both sit just off the red band, on the paper side */
-.crossing-sticky { --ax: calc(var(--x) - 50vh - 4px); }
-.slogan, .slogan-cut { position: absolute; left: var(--ax); top: 50%; margin: 0; height: 1.4em; margin-top: -.7em; line-height: 1.4em; white-space: nowrap;
+.crossing-sticky { --f: .5; --ax: calc(var(--x) - var(--h) * var(--f) - 4px); }   /* the scissors, --f down the edge */
+@media (max-width: 640px) { .crossing-sticky { --f: .4; } }                        /* room below them for the whole line */
+.slogan, .slogan-cut { position: absolute; left: var(--ax); top: calc(var(--f) * 100%); margin: 0; height: 1.4em; margin-top: -.7em; line-height: 1.4em; white-space: nowrap;
   font-family: var(--mono); font-size: clamp(13px, 1.6vw, 17px); color: var(--cut); opacity: var(--o, 0); transform-origin: 0 50%; }
 .slogan { max-width: none; letter-spacing: .14em; text-transform: uppercase; transform: rotate(-45deg) translate(calc(-100% - .9em), -18px); }
 .slogan-cut { display: flex; align-items: center; gap: .5em; width: 160vmax; transform: rotate(-45deg) translate(-.6em, -18px); }
 .slogan-x { font-family: var(--sans); font-size: 1.9em; line-height: 1; }
 .slogan-dash { flex: 1; height: 2px; background: repeating-linear-gradient(to right, var(--cut) 0 7px, transparent 7px 14px); }
 @media (prefers-reduced-motion: reduce) {
-  .crossing { height: auto; } .crossing-sticky { position: relative; height: 60vh; --p: .5 !important; }
+  .crossing { height: auto; } .crossing-sticky { position: relative; --h: 60vh; --p: .5 !important; }
 }
 
 /* ---------------------------------------------------------------- night */

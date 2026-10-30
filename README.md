@@ -63,6 +63,13 @@ from the arris-films repository:
 tools/media.sh ../arris-films/presentation
 ```
 
+## Publishing
+
+The site is at https://arristype.com, on Cloudflare Pages, which builds
+every push to `main` with `sh tools/dist.sh` and publishes `dist/`: the page
+and what it loads, and nothing else (this README and `tools/` stay out).
+`npx serve dist` serves exactly what is published.
+
 ## Layout
 
 | Path | What |

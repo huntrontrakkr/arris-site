@@ -138,6 +138,7 @@ body.past .bar nav .dl { color: var(--amber); }
 .ds-ghost { position: absolute; left: clamp(20px, 4vw, 48px); right: clamp(20px, 4vw, 48px); top: clamp(24px, 4vw, 52px); pointer-events: none;
   color: transparent; -webkit-text-stroke: 1px var(--cut); opacity: 0; transition: opacity .2s; }
 .ds-stage.graded .ds-ghost { opacity: 1; }
+.ds-stage.locked .ds-text, .ds-stage.locked .ds-ghost { white-space: nowrap; }   /* lines broken once, at the widest (site.js) */
 .ds-text, .ds-ghost { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 90px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 90px), transparent); }
 .ds-panel { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: 14px; }
 @media (max-width: 860px) { .ds-panel { grid-template-columns: 1fr; } }

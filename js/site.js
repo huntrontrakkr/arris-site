@@ -334,7 +334,47 @@
   }));
   $('#ds-up').addEventListener('click', () => setLoc({ ital: false }));
   $('#ds-it').addEventListener('click', () => setLoc({ ital: true }));
-  dsText.addEventListener('input', () => { dsGhost.textContent = dsText.textContent; });
+
+  // the sample's lines are broken once, at the widest the axes make it, and
+  // kept: lighter places only shorten them, so moving through the
+  // designspace never rewraps the sample or moves the page below it. They
+  // are measured short of the fade at the stage's right edge, and broken
+  // again after an edit, a resize or a change of style
+  const meas = dsText.cloneNode(false);
+  meas.removeAttribute('id');
+  meas.removeAttribute('contenteditable');
+  meas.setAttribute('aria-hidden', 'true');
+  Object.assign(meas.style, { position: 'absolute', left: '0', top: '0', visibility: 'hidden', pointerEvents: 'none', whiteSpace: 'normal' });
+  dsStage.appendChild(meas);
+  const WIDEST = [[900, 0, 0], [900, 0, 100], [900, 100, 0], [900, -100, 0]];
+  const escHTML = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  let lockedAs = '';
+  function lockLines() {
+    if (document.activeElement === dsText) return;          // again on blur
+    const words = dsText.textContent.replace(/\s+/g, ' ').trim().split(' ');
+    meas.style.width = `${Math.max(120, dsText.clientWidth - 90)}px`;
+    meas.style.fontStyle = LOC.ital ? 'italic' : 'normal';
+    let lines = null;
+    for (const [w, g, x] of WIDEST) {
+      meas.style.fontVariationSettings = fvs(w, g, x);
+      meas.innerHTML = words.map(t => `<span>${escHTML(t)}</span>`).join(' ');
+      const tops = [...meas.children].map(s => s.offsetTop), here = [];
+      words.forEach((t, k) => { if (!k || tops[k] > tops[k - 1] + 2) here.push([t]); else here[here.length - 1].push(t); });
+      if (!lines || here.length > lines.length) lines = here;
+    }
+    dsText.innerHTML = dsGhost.innerHTML = lines.map(l => escHTML(l.join(' '))).join(' <br>');
+    dsStage.classList.add('locked');
+    lockedAs = `${dsText.clientWidth} ${LOC.ital}`;
+  }
+  dsText.addEventListener('input', () => { dsGhost.innerHTML = escHTML(dsText.innerText).replace(/\n/g, '<br>'); });
+  dsText.addEventListener('blur', lockLines);
+  subs.push(() => { if (lockedAs && !lockedAs.endsWith(` ${LOC.ital}`)) lockLines(); });
+  let dsRsz;
+  addEventListener('resize', () => {
+    clearTimeout(dsRsz);
+    dsRsz = setTimeout(() => { if (!lockedAs.startsWith(`${dsText.clientWidth} `)) lockLines(); }, 150);
+  });
+  document.fonts.ready.then(lockLines);
 
   const PRESETS = [
     ['Thin', { wght: 100, GRAD: 0, WTCH: 0 }], ['Regular', { wght: 400, GRAD: 0, WTCH: 0 }], ['Bold', { wght: 700, GRAD: 0, WTCH: 0 }],

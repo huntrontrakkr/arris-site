@@ -98,7 +98,7 @@
   let lines = [];
   function layout() {
     lines = [];
-    paras.filter(p => p.closest('.sheet').classList.contains('front')).forEach(p => {
+    paras.filter(p => !p.closest('.sheet').hidden).forEach(p => {
       const words = [...p._text.matchAll(/\S+/g)].map(m => [m.index, m[0]]);
       p.innerHTML = words.map(([, w]) => `<span>${esc(w)}</span>`).join(' ');
       const tops = [...p.children].map(s => s.offsetTop);
@@ -112,7 +112,6 @@
       lines.push(...$$('.tl', p));
     });
     lines.forEach(l => { l._w = -1; });
-    sizeBack();
     update();
   }
 
@@ -130,35 +129,39 @@
   const wrap = $('.sheet-wrap');
   new IntersectionObserver(es => { near = es[0].isIntersecting; if (near) update(); }, { rootMargin: '200px 0px' }).observe(wrap);
 
-  // the two long reads lie one on the other. The one behind is kept as tall
-  // as the one you read, so the stack never makes the page longer, and shows
-  // its head above it; turning to it shuffles them: the page you read slides
-  // down and away as the other rises, and they change places at the top of
-  // the rise (css .away, .rise)
+  // the next story stands on the horizon of the one you read (css .next),
+  // its head and byline on a bar; turning to it folds the page you read
+  // away over its top edge and brings the next up over the same edge into
+  // its place, and the bar then offers the one you left
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  function sizeBack() {
-    const front = $('.sheet.front', wrap), back = $('.sheet.back', wrap);
-    if (!front || !back) return;
-    front.style.height = '';
-    back.style.height = `${front.offsetHeight}px`;
+  const next = $('#next', wrap), sheets = $$('.sheet', wrap);
+  function offer(sheet) {
+    const text = sel => $(sel, sheet).textContent.trim();
+    $('.next-kicker', next).textContent = text('.sheet-kicker');
+    $('.next-hed', next).textContent = text('.sheet-hed');
+    $('.next-by', next).textContent = text('.sheet-by');
+    $('.next-n', next).textContent = `${String(sheets.indexOf(sheet) + 1).padStart(2, '0')} / ${String(sheets.length).padStart(2, '0')}`;
+    next.setAttribute('aria-label', `Turn to: ${text('.sheet-hed')}`);
   }
   function turn() {
-    const front = $('.sheet.front', wrap), back = $('.sheet.back', wrap);
-    if (!front || !back || wrap.classList.contains('turning')) return;
+    const from = $('.sheet:not([hidden])', wrap), to = $('.sheet[hidden]', wrap);
+    if (!from || !to || wrap.classList.contains('turning')) return;
     const swap = () => {
-      front.classList.remove('front', 'away'); front.classList.add('back');
-      back.classList.remove('back', 'rise'); back.classList.add('front');
+      from.hidden = true;
+      from.classList.remove('fold');
+      to.hidden = false;
+      offer(from);
       layout();
+      if (!still) { to.classList.add('unfold'); to.getBoundingClientRect(); to.classList.remove('unfold'); }
       const top = wrap.getBoundingClientRect().top;
       if (top < 0) scrollBy({ top: top - 40, behavior: still ? 'auto' : 'smooth' });
     };
     if (still) { swap(); return; }
     wrap.classList.add('turning');
-    front.classList.add('away');
-    back.classList.add('rise');
-    setTimeout(() => { swap(); setTimeout(() => wrap.classList.remove('turning'), 520); }, 330);
+    from.classList.add('fold');
+    setTimeout(() => { swap(); setTimeout(() => wrap.classList.remove('turning'), 420); }, 340);
   }
-  $$('.sheet-turn', wrap).forEach(b => b.addEventListener('click', turn));
+  if (next) next.addEventListener('click', turn);
   addEventListener('scroll', () => {
     if (!near || queued) return;
     queued = true;

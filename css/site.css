@@ -443,10 +443,11 @@ body.past .bar nav .dl { color: var(--amber); }
    where it stands in the window (js), from Thin below to the reading
    weight above */
 .sheet-wrap { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center;
-  --x: clamp(-60px, -4vw, 0px); --peek: clamp(92px, 11vw, 120px); padding-top: calc(var(--peek) + 24px); }
-.sheet { grid-area: 1 / 1; position: relative; width: min(100%, 760px); min-width: 0; background: #f1ece0; color: #1a1915;
+  --x: clamp(-60px, -4vw, 0px); --tilt: -.6deg; --peek: clamp(100px, 10vw, 112px); padding-top: calc(var(--peek) + 18px); }
+.sheet { grid-area: 1 / 1; position: relative; z-index: 2; width: min(100%, 760px); min-width: 0; background: #f1ece0; color: #1a1915;
   padding: clamp(24px, 5vw, 64px) clamp(20px, 5vw, 72px) clamp(32px, 5vw, 64px); box-shadow: 0 30px 70px -20px rgba(0,0,0,.8);
-  transition: transform .5s cubic-bezier(.3,.7,.2,1), filter .4s; }
+  transform-origin: 50% 0; transform: translateX(var(--x)) perspective(1800px) rotateX(0deg) rotate(var(--tilt));
+  transition: transform .55s cubic-bezier(.2,.8,.2,1), opacity .4s; }
 .sheet-kicker { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--cut); }
 .sheet-hed { font-family: var(--sans); text-transform: none; letter-spacing: -.01em; color: inherit; font-size: clamp(34px, 5vw, 58px); line-height: 1.02; margin: 10px 0 14px;
   font-variation-settings: "wght" 700, "GRAD" 0, "WTCH" 0; }
@@ -463,34 +464,39 @@ body.past .bar nav .dl { color: var(--amber); }
 .taper .k { font-variation-settings: "wght" 430, "GRAD" 0, "WTCH" 0; }
 .pull { font-style: italic; font-size: 1.45em; line-height: 1.3; font-variation-settings: "wght" 650, "GRAD" 0, "WTCH" 0; padding: 14px 0; margin: 18px 0 !important;
   border-top: 2px solid #1a1915; border-bottom: 2px solid #1a1915; }
-/* the two long reads lie one on the other: the one behind shows its head
-   above the one you read and lifts under the pointer; turning to it
-   shuffles them, the page you read sliding down and away as the other
-   rises over it (belt.js) */
-.sheet.front { z-index: 2; transform: translateX(var(--x)) rotate(-.6deg); }
-.sheet.back { z-index: 1; align-self: start; overflow: hidden; padding-top: 26px; filter: brightness(.9);
-  transform: translate(calc(var(--x) + 34px), calc(-1 * var(--peek))) rotate(1.4deg); }
-.sheet.back:has(:focus-visible) { filter: brightness(.98); transform: translate(calc(var(--x) + 40px), calc(-1 * var(--peek) - 18px)) rotate(2deg); }
-@media (hover: hover) { .sheet.back:hover { filter: brightness(.98); transform: translate(calc(var(--x) + 40px), calc(-1 * var(--peek) - 18px)) rotate(2deg); } }
-.sheet.front.away { transform: translate(calc(var(--x) - 70px), 90px) rotate(-5deg); }
-.sheet.back.rise { filter: brightness(1); transform: translate(calc(var(--x) + 18px), calc(-1 * var(--peek) - 130px)) rotate(-1deg) scale(1.015); }
-.sheet.back:not(.rise) > :not(.sheet-turn, .sheet-kicker, .sheet-hed) { visibility: hidden; }   /* only its head shows, and no rule strays past the front */
-.sheet-turn { display: none; }
-.sheet.back .sheet-turn { display: block; position: absolute; inset: 0; z-index: 3; width: 100%; padding: 0; background: none; border: 0; cursor: pointer; }
-.sheet.back .sheet-turn:focus-visible { outline: 2px solid var(--amber); outline-offset: -6px; }
-@media (prefers-reduced-motion: reduce) { .sheet { transition: none; } }
+/* the next story, on the horizon of the one you read: a dark bar rising
+   over its top edge, the next story's head and byline on it, its foot
+   tucked behind the page. Turning to it folds the page you read away over
+   that edge and brings the next up over it into its place; the bar then
+   offers the one you left (belt.js) */
+.next { grid-area: 1 / 1; align-self: start; position: relative; z-index: 1; width: min(100% - 28px, 700px); display: grid; gap: 3px;
+  padding: 14px 22px 44px; font: inherit; text-align: left; color: var(--night-ink); background: linear-gradient(180deg, #1b2025, #101316);
+  border: 0; cursor: pointer; clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 0 100%);
+  transform: translate(calc(var(--x) + 18px), calc(-1 * var(--peek))); transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .25s; }
+.next::before { content: ""; position: absolute; left: 0; right: 20px; top: 0; height: 2px; background: linear-gradient(90deg, var(--amber) 30%, rgba(255,176,0,0)); }
+.next-top { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--amber); }
+.next-turn i { display: inline-block; font-style: normal; transition: transform .25s; }
+.next-n { color: var(--night-dim); }
+.next-kicker { margin-top: 7px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--cut); }
+.next-hed { font-size: clamp(19px, 2.5vw, 26px); line-height: 1.15; white-space: nowrap; overflow: hidden; font-variation-settings: "wght" 650, "GRAD" -50, "WTCH" 0;
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 56px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 56px), transparent); }
+.next-by { font-family: var(--mono); font-size: 10.5px; color: var(--night-dim); }
+.next:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
+@media (hover: hover) {
+  .next:hover { transform: translate(calc(var(--x) + 18px), calc(-1 * var(--peek) - 10px)); }
+  .next:hover .next-turn i { transform: translateX(4px); }
+}
+.sheet.fold { opacity: 0; transform: translateX(var(--x)) perspective(1800px) rotateX(-80deg) rotate(var(--tilt));
+  transition: transform .34s cubic-bezier(.55,0,.85,.35), opacity .34s ease-in; }
+.sheet.unfold { opacity: 0; transform: translateX(var(--x)) perspective(1800px) rotateX(70deg) rotate(var(--tilt)); transition: none; }
+.sheet-wrap.turning .next { opacity: 0; transform: translate(calc(var(--x) + 18px), calc(-1 * var(--peek) + 28px)); }
+@media (prefers-reduced-motion: reduce) { .sheet, .next { transition: none; } }
 .sheet-fig { margin: 4px 0 1.4em auto; width: min(100%, 78%); }
 .sheet-fig video { display: block; width: 100%; height: auto; aspect-ratio: 1920 / 804; background: #000; }
 .sheet-fig figcaption { font-family: var(--mono); font-size: 11px; color: #6b665c; margin-top: 6px; }
 @media (max-width: 640px) { .sheet-fig { width: 100%; } }
 .reading, .desk { overflow-x: clip; }
-@media (max-width: 640px) {
-  .sheet-wrap { --x: 0px; }
-  .sheet.front { transform: rotate(-.3deg); }
-  .sheet.back { transform: translate(14px, calc(-1 * var(--peek))) rotate(1.2deg); }
-  .sheet.back:has(:focus-visible) { transform: translate(16px, calc(-1 * var(--peek) - 12px)) rotate(1.6deg); }
-}
-@media (max-width: 640px) and (hover: hover) { .sheet.back:hover { transform: translate(16px, calc(-1 * var(--peek) - 12px)) rotate(1.6deg); } }
+@media (max-width: 640px) { .sheet-wrap { --x: 0px; --tilt: -.3deg; } .next { width: calc(100% - 20px); padding-inline: 16px; } }
 
 .dock { background: #3a3c3e linear-gradient(135deg, #45474a, #2c2e30); color: #e9e2d0; padding: clamp(18px, 3vw, 32px); display: grid; gap: 8px;
   clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 0 100%); }

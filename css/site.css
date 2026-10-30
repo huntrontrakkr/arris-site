@@ -640,12 +640,12 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .never { display: flex; flex-wrap: wrap; gap: 8px 22px; align-items: baseline; margin: 22px 0 10px; font-family: var(--mono); font-size: clamp(22px, 3vw, 32px); }
 .never-label { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
 
-.tui { margin: 0; font-family: var(--mono); font-size: clamp(9.5px, 2.15vw, 21px); line-height: 1.225; color: #d7dde2; background: #0a0b0c;
+.tui { margin: 0; font-family: var(--mono); font-size: clamp(12px, 1.35vw, 16px); line-height: 1.225; color: #d7dde2; background: #0a0b0c;
   padding: clamp(14px, 2.4vw, 26px); border: 1px solid var(--line); overflow-x: auto; }
 .tui .p1 { background: var(--amber); color: var(--night); } .tui .p1f { color: var(--amber); }
 .tui .p2 { background: #2a2f35; color: var(--night-ink); } .tui .p2f { color: #2a2f35; }
 .tui .p3 { color: var(--t700); } .tui .ok { color: var(--t900); } .tui .dim { color: var(--night-dim); }
-.tui .w1 { color: var(--t100); } .tui .w4 { color: var(--t400); } .tui .w9 { color: var(--t900); }
+.tui .w1 { color: var(--t100); } .tui .w4 { color: var(--t400); } .tui .w6 { color: var(--t600); } .tui .w9 { color: var(--t900); }
 
 .shopfront { background: #1b1410; border-top: 10px solid var(--t600); padding: clamp(22px, 4vw, 40px); display: grid; gap: 10px;
   clip-path: polygon(0 0, 100% 0, 100% 100%, 26px 100%, 0 calc(100% - 26px)); }

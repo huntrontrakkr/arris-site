@@ -198,46 +198,104 @@ main = print (tonnage ["3000", "470"])` },
   });
   $('#never').textContent = '<=<  >>=  //=  ||=  ---->  ::  //  ||';
 
-  /* ------------------------------------------------------------ the terminal */
-  const tui = $('#tui'), W = 46, L = 14;
-  const SPIN = '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏', SPARK = '▁▂▃▄▅▆▇█', BR = '⣀⣤⣶⣿⣿⣷⣦⣄⡀⢀⣠⣴⣾⣿⣷⣦⣤⣀';
+  /* ------------------------------------------------------------ the terminal: the Glasshouse's console */
+  // The module from the long read above, as its night-shift console: a
+  // status line in Powerline segments, panes of box drawing with sparklines
+  // in blocks and graphs in Braille, a log that ticks over, and a prompt.
+  // The frame is laid out to the width it has: panes side by side where
+  // there is room for them, stacked where there is not.
+  const tui = $('#tui');
+  const SPIN = '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏', SPARK = '▁▂▃▄▅▆▇█', BRAILLE = '⣀⣄⣤⣦⣶⣷⣿';
   const two = n => String(n).padStart(2, '0');
-  // a row is a list of [text, class]; the frame pads the text to its width
   const seg = (t, c = '') => [t, c];
+  const cells = t => [...t].length;
   const html = row => row.map(([t, c]) => (c ? `<span class="${c}">${esc(t)}</span>` : esc(t))).join('');
-  const len = row => row.reduce((n, [t]) => n + [...t].length, 0);
-  const pad = (row, n) => [...row, seg(' '.repeat(Math.max(0, n - len(row))))];
-  const full = row => [seg('│'), ...pad(row, W - 2), seg('│')];
-  const split = (a, b) => [seg('│'), ...pad(a, L), seg('│'), ...pad(b, W - L - 3), seg('│')];
-  let k = 0;
+  const fit = (row, n) => {                          // a row cut or padded to n cells
+    const out = []; let used = 0;
+    for (const [t, c] of row) {
+      const ch = [...t];
+      if (used + ch.length <= n) { out.push([t, c]); used += ch.length; }
+      else { out.push([ch.slice(0, n - used).join(''), c]); used = n; break; }
+    }
+    if (used < n) out.push(seg(' '.repeat(n - used)));
+    return out;
+  };
+  const wave = (k, n, f, lo = 0) => [...Array(n)].map((_, i) => Math.max(lo, Math.min(1, f((k - n + i) / 6) * 0.5 + 0.5)));
+  const spark = (k, n, f, cls) => seg(wave(k, n, f).map(v => SPARK[Math.round(v * 7)]).join(''), cls);
+  const braille = (k, n, f, cls) => seg(wave(k, n, f).map(v => BRAILLE[Math.round(v * 6)]).join(''), cls);
+  const bar = (share, n) => { const f = Math.round(share * n * 8), full = Math.floor(f / 8), part = f % 8; return '█'.repeat(full) + (part ? ' ▏▎▍▌▋▊▉'[part] : '') + ' '.repeat(Math.max(0, n - full - (part ? 1 : 0))); };
+  // a pane: rows in a frame w cells wide, titled; the active one heavy
+  function pane(title, rows, w, heavy = false) {
+    const [tl, tr, bl, br, h, v] = heavy ? '┏┓┗┛━┃' : '╭╮╰╯─│';
+    const iw = w - 2;
+    const head = [seg(tl + h + ' '), seg(title, heavy ? 'p1f' : 'dim'), seg(' ' + h.repeat(Math.max(0, iw - cells(title) - 3)) + tr)];
+    return [fit(head, w), ...rows.map(r => [seg(v), ...fit(r, iw), seg(v)]), [seg(bl + h.repeat(iw) + br)]];
+  }
+  const beside = (a, b) => a.map((r, i) => [...r, seg(' '), ...b[i]]);
+  // the log: the night shift's entries, one more every few seconds
+  const LOG = [
+    ['02:51', 'lamps -> amber, 20 min ramp', ''],
+    ['02:58', 'bed 7 watered, 14 L', 'ok'],
+    ['03:04', 'east window: condensation >= 2 mm, wiper on', ''],
+    ['03:11', 'T. log: "thorns true, flowers on their own time"', 'dim'],
+    ['03:19', 'hal: last row, 6 L', 'ok'],
+    ['03:26', 'lamps -> off; corridor light only', ''],
+    ['03:40', 'bladder 3 sealed, 212 L left, next lift 06:00', ''],
+    ['03:52', 'air 21.4 C, rh 58 %, co2 612 ppm: within band', 'ok'],
+    ['04:10', 'east bed: first bloom, dark red', 'p1f'],
+    ['04:14', 'M. log: "do not water them more"', 'dim'],
+  ];
+  let k = 0, cols = 0;
   function frame() {
-    const d = new Date(), pct = Math.floor(k / 2) % 101, filled = Math.round(pct / 100 * 26);
-    const bar = '█'.repeat(filled) + ' '.repeat(26 - filled);
-    const cpu = [...Array(8)].map((_, i) => SPARK[Math.floor((Math.sin((k + i * 3) / 5) * 0.5 + 0.5) * 7.99)]).join('');
-    const net = [...BR].map((_, i) => BR[(i + k) % BR.length]).join('');
-    const rows = [
-      [seg('  main ', 'p1'), seg('', 'p1f p2'), seg(' ~/code/arris-type ', 'p2'), seg('', 'p2f'), seg('  make proofs  '),
-        seg('', 'p3'), seg(` ${two(d.getHours())}:${two(d.getMinutes())} `, 'p3'), seg('', 'p3'), seg(' ✓', 'ok')],
-      [seg('╭─┤ Arris Mono ├' + '─'.repeat(W - 17) + '╮')],
-      full([seg(` build ${SPIN[k % 10]}  ▕`), seg(bar, 'w4'), seg(`▏${String(pct).padStart(4)}%`)]),
-      full([seg(' tests    '), seg('✓ 4 passed', 'ok'), seg('  ✗ 0 failed  '), seg('⚠ 1', 'p3')]),
-      [seg('├' + '─'.repeat(L) + '┬' + '─'.repeat(W - L - 3) + '┤')],
-      split([seg(' cpu '), seg(cpu, 'w9')], [seg(' '), seg(net, 'w4'), seg(' net '), seg('░▒▓█', 'dim')]),
-      split([seg(' mem ████▋')], [seg(' ◆ fonts  ● vf  ○ docs  ★ ok')]),
-      [seg('├' + '─'.repeat(L) + '┼' + '─'.repeat(W - L - 3) + '┤')],
-      split([seg(' ▶ '), seg('Thin', 'w1')], [seg(' ┏━━━━━━━━┓ ╔════════╗ ┌┄┄┄┐')]),
-      split([seg(' ▷ '), seg('Regular', 'w4')], [seg(' ┃ heavy  ┃ ║ double ║ ┆   ┆')]),
-      split([seg(' ▸ '), seg('Black', 'w9')], [seg(' ┗━━━━━━━━┛ ╚════════╝ └┄┄┄┘')]),
-      [seg('╰' + '─'.repeat(L) + '┴' + '─'.repeat(W - L - 3) + '╯')],
-      [seg(' ☐ todo ☑ done ☒ dropped ☰ menu ♫ ⚙ ⚡ ➜ ⬆ ⬇', 'dim')],
-    ];
+    const w = cols, wide = w >= 84;
+    const d = new Date(), m26 = Math.floor((d.getHours() * 60 + d.getMinutes()) * 26 / 24) % (26 * 60);
+    // the status line
+    const left = [seg(' ⌂ glasshouse ', 'p1'), seg('', 'p1f p2'), seg(' ring 4 · night shift ', 'p2'), seg('', 'p2f'), seg(' 3 panes ', 'dim')];
+    const right = [seg('', 'p3'), seg(` ${two(Math.floor(m26 / 60))}:${two(m26 % 60)} `, 'p3'), seg(' 26h ', 'dim'), seg('✓ ', 'ok')];
+    const status = [...left, seg(' '.repeat(Math.max(1, w - left.concat(right).reduce((n, [t]) => n + cells(t), 0)))), ...right];
+    // the panes
+    const pw = wide ? Math.floor((w - 1) / 2) : w, iw = pw - 2, g = iw - 16;
+    const air = (21.4 + 0.3 * Math.sin(k / 40)).toFixed(1), rh = Math.round(58 + 2 * Math.sin(k / 60)), co2 = Math.round(612 + 9 * Math.sin(k / 50));
+    const ramp = Math.min(1, (k % 400) / 300), lit = Math.round(ramp * 8);
+    const env = pane('env', [
+      [seg(` air   ${air} °C  `), spark(k, g, x => Math.sin(x), 'w9')],
+      [seg(` rh    ${rh} %     `), spark(k, g, x => Math.sin(x / 1.7 + 1), 'w4')],
+      [seg(` co2   ${co2} ppm  `), braille(k, g, x => Math.sin(x / 2.3) * Math.cos(x / 5), 'w4')],
+      [seg(' light '), seg('░▒▓█'.repeat(2).slice(0, lit), 'w6'), seg(' '.repeat(8 - lit)), seg(ramp < 1 ? '  ramping to amber' : '  amber', ramp < 1 ? 'dim' : 'p1f')],
+    ], pw);
+    const sec = Math.floor(k / 4) % 900, bw = Math.max(6, iw - 24);
+    const water = pane('water', [
+      [seg(' bladder '), seg(bar(212 / 340, bw), 'w4'), seg(' 212/340 L')],
+      [seg(` bed 7   ▶ watering ${SPIN[k % 10]} `), seg(`${two(Math.floor(sec / 60))}:${two(sec % 60)}`, 'p1f')],
+      [seg(' east    '), seg('✓ done 02:58', 'ok'), seg('   14 L')],
+      [seg(' pH      6.3     '), spark(k, g, x => Math.sin(x / 3) * 0.3, 'w9')],
+    ], pw, true);
+    const n = wide ? 6 : 5, at = n - 1 + Math.floor(k / 24);      // full from the first frame, then one more every six seconds
+    const log = pane('log', [...Array(n)].map((_, i) => {
+      const e = LOG[(at + i - n + 1) % LOG.length];
+      return [seg(` ${e[0]}  `, 'dim'), seg(e[1], e[2])];
+    }), w);
+    const cmd = w >= 70 ? './water --bed 7 --litres 14 && ./lamps --ramp 20m -> amber' : './water --bed 7 -l 14 && ./lamps -> amber';
+    const prompt = [seg(' ❯ ', 'p1f'), seg(cmd), seg(k % 4 < 2 ? '▌' : ' ', 'p1f')];
+    const rows = [fit(status, w), ...(wide ? beside(env, water) : [...env, ...water]), ...log, fit(prompt, w)];
     tui.innerHTML = rows.map(html).join('\n');
     k++;
   }
-  frame();
+  // the width in cells, from a measured character
+  function measure() {
+    const probe = document.createElement('span'); probe.textContent = 'M'.repeat(20); probe.style.position = 'absolute'; probe.style.visibility = 'hidden';
+    tui.appendChild(probe);
+    const cell = probe.getBoundingClientRect().width / 20; probe.remove();
+    const cs = getComputedStyle(tui);
+    const c = Math.max(40, Math.floor((tui.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)) / cell) - 1);
+    if (c !== cols) { cols = c; frame(); }
+  }
+  document.fonts.ready.then(measure);
+  measure();
+  if ('ResizeObserver' in window) new ResizeObserver(measure).observe(tui);
   if (!reduce) {
     let vis = false;
     new IntersectionObserver(es => { vis = es[0].isIntersecting; }).observe(tui);
-    setInterval(() => { if (vis) frame(); }, 110);
+    setInterval(() => { if (vis && cols) frame(); }, 250);
   }
 })();

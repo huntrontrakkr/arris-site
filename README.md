@@ -19,9 +19,9 @@ download.
 ## Running it
 
 Any static server from the repository root that answers byte-range
-requests (every real host does), since the board film is scrubbed by the
-scroll and a browser cannot seek a video without them. Python's
-`http.server` does not; `npx serve` does:
+requests, since the board film is scrubbed by the scroll and a browser
+cannot seek a video without them. Python's `http.server` does not;
+`npx serve` does, and `npx wrangler dev` runs the site as it is published:
 
 ```
 npx serve .
@@ -65,10 +65,15 @@ tools/media.sh ../arris-films/presentation
 
 ## Publishing
 
-The site is at https://arristype.com, on Cloudflare Pages, which builds
-every push to `main` with `sh tools/dist.sh` and publishes `dist/`: the page
-and what it loads, and nothing else (this README and `tools/` stay out).
-`npx serve dist` serves exactly what is published.
+The site is at https://arristype.com: a Cloudflare Worker that serves the
+repository's files (`wrangler.jsonc`), deployed on every push to `main` by
+Workers Builds (`npx wrangler deploy`). Everything is published but what
+`.assetsignore` lists: this README, `tools/`, `worker/` and the
+configuration, which would give the layer underneath away. A wrong address
+gets `404.html`. The Worker's own code, `worker/index.js`, runs first only
+for `media/`, to answer the byte-range requests the asset server answers
+with whole files: Safari plays no film without them, and the board film
+seeks as the page scrolls. `npx wrangler dev` runs all of it locally.
 
 ## Layout
 
@@ -84,6 +89,8 @@ and what it loads, and nothing else (this README and `tools/` stay out).
 | `data/transfer.json` | written by `tools/transfer.py` |
 | `media/` | written by `tools/media.sh` |
 | `kapa/` | not linked from the navigation; `sealed.json` is written by `tools/seal.mjs` |
+| `404.html` | what a wrong address gets |
+| `wrangler.jsonc`, `.assetsignore`, `worker/` | the Worker: what it publishes, and the byte ranges it answers for the films |
 
 ## The layer underneath
 

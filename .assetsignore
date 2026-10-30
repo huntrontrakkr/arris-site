@@ -1,0 +1,13 @@
+# Published: everything in the repository but these (.gitignore syntax).
+# The README and tools/ would give the layer underneath away.
+.git
+.gitignore
+.assetsignore
+.wrangler
+node_modules
+wrangler.jsonc
+README.md
+tools/
+worker/
+**/.DS_Store
+**/__pycache__

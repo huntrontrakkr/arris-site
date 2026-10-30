@@ -1,0 +1,21 @@
+// The site, as a Worker that serves its files (Cloudflare Workers static
+// assets). Every push to main is built and deployed by Workers Builds with
+// `npx wrangler deploy`; .assetsignore keeps the repository's own files
+// (this one, the README, tools/, worker/) off the site. The Worker's own
+// code (worker/index.js) runs first only for the films and their posters,
+// to answer byte ranges; everything else is served as it is.
+{
+  "$schema": "https://unpkg.com/wrangler@4.156.0/config-schema.json",
+  "name": "arristype",
+  "compatibility_date": "2026-10-01",
+  "main": "worker/index.js",
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS",
+    "run_worker_first": ["/media/*"],
+    // a wrong address gets 404.html, with a 404, not the home page
+    "not_found_handling": "404-page",
+    "html_handling": "auto-trailing-slash"
+  },
+  "routes": [{ "pattern": "arristype.com", "custom_domain": true }]
+}

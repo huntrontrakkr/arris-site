@@ -43,6 +43,18 @@ jobs:
           test -n "$ZID" -a "$ZID" != null || { echo "::error::the token cannot see the zone $ZONE"; exit 1; }
           echo "zone $ZID, account $AID"
 
+          # what the token can reach, so a refusal below has a name
+          probe() {  # probe LABEL PATH
+            body=$(curl -sS "https://api.cloudflare.com/client/v4$2" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+            if jq -e '.success' > /dev/null <<< "$body"; then echo "  yes  $1"
+            else echo "  no   $1: $(jq -c '[.errors[].message]' <<< "$body")"; fi
+          }
+          echo "the token (id $(api GET /user/tokens/verify | jq -r '.result.id')) can reach:"
+          probe "DNS records (Zone DNS Read)" "/zones/$ZID/dns_records?per_page=1"
+          probe "Email Routing settings" "/zones/$ZID/email/routing"
+          probe "Email Routing rules (Zone Email Routing Rules Read)" "/zones/$ZID/email/routing/rules?per_page=1"
+          probe "destination addresses (Account Email Routing Addresses Read)" "/accounts/$AID/email/routing/addresses?per_page=1"
+
           # 1. routing on (this adds the MX and SPF records); already on is fine
           state=$(api GET "/zones/$ZID/email/routing"); ok "$state"
           if [ "$(jq -r '.result.enabled' <<< "$state")" != true ]; then

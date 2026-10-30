@@ -641,7 +641,10 @@
     glyph.style.fontStyle = CL.ital ? 'italic' : 'normal';
     pressSwitch($('#card-it'), $('#card-up'), CL.ital);
     $('#card-mono').setAttribute('aria-checked', CL.mono);
-    $('.spec').classList.toggle('is-mono', CL.mono);
+    // the sheet of characters follows the card: style, family and place
+    const grid = $('#grid');
+    grid.style.fontFamily = glyph.style.fontFamily; grid.style.fontWeight = glyph.style.fontWeight;
+    grid.style.fontVariationSettings = glyph.style.fontVariationSettings; grid.style.fontStyle = glyph.style.fontStyle;
     const adv = Math.round(chEl.getBoundingClientRect().width / cardM.S * cardM.M.upm);
     $('#card-metrics').innerHTML = CL.mono
       ? `<span>ADVANCE ${adv}</span><span class="ax-wght">wght ${CL.wght} ${CL.wght === 400 ? 'Regular' : 'Bold'}</span><span>Mono: Regular and Bold</span>`

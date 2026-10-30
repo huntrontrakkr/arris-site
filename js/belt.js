@@ -129,10 +129,11 @@
   const wrap = $('.sheet-wrap');
   new IntersectionObserver(es => { near = es[0].isIntersecting; if (near) update(); }, { rootMargin: '200px 0px' }).observe(wrap);
 
-  // the next story is a card over the top corner of the one you read (css
-  // .next): its head and its summary; turning to it folds the page you read
-  // away over its top edge and brings the next up over the same edge into
-  // its place, and the card then offers the one you left
+  // the next story is a file behind the one you read, its tab over the
+  // page's top edge (css .next): its head and its summary; turning to it
+  // folds the page you read away over its top edge and brings the next up
+  // over the same edge into its place, and the file then offers the one
+  // you left
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const next = $('#next', wrap), sheets = $$('.sheet', wrap);
   function offer(sheet) {

@@ -464,37 +464,44 @@ body.past .bar nav .dl { color: var(--amber); }
 .taper .k { font-variation-settings: "wght" 430, "GRAD" 0, "WTCH" 0; }
 .pull { font-style: italic; font-size: 1.45em; line-height: 1.3; font-variation-settings: "wght" 650, "GRAD" 0, "WTCH" 0; padding: 14px 0; margin: 18px 0 !important;
   border-top: 2px solid #1a1915; border-bottom: 2px solid #1a1915; }
-/* the next story, a card in front of the page you read, over its top
-   right corner: it sits in the row above the page and reaches down over
-   its edge by --over, however tall its summary makes it (more of it on a
-   desk, just the margin on a phone):
-   TURN TO, its place, its kicker, headline and summary; the cut corner is
-   the card's, the shadow the button's, so the shadow follows the cut. A
-   tap folds the page away and the card with it, and both come back with
-   the story you left on the card (belt.js) */
-.sheet-wrap { --card: min(340px, calc(100% - 24px)); --over: 84px; }
-.next { grid-area: 1 / 1; justify-self: end; position: relative; z-index: 3; width: var(--card); padding: 0; border: 0;
-  margin: 0 max(4px, calc(50% - 430px - var(--x))) calc(-1 * var(--over)) 0;
-  background: none; font: inherit; text-align: left; color: var(--night-ink); cursor: pointer; --tilt-c: 2.2deg;
-  filter: drop-shadow(0 18px 24px rgba(0,0,0,.55)); transform-origin: 50% 100%;
-  transform: perspective(900px) translateY(0) rotateX(0deg) rotate(var(--tilt-c)); transition: transform .4s cubic-bezier(.2,.8,.2,1), opacity .3s; }
-.next-card { position: relative; display: grid; gap: 4px; padding: 16px 20px 18px; background: linear-gradient(160deg, #1d2328, #101316 70%);
-  clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 0 100%); }
-.next-card::before { content: ""; position: absolute; left: 0; right: 22px; top: 0; height: 2px; background: linear-gradient(90deg, var(--amber) 35%, rgba(255,176,0,0)); }
-.next-top { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--amber); }
+/* the next story, a file standing behind the page you read: its tab and
+   head rise over the page's top edge, off to the right and square to the
+   page (the same lean), and the rest goes down behind the page and on
+   down its side, a shade off the night that darkens into it, so it sits a
+   layer down. The tab is cut like the letters; its height is --lip, its
+   width --tab. It rises a little under the pointer; a tap drops it behind
+   as the page folds away, and it comes back up with the story you left
+   (belt.js) */
+.sheet-wrap { --card: min(380px, calc(100% - 24px)); --tuck: 28px; --lip: 30px; --tab: 132px; --c: 14px; }
+.next { grid-area: 1 / 1; justify-self: end; position: relative; z-index: 1; width: var(--card); padding: 0; border: 0;
+  margin: 0 max(12px, calc(50% - 434px - var(--x))) calc(-1 * var(--tuck)) 0;
+  background: none; font: inherit; text-align: left; color: var(--night-ink); cursor: pointer;
+  filter: drop-shadow(0 -1px 0 rgba(241,235,221,.1));
+  transform: translateY(0) rotate(var(--tilt)); transition: transform .4s cubic-bezier(.2,.8,.2,1), opacity .3s; }
+.next::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 240px; pointer-events: none;
+  background: linear-gradient(#101316, rgba(16,19,22,0)); }
+.next-card { position: relative; display: grid; gap: 4px; padding: calc(var(--lip) + 14px) 22px calc(var(--tuck) + 20px);
+  background: linear-gradient(180deg, #1f2429, #15181c 65%, #101316);
+  clip-path: polygon(0 0, var(--tab) 0, calc(var(--tab) + var(--lip)) var(--lip), calc(100% - var(--c)) var(--lip), 100% calc(var(--lip) + var(--c)), 100% 100%, 0 100%);
+  transition: filter .3s; }
+.next-card::before { content: ""; position: absolute; left: 0; top: 0; width: var(--tab); height: 2px; background: var(--amber); }
+.next-turn { position: absolute; left: 0; top: 0; height: var(--lip); display: flex; align-items: center; gap: 8px; padding: 2px 0 0 16px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--amber); }
 .next-turn i { display: inline-block; font-style: normal; transition: transform .25s; }
-.next-n { color: var(--night-dim); }
-.next-kicker { margin-top: 8px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--cut); }
-.next-hed { font-size: clamp(20px, 2.2vw, 24px); line-height: 1.12; font-variation-settings: "wght" 680, "GRAD" -50, "WTCH" 0;
+.next-top { display: flex; justify-content: space-between; gap: 12px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; }
+.next-kicker { color: var(--cut); }
+.next-n { flex: none; color: var(--night-dim); }
+.next-hed { margin-top: 4px; font-size: clamp(20px, 2.2vw, 24px); line-height: 1.12; color: #e8e2d4; font-variation-settings: "wght" 680, "GRAD" -50, "WTCH" 0;
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
-.next-dek { margin-top: 2px; font-style: italic; font-size: 14.5px; line-height: 1.38; color: #c9c2b4; font-variation-settings: "wght" 400, "GRAD" -50, "WTCH" 0;
+.next-dek { margin-top: 2px; font-style: italic; font-size: 14.5px; line-height: 1.38; color: #a9a396; font-variation-settings: "wght" 400, "GRAD" -50, "WTCH" 0;
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
 .next:focus-visible { outline: 2px solid var(--amber); outline-offset: 4px; }
 @media (hover: hover) {
-  .next:hover { transform: perspective(900px) translateY(-6px) rotateX(0deg) rotate(0deg); }
+  .next:hover { transform: translateY(-8px) rotate(var(--tilt)); }
+  .next:hover .next-card { filter: brightness(1.25); }
   .next:hover .next-turn i { transform: translateX(4px); }
 }
-.sheet-wrap.turning .next { opacity: 0; transform: perspective(900px) translateY(0) rotateX(-80deg) rotate(var(--tilt-c)); transition: transform .3s ease-in, opacity .3s ease-in; }
+.sheet-wrap.turning .next { opacity: 0; transform: translateY(56px) rotate(var(--tilt)); transition: transform .3s ease-in, opacity .3s ease-in; }
 .sheet.fold { opacity: 0; transform: translateX(var(--x)) perspective(1800px) rotateX(-80deg) rotate(var(--tilt));
   transition: transform .34s cubic-bezier(.55,0,.85,.35), opacity .34s ease-in; }
 .sheet.unfold { opacity: 0; transform: translateX(var(--x)) perspective(1800px) rotateX(70deg) rotate(var(--tilt)); transition: none; }
@@ -504,7 +511,7 @@ body.past .bar nav .dl { color: var(--amber); }
 .sheet-fig figcaption { font-family: var(--mono); font-size: 11px; color: #6b665c; margin-top: 6px; }
 @media (max-width: 640px) { .sheet-fig { width: 100%; } }
 .reading, .desk { overflow-x: clip; }
-@media (max-width: 640px) { .sheet-wrap { --x: 0px; --tilt: -.3deg; --over: 20px; } .sheet { padding-top: 44px; } .next { --tilt-c: 1.2deg; } }
+@media (max-width: 640px) { .sheet-wrap { --x: 0px; --tilt: -.3deg; --tuck: 22px; --card: min(340px, calc(100% - 48px)); } }
 
 .dock { background: #3a3c3e linear-gradient(135deg, #45474a, #2c2e30); color: #e9e2d0; padding: clamp(18px, 3vw, 32px); display: grid; gap: 8px;
   clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 0 100%); }

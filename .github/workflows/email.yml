@@ -25,6 +25,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - name: What the settings endpoints need (from the API reference)
+        continue-on-error: true
+        run: |
+          for m in get enable; do
+            echo "== email_routing/$m"
+            curl -sSL "https://developers.cloudflare.com/api/resources/email_routing/methods/$m/" \
+              | sed 's/<[^>]*>/ /g' | tr -s ' \n\t' ' ' \
+              | grep -oiE '.{0,160}permission.{0,240}' | head -5 || echo "(nothing found)"
+          done
       - name: Email Routing
         env:
           TO: ${{ inputs.forward_to }}
@@ -55,13 +64,15 @@ jobs:
           probe "Email Routing rules (Zone Email Routing Rules Read)" "/zones/$ZID/email/routing/rules?per_page=1"
           probe "destination addresses (Account Email Routing Addresses Read)" "/accounts/$AID/email/routing/addresses?per_page=1"
 
-          # 1. routing on (this adds the MX and SPF records); already on is fine
-          state=$(api GET "/zones/$ZID/email/routing"); ok "$state"
-          if [ "$(jq -r '.result.enabled' <<< "$state")" != true ]; then
+          # 1. routing on (this adds the MX and SPF records); already on is fine.
+          # Read from the DNS records: the settings endpoint wants a permission
+          # the token need not have.
+          mx=$(api GET "/zones/$ZID/dns_records?type=MX&per_page=10"); ok "$mx"
+          if jq -e '.result[] | select(.content | test("mx.cloudflare.net"))' > /dev/null <<< "$mx"; then
+            echo "routing was on (the MX records point at Cloudflare)"
+          else
             r=$(api POST "/zones/$ZID/email/routing/enable"); ok "$r"
             echo "routing enabled"
-          else
-            echo "routing was on"
           fi
 
           # 2. the destination inbox, verified or awaiting its email

@@ -819,15 +819,24 @@
     survey.classList.toggle('leaking', on);
     totalEl.textContent = on ? '100.0' : '85.8';
   }
-  leakRow.addEventListener('pointerenter', () => leaking(true));
-  leakRow.addEventListener('pointerleave', () => leaking(false));
-  if (!reduce && slice) {
-    let s = 1, hold = 0;
+  // a mouse shows it while over the row; a tap shows it for a moment, then
+  // the slices take it back (a touch screen's hover stays after the tap, so
+  // it is not asked)
+  let hovering = false, hold = 0;
+  const cycling = !reduce && slice;
+  leakRow.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') { hovering = true; leaking(true); } });
+  leakRow.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') { hovering = false; leaking(false); } });
+  leakRow.addEventListener('click', () => {
+    if (hovering) return;
+    if (cycling) { leaking(true); hold = 10; } else leaking(!leakRow.classList.contains('on'));
+  });
+  if (cycling) {
+    let s = 1;
     setInterval(() => {
       if (hold > 0) { hold--; return; }
       s = s % 33 + 1;
       slice.textContent = two(s);
-      if (!leakRow.matches(':hover')) leaking(s === 33);
+      if (!hovering) leaking(s === 33);
       if (s === 33) hold = 8;
     }, 180);
   }

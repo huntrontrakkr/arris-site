@@ -68,9 +68,10 @@ tools/media.sh ../arris-films/presentation
 The site is at https://arristype.com: a Cloudflare Worker that serves the
 repository's files (`wrangler.jsonc`), deployed on every push to `main` by
 `.github/workflows/deploy.yml`, which then checks the live site from
-outside. It needs the repository secrets `CLOUDFLARE_API_TOKEN` (the Edit
-Cloudflare Workers template, plus DNS edit, for the arristype.com zone)
-and `CLOUDFLARE_ACCOUNT_ID`. Everything is published but what
+outside. It needs the repository secret `CLOUDFLARE_API_TOKEN` (the Edit
+Cloudflare Workers template, plus DNS edit, for the arristype.com zone),
+and `CLOUDFLARE_ACCOUNT_ID` only if the token reaches more than one
+account. Everything is published but what
 `.assetsignore` lists: this README, `tools/`, `worker/`, `.github/` and the
 configuration, which would give the layer underneath away. A wrong address
 gets `404.html`. The Worker's own code, `worker/index.js`, runs first only

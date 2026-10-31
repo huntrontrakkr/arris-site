@@ -356,8 +356,8 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 /* the crossing begins under the end of the paper half and the night half
    begins under its end: the workshop's last figures are still in view as
    the cut starts, and the Belt's paperwork is in view before it is done */
-.crossing { max-width: none; padding: 0; height: 190vh; margin-top: -45vh; position: relative;
-  background: linear-gradient(var(--paper), var(--paper)) 0 45vh / 100% calc(100% - 45vh) no-repeat; }   /* bare where it overlaps */
+.crossing { max-width: none; padding: 0; height: 190vh; margin-top: -65vh; position: relative;
+  background: linear-gradient(var(--paper), var(--paper)) 0 65vh / 100% calc(100% - 65vh) no-repeat; }   /* bare where it overlaps */
 .crossing-sticky { position: sticky; top: 0; --h: 100vh; height: var(--h); overflow: hidden; --p: 0; }
 @supports (height: 100svh) { .crossing-sticky { --h: 100svh; } }
 .cface { position: absolute; inset: 0; display: grid; align-items: end; padding: 0 var(--gut-r) 48px var(--gut); }
@@ -388,8 +388,8 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .slogan-cut { display: flex; align-items: center; gap: .5em; width: 160vmax; transform: rotate(-45deg) translate(-.6em, -18px); }
 .slogan-x { font-family: var(--sans); font-size: 1.9em; line-height: 1; }
 .slogan-dash { flex: 1; height: 2px; background: repeating-linear-gradient(to right, var(--cut) 0 7px, transparent 7px 14px); }
-.face-night { position: relative; margin-top: -45vh; }
-@supports (height: 100svh) { .crossing, .face-night { margin-top: -45svh; } .crossing { background-position: 0 45svh; background-size: 100% calc(100% - 45svh); } }
+.face-night { position: relative; margin-top: -60vh; }
+@supports (height: 100svh) { .crossing { margin-top: -65svh; background-position: 0 65svh; background-size: 100% calc(100% - 65svh); } .face-night { margin-top: -60svh; } }
 @media (prefers-reduced-motion: reduce) {
   .crossing { height: auto; margin-top: 0; background: var(--paper); } .crossing-sticky { position: relative; --h: 60vh; --p: .5 !important; }
   .cface-paper { background: var(--paper); }

@@ -392,12 +392,16 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .slogan-cut { display: flex; align-items: center; gap: .5em; width: 160vmax; transform: rotate(-45deg) translate(-.6em, -18px); }
 .slogan-x { font-family: var(--sans); font-size: 1.9em; line-height: 1; }
 .slogan-dash { flex: 1; height: 2px; background: repeating-linear-gradient(to right, var(--cut) 0 7px, transparent 7px 14px); }
-.face-night { position: relative; margin-top: -60vh; }
+/* the night half's ground is cut along the same edge while the sweep runs
+   (--c from site.js: where the edge, carried on, meets the half's top and
+   left), else its straight top showed across the paper side on a wide
+   window; -99999px cuts nothing */
+.face-night { position: relative; margin-top: -60vh; --c: -99999px; clip-path: polygon(var(--c) 0, 100% 0, 100% 100%, 0 100%, 0 var(--c)); }
 @supports (height: 100svh) { .crossing { margin-top: -65svh; background-position: 0 65svh; background-size: 100% calc(100% - 65svh); } .face-night { margin-top: -60svh; } }
 @media (prefers-reduced-motion: reduce) {
   .crossing { height: auto; margin-top: 0; background: var(--paper); } .crossing-sticky { position: relative; --h: 60vh; --p: .5 !important; }
   .cface-paper { background: var(--paper); }
-  .face-night { margin-top: 0; }
+  .face-night { margin-top: 0; clip-path: none; }
 }
 
 /* ---------------------------------------------------------------- night */

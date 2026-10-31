@@ -852,12 +852,19 @@
   document.fonts.ready.then(placeLens); addEventListener('resize', placeLens);
 
   /* ------------------------------------------------------------ the arris */
-  const crossing = $('#crossing'), sticky = $('.crossing-sticky'), steel = $('.face-steel');
+  const crossing = $('#crossing'), sticky = $('.crossing-sticky'), night = $('.face-night'), steel = $('.face-steel');
   function onScroll() {
     const r = crossing.getBoundingClientRect();
     const p = reduce ? 0.5 : clamp(-r.top / (r.height - innerHeight), 0, 1);
     sticky.style.setProperty('--p', p.toFixed(4));
     sticky.style.setProperty('--o', Math.max(0, 1 - Math.abs(p - 0.5) * 2.6).toFixed(3));
+    // the night half begins under the stage: while the sweep runs, its ground
+    // is cut along the edge carried on (css .face-night --c): the edge's top
+    // is at x in the stage, and it runs down-left one for one
+    const nt = night.getBoundingClientRect().top;
+    const x = (1 - p) * (innerWidth + sticky.offsetHeight);
+    night.style.setProperty('--c', !reduce && p < 1 && nt < innerHeight
+      ? (x - (nt - sticky.getBoundingClientRect().top)).toFixed(1) + 'px' : '-99999px');
     document.body.classList.toggle('past', r.top + r.height * 0.45 < 0);
     document.body.classList.toggle('steel', steel.getBoundingClientRect().top < 44);
   }

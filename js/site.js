@@ -239,7 +239,7 @@
   // The weight rows set a pangram, one for the nine rows of a section so the
   // weights compare, picked by the hour of loading (a reload within the hour
   // keeps it; a link shows the same line for a while). The upright takes the
-  // fox and the ring's own; the italic the cyberpunk set a friend wrote (the
+  // fox and the ring's own; the italic the cyberpunk set Jameson wrote (the
   // credit is in the footer). A long line fades out at the row's right edge.
   const PANGRAMS = [
     ['up', 'The quick brown fox jumps over the lazy dog.'],

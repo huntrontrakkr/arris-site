@@ -237,8 +237,7 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .it-lang { font-family: var(--mono); font-size: 12px; color: var(--dim); }
 .it-sample { font-style: italic; font-size: clamp(40px, 4.4vw, 60px); line-height: 1.1; font-variation-settings: "wght" 500, "GRAD" 0, "WTCH" 0; }
 
-.field-sec .sub { max-width: 64ch; }
-.field { margin: 28px 0 0; }
+.field { margin: 40px 0 0; }
 .field video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: var(--night);
   clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px)); }
 .field figcaption { margin-top: 12px; }

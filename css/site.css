@@ -300,7 +300,7 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .groups small { opacity: .6; margin-left: 4px; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); border-top: 1px solid var(--line); border-left: 1px solid var(--line);
   max-height: 560px; overflow-y: auto; overscroll-behavior: contain; }
-.grid button { font: inherit; font-size: 24px; line-height: 1; aspect-ratio: 1; background: none; color: var(--ink); border: 0;
+.grid button { font: inherit; font-size: 24px; line-height: 1; aspect-ratio: 4 / 5; background: none; color: var(--ink); border: 0;   /* taller than wide: room above for stacked accents at Black (Ẵ) */
   border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); cursor: cell; padding: 0; min-width: 0; }
 @media (hover: hover) { .grid button:hover { background: var(--panel); } }
 .grid button[aria-selected="true"] { background: var(--cut); color: var(--paper); }

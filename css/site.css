@@ -255,7 +255,8 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .card-lines div.base { border-top-color: rgba(255,176,0,.7); }
 .card-lines span { position: absolute; left: 2px; bottom: 3px; font-family: var(--mono); font-size: 10.5px; color: rgba(241,235,221,.45); white-space: nowrap; }
 .card-glyph { position: absolute; left: 0; right: 0; text-align: center; white-space: pre; color: var(--night-ink);
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent); mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent); }
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent); mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent);
+  padding: .3em 0; margin-top: -.3em; }   /* the mask clips to the box: room in it for ink past the ascender and descender (stacked accents at Black reach 1178) */
 .card-ctl { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: center; margin-top: 10px; }
 .card-side { display: grid; gap: 10px; justify-items: start; }
 @media (max-width: 560px) { .card-ctl { grid-template-columns: 1fr; } .tri { max-width: 300px; margin: 6px auto 0; } .card-side { grid-template-columns: 1fr auto; align-items: center; column-gap: 18px; } }

@@ -353,7 +353,7 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .m-ctl input { flex: 1; accent-color: var(--cut); }
 
 /* ---------------------------------------------------------------- the arris */
-.crossing { max-width: none; padding: 0; height: 220vh; position: relative; background: var(--night); }
+.crossing { max-width: none; padding: 0; height: 190vh; position: relative; background: var(--night); }
 .crossing-sticky { position: sticky; top: 0; --h: 100vh; height: var(--h); overflow: hidden; --p: 0; }
 @supports (height: 100svh) { .crossing-sticky { --h: 100svh; } }
 .cface { position: absolute; inset: 0; display: grid; align-items: end; padding: 0 var(--gut-r) 48px var(--gut); }
@@ -379,8 +379,13 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .slogan-cut { display: flex; align-items: center; gap: .5em; width: 160vmax; transform: rotate(-45deg) translate(-.6em, -18px); }
 .slogan-x { font-family: var(--sans); font-size: 1.9em; line-height: 1; }
 .slogan-dash { flex: 1; height: 2px; background: repeating-linear-gradient(to right, var(--cut) 0 7px, transparent 7px 14px); }
+/* the Belt's paperwork comes up into the night face before the crossing is
+   done, so the dark frame is never empty and the page is seen to go on */
+.face-night { position: relative; margin-top: -45vh; }
+@supports (height: 100svh) { .face-night { margin-top: -45svh; } }
 @media (prefers-reduced-motion: reduce) {
   .crossing { height: auto; } .crossing-sticky { position: relative; --h: 60vh; --p: .5 !important; }
+  .face-night { margin-top: 0; }
 }
 
 /* ---------------------------------------------------------------- night */

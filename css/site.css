@@ -359,8 +359,11 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .crossing { max-width: none; padding: 0; height: 190vh; margin-top: -65vh; position: relative;
   background: linear-gradient(var(--paper), var(--paper)) 0 65vh / 100% calc(100% - 65vh) no-repeat; }   /* bare where it overlaps */
 .crossing-sticky { position: sticky; top: 0; --h: 100vh; height: var(--h); overflow: hidden; --p: 0; }
-@supports (height: 100svh) { .crossing-sticky { --h: 100svh; } }
-.cface { position: absolute; inset: 0; display: grid; align-items: end; padding: 0 var(--gut-r) 48px var(--gut); }
+/* on a phone the browser's bar comes and goes: the face is as tall as the
+   window with the bar gone (lvh), and its foot keeps clear of the bar by the
+   difference, so nothing shows beneath it either way */
+@supports (height: 100lvh) { .crossing-sticky { --h: 100lvh; --bar: calc(100lvh - 100svh); } }
+.cface { position: absolute; inset: 0; display: grid; align-items: end; padding: 0 var(--gut-r) calc(48px + var(--bar, 0px)) var(--gut); }
 .cface span { font-size: clamp(56px, 13vw, 200px); line-height: .9; }
 .cface-paper { color: var(--paper-ink); font-variation-settings: "wght" 200, "GRAD" 0, "WTCH" 0; align-content: end; }   /* no ground of its own: the page shows through */
 .cface-go { display: block; margin-top: 14px; font-style: normal; font-family: var(--mono); font-size: 13px;

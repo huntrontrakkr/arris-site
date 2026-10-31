@@ -237,10 +237,11 @@
   });
 
   // The weight rows set a pangram, one for the nine rows of a section so the
-  // weights compare, picked by the hour of loading (a reload within the hour
-  // keeps it; a link shows the same line for a while). The upright takes the
-  // fox and the ring's own; the italic the cyberpunk set Jameson wrote (the
-  // credit is in the footer). A long line fades out at the row's right edge.
+  // weights compare, and each load turns to the next: a counter kept in the
+  // browser steps through both sets in order (without storage, any one). The
+  // upright takes the fox and the ring's own; the italic the cyberpunk set
+  // Jameson wrote (the credit is in the footer). A long line fades out at
+  // the row's right edge.
   const PANGRAMS = [
     ['up', 'The quick brown fox jumps over the lazy dog.'],
     ['up', 'Two old pilots keep a dozen quiet roses in the Glasshouse; their horticulturist fixes the jammed valve by hand.'],
@@ -264,8 +265,13 @@
     ['it', 'Quick, jam the vexed AI before it grows lazy and finds its pulse.'],
     ['it', 'Overclocked AI jesters quickly vex frozen grid humans, wiping backups.'],
   ];
-  const HOUR = Math.floor(Date.now() / 36e5);
-  const pangram = kind => { const set = PANGRAMS.filter(p => p[0] === kind); return set[HOUR % set.length][1]; };
+  let turn = Math.floor(Math.random() * 1000);
+  try {
+    const kept = localStorage.getItem('arris-pangram');
+    if (kept !== null) turn = +kept;
+    localStorage.setItem('arris-pangram', turn + 1);
+  } catch (e) { /* no storage: any one */ }
+  const pangram = kind => { const set = PANGRAMS.filter(p => p[0] === kind); return set[turn % set.length][1]; };
   function weightRows(el, text) {
     for (let w = 100; w <= 900; w += 100) {
       const row = document.createElement('div');

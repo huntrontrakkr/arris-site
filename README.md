@@ -1,7 +1,7 @@
 # arris-site
 
 The release website for [Arris](https://github.com/huntrontrakkr/arris-type),
-a chamfered sans. A static site: no build step, no framework, no backend.
+a chamfered geometric sans family with an industrial character, a cursive italic, and a monospaced companion. A static site: no build step, no framework, no backend.
 
 The page has two faces joined at an edge. Above is Paper, the workshop: the
 name under your cursor, the watch the figures came from, the axes one at a

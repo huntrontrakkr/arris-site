@@ -18,7 +18,7 @@ const V = (x, y, z) => new THREE.Vector3(x, y, z);
 /* ------------------------------------------------------------ the pail's measures, in centimetres */
 const H = 9.0;                                     // the body, foot to fold
 const FOOT = { a: 3.5, b: 3.1, c: 0.85, d: 0.0 };  // half-width, half-depth, corner cut, pleat depth
-const MOUTH = { a: 5.4, b: 4.5, c: 1.35, d: 0.7 };     // (d: the corner gussets' tuck, so their folds read)
+const MOUTH = { a: 5.4, b: 4.5, c: 1.35, d: 0.32 };
 const T = 0.05;                                    // the board's thickness
 
 // a seeded random, so the noodles fall the same way on every visit
@@ -188,6 +188,40 @@ function buildPail(renderer) {
   add(outer.geometry(), paper);
   add(innerM.geometry(), inside);
   add(rim.geometry(), edge);
+
+  /* the ends' folds: on each plain end the front panel's board comes round
+     the corner and lies over the end, a second layer whose cut edge is a
+     long crease from the top, by the wire's hook, down to the far bottom
+     corner (as on a real pail) */
+  const lap = new Mesher(), lapEdge = new Mesher(), lapShade = new Mesher();
+  for (const side of ['left', 'right']) {
+    const [i, j] = SIDES[side];
+    const [near, far] = side === 'left' ? [j, i] : [i, j];   // near: the corner with the front
+    const f = frame(bot, top, i, j);
+    const out = h => f.n.clone().multiplyScalar(h);
+    const apex = top[far].clone().lerp(top[near], 0.42), foot = bot[far].clone().lerp(bot[near], 0.06);
+    // the layer stands a little proud along its edge, as folded board does,
+    // and lies down at the corner it comes round
+    const P = [apex.clone().add(out(0.13)), foot.clone().add(out(0.1)), bot[near].clone().add(out(T)), top[near].clone().add(out(T))];
+    const uv = q => { const d = q.clone().sub(f.c0); return [(d.dot(f.e) / f.w + 0.5) * 0.25, d.dot(f.u) / f.len * 0.25]; };
+    lap.poly(P, f.n, P.map(uv));
+    // its cut edge along the crease, facing away from the layer
+    const away = top[far].clone().sub(apex).projectOnPlane(f.n).normalize();
+    lapEdge.poly([apex, foot, P[1], P[0]], away);
+    // and the shade it lays on the panel beside it: dark at the edge, gone
+    // a few millimetres out
+    const w = away.clone().multiplyScalar(0.32), lift = out(0.006);
+    const S = [apex.clone().add(lift), foot.clone().add(lift), foot.clone().add(w).add(lift), apex.clone().add(w).add(lift)];
+    lapShade.poly(S, f.n, [[0, 0], [0, 1], [1, 1], [1, 0]]);
+  }
+  add(lap.geometry(), paper);
+  add(lapEdge.geometry(), edge);
+  const fade = document.createElement('canvas'); fade.width = 64; fade.height = 2;
+  const fg = fade.getContext('2d'), grad = fg.createLinearGradient(0, 0, 64, 0);
+  grad.addColorStop(0, 'rgba(40,30,20,0.55)'); grad.addColorStop(1, 'rgba(40,30,20,0)');
+  fg.fillStyle = grad; fg.fillRect(0, 0, 64, 2);
+  const shade = new THREE.Mesh(lapShade.geometry(), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(fade), transparent: true, depthWrite: false }));
+  group.add(shade);
   for (const side of ['front', 'back']) {
     const mat = new THREE.MeshStandardMaterial({ color: '#ffffff', map: printTexture(printed[side].f, footW, renderer), roughness: 0.5 });
     add(printed[side].mesh.geometry(), mat);
@@ -281,13 +315,14 @@ function buildNoodles(top) {
   const dome = (x, z) => level + 1.5 * Math.max(0, 1 - (x / (A + 0.4)) ** 2 - (z / (B + 0.4)) ** 2) ** 0.75;
 
   // the heap under the strands, so nothing shows through between them
-  const bed = new THREE.PlaneGeometry(2 * A + 0.6, 2 * B + 0.6, 40, 40);
+  // (inside the walls by a millimetre and more: wider, its rim came through them)
+  const bed = new THREE.PlaneGeometry(2 * A + 0.3, 2 * B + 0.3, 40, 40);
   bed.rotateX(-Math.PI / 2);
   const bp = bed.attributes.position;
   for (let i = 0; i < bp.count; i++) {
     let x = bp.getX(i), z = bp.getZ(i);
-    const over = Math.abs(x) + Math.abs(z) - (lim + 0.2);
-    if (over > 0) { const s = (lim + 0.2) / (Math.abs(x) + Math.abs(z)); x *= s; z *= s; }
+    const over = Math.abs(x) + Math.abs(z) - lim;
+    if (over > 0) { const s = lim / (Math.abs(x) + Math.abs(z)); x *= s; z *= s; }
     bp.setXYZ(i, x, dome(x, z) - 0.3, z);
   }
   bed.computeVertexNormals();

@@ -1,6 +1,7 @@
-"""Who came to arristype.com, from Cloudflare's analytics: requests and
-visitors by hour, and for page loads the pages, where they came from (the
-referring site), countries and devices; then the posts on Reddit that link
+"""Who came to arristype.com and who took the fonts: the release zips'
+downloads on GitHub (and npm's), Cloudflare's analytics (requests and
+visitors by hour, and for page loads the pages, where they came from, the
+referring site, countries and devices), and the posts on Reddit that link
 to the site, with their scores. Run by .github/workflows/traffic.yml.
 
     CLOUDFLARE_API_TOKEN=... python3 tools/traffic.py [hours]
@@ -135,6 +136,23 @@ def cloudflare(hours: int) -> None:
             break
 
 
+def downloads() -> None:
+    """The release zips' download counts on GitHub (a running total each:
+    GitHub keeps no dates), and the npm package's downloads."""
+    say('## Downloads')
+    say()
+    status, r = call('https://api.github.com/repos/huntrontrakkr/arris-type/releases?per_page=20')
+    if status == 200 and isinstance(r, list):
+        rows = [(rel['tag_name'], a['name'], a['download_count'], rel['published_at'][:10])
+                for rel in r if not rel.get('draft') for a in rel['assets']]
+        table(rows, ('release', 'file', 'downloads', 'published'))
+    else:
+        say(f'GitHub releases: HTTP {status}')
+    status, r = call('https://api.npmjs.org/downloads/point/last-week/@arristype/arris')
+    say(f"npm, @arristype/arris, the last week: {r.get('downloads', 0) if status == 200 else 'not published yet'}")
+    say()
+
+
 def reddit() -> None:
     say('## Reddit: posts linking to arristype.com')
     say()
@@ -155,6 +173,7 @@ def reddit() -> None:
 
 def main() -> int:
     hours = int(sys.argv[1]) if len(sys.argv) > 1 else 48
+    downloads()
     cloudflare(hours)
     reddit()
     summary = os.environ.get('GITHUB_STEP_SUMMARY')

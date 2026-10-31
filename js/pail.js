@@ -368,14 +368,22 @@ export async function mount(stage) {
   const canvas = stage.querySelector('canvas');
   // the print is set in Arris: its weights in hand before the board is printed
   await Promise.all([200, 500, 700, 900].map(w => document.fonts.load(`${w} 100px Arris`, 'THANK YOU ENJOY')));
+  // a phone or tablet has far less GPU memory: a smaller shadow map, a
+  // lower pixel ratio, and no multisampling on a dense screen (its pixels
+  // are small enough without it)
+  const light = matchMedia('(max-width: 860px), (pointer: coarse)').matches;
   let renderer;
   try {
-    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'low-power' });
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: !light || devicePixelRatio < 2, alpha: true, powerPreference: 'low-power' });
   } catch {
     stage.classList.add('no-gl');
     return;
   }
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  // if the GPU drops the context (out of memory, a driver reset), the
+  // browser draws a broken canvas in its place: hide the pail instead
+  let lost = false;
+  canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); lost = true; stage.classList.add('no-gl'); });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, light ? 1.75 : 2));
   renderer.toneMapping = THREE.NeutralToneMapping;
   renderer.toneMappingExposure = 1.0;
   renderer.shadowMap.enabled = true;
@@ -390,9 +398,9 @@ export async function mount(stage) {
   const key = new THREE.DirectionalLight('#fff4e6', 2.6);
   key.position.set(20, 11, 22);
   key.castShadow = true;
-  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.mapSize.setScalar(light ? 1024 : 2048);
   Object.assign(key.shadow.camera, { left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 120 });
-  key.shadow.radius = 6; key.shadow.blurSamples = 20;
+  key.shadow.radius = light ? 3 : 6; key.shadow.blurSamples = light ? 12 : 20;   // (the radius is in the map's texels)
   key.shadow.bias = -0.0006; key.shadow.normalBias = 0.02;
   scene.add(key);
   const rimLight = new THREE.DirectionalLight('#cfe2ff', 0.9);         // a cool edge from behind
@@ -436,6 +444,7 @@ export async function mount(stage) {
   let size = [0, 0], queued = false, visible = true;
   const draw = () => {
     queued = false;
+    if (lost) return;
     const w = canvas.clientWidth, h = canvas.clientHeight;
     if (w !== size[0] || h !== size[1]) {
       size = [w, h];

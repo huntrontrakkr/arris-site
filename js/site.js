@@ -857,6 +857,14 @@
     const r = crossing.getBoundingClientRect();
     const p = reduce ? 0.5 : clamp(-r.top / (r.height - innerHeight), 0, 1);
     sticky.style.setProperty('--p', p.toFixed(4));
+    if (!reduce) {
+      // the cut's top point, from off the right edge to the left edge: the
+      // run before it shows (a window's height, at 45 degrees) takes the
+      // first eighth of the scroll, the sweep across the rest
+      const vw = sticky.clientWidth, h = sticky.clientHeight, d = 0.125;
+      const x = p < d ? vw + h - (p / d) * (h - 12) : (vw + 12) * (1 - (p - d) / (1 - d));
+      sticky.style.setProperty('--x', `${x.toFixed(1)}px`);
+    }
     sticky.style.setProperty('--o', Math.max(0, 1 - Math.abs(p - 0.5) * 2.6).toFixed(3));
     document.body.classList.toggle('past', r.top + r.height * 0.45 < 0);
     document.body.classList.toggle('steel', steel.getBoundingClientRect().top < 44);

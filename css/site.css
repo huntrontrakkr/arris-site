@@ -353,12 +353,17 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .m-ctl input { flex: 1; accent-color: var(--cut); }
 
 /* ---------------------------------------------------------------- the arris */
-.crossing { max-width: none; padding: 0; height: 190vh; position: relative; background: var(--night); }
+.crossing { max-width: none; padding: 0; height: 170vh; position: relative; background: var(--night); }
 .crossing-sticky { position: sticky; top: 0; --h: 100vh; height: var(--h); overflow: hidden; --p: 0; }
 @supports (height: 100svh) { .crossing-sticky { --h: 100svh; } }
 .cface { position: absolute; inset: 0; display: grid; align-items: end; padding: 0 var(--gut-r) 48px var(--gut); }
 .cface span { font-size: clamp(56px, 13vw, 200px); line-height: .9; }
 .cface-paper { background: var(--paper); color: var(--paper-ink); font-variation-settings: "wght" 200, "GRAD" 0, "WTCH" 0; }
+.cface-go { position: absolute; left: var(--gut); top: calc(68px + env(safe-area-inset-top, 0px)); font-style: normal; font-family: var(--mono); font-size: 13px;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--cut); font-variation-settings: normal; }
+.cface-go b { display: inline-block; font-weight: inherit; margin-left: .3em; animation: go 1.6s ease-in-out infinite; }
+@keyframes go { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+@media (prefers-reduced-motion: reduce) { .cface-go b { animation: none; } }
 /* the edge runs at 45 degrees: its top at X, its bottom at X minus the
    stage's own height (--h, the one it is drawn across: on a phone 100vh
    and 100svh differ, and the edge leant off the slogan's 45); X sweeps

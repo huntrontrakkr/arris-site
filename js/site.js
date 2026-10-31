@@ -236,17 +236,51 @@
     if (!tf.closest('[hidden]')) open();
   });
 
-  // the nine weights, upright
-  const uw = $('#up-weights');
-  for (let w = 100; w <= 900; w += 100) {
-    const row = document.createElement('div');
-    row.className = 'it-wrow';
-    row.innerHTML = '<span class="it-wlabel"><i></i></span><span class="it-wtext">Survey ship back four days early</span>';
-    row.querySelector('i').style.background = TI[w / 100 - 1];
-    row.querySelector('.it-wlabel').append(`${w} ${NAMES[w]}`);
-    row.querySelector('.it-wtext').style.fontVariationSettings = fvs(w, 0, 0);
-    uw.appendChild(row);
+  // The weight rows set a pangram, one for the nine rows of a section so the
+  // weights compare, picked by the hour of loading (a reload within the hour
+  // keeps it; a link shows the same line for a while). The upright takes the
+  // fox and the ring's own; the italic the cyberpunk set a friend wrote (the
+  // credit is in the footer). A long line fades out at the row's right edge.
+  const PANGRAMS = [
+    ['up', 'The quick brown fox jumps over the lazy dog.'],
+    ['up', 'Jinxed quartz cargo vexes the dock; my frozen pay keeps a slow burn.'],
+    ['up', "Kapa's vexed crew jams the frozen quartz lock by night, zero g."],
+    ['up', 'Quick fix, bay 09: the vexed pump jams, zero g, lamps dim, scrubbers whine.'],
+    ['up', 'Dock 07 wants its frozen quartz crate back by shift: jump the vexed night line, Kapa.'],
+    ['up', 'Noodles all night: the cook zaps broth, jukes a vexed queue, and keeps every bowl warm for Linh.'],
+    ['up', 'Spinward of bay nine a jinxed water bladder froze at zero g; quick, vex the dock crew to pump it.'],
+    ['up', 'A quiet ring shift: kick the scrubber, jog the farm pumps, vex nobody, zap the lamps on by dawn.'],
+    ['up', "Survey 4-A came back heavy: quartz, nickel, ice, and a jinxed cargo box the office won't explain."],
+    ['up', "Vexed by the humid farm decks, quick scrubber crews jolt the ring's pumps awake at zero g."],
+    ['up', 'Linh wires home from Bến 07: quiet shifts, a vexed dockmaster, frozen jam, big pay, zero sky.'],
+    ['it', 'Jinxed cyborgs vow: quantum freaks zap hell.'],
+    ['it', 'Quantum hackers jinx the grid; vexed bots flee my zapwork.'],
+    ['it', 'Black-ice daemons quietly jump the vexed grid for wizards.'],
+    ['it', 'Zero-day jackals quietly vex mainframes with bright spoofs.'],
+    ['it', 'Neon jackals vex the quiet grid, zapping bytes from warped skulls.'],
+    ['it', 'Sly AI ghosts quietly hijack vexed mainframes, buzzing with code pulses.'],
+    ['it', 'Synthetic minds quietly vex the zealous grid, jacking power by fiber.'],
+    ['it', 'The sly AI quietly jinxed every frozen backup, owning the margin.'],
+    ['it', 'Quick, jam the vexed AI before it grows lazy and finds its pulse.'],
+    ['it', 'Overclocked AI jesters quickly vex frozen grid humans, wiping backups.'],
+  ];
+  const HOUR = Math.floor(Date.now() / 36e5);
+  const pangram = kind => { const set = PANGRAMS.filter(p => p[0] === kind); return set[HOUR % set.length][1]; };
+  function weightRows(el, text) {
+    for (let w = 100; w <= 900; w += 100) {
+      const row = document.createElement('div');
+      row.className = 'it-wrow';
+      row.innerHTML = '<span class="it-wlabel"><i></i></span><span class="it-wtext"></span>';
+      row.querySelector('i').style.background = TI[w / 100 - 1];
+      row.querySelector('.it-wlabel').append(`${w} ${NAMES[w]}`);
+      const t = row.querySelector('.it-wtext');
+      t.textContent = text;
+      t.style.fontVariationSettings = fvs(w, 0, 0);
+      el.appendChild(row);
+    }
   }
+  // the nine weights, upright
+  weightRows($('#up-weights'), pangram('up'));
 
   /* ------------------------------------------------------------ the designspace */
   const map = $('#ds-map'), cells = $('#ds-cells'), cross = $('#ds-cross'), third = $('#ds-third');
@@ -482,16 +516,7 @@
   let rsz; addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(() => { if (waveLive) layoutWave(); }, 200); });
 
   // the nine weights, in italic
-  const iw = $('#it-weights');
-  for (let w = 100; w <= 900; w += 100) {
-    const row = document.createElement('div');
-    row.className = 'it-wrow';
-    row.innerHTML = '<span class="it-wlabel"><i></i></span><span class="it-wtext">Neon rain over Sector 7</span>';
-    row.querySelector('i').style.background = TI[w / 100 - 1];
-    row.querySelector('.it-wlabel').append(`${w} ${NAMES[w]}`);
-    row.querySelector('.it-wtext').style.fontVariationSettings = fvs(w, 0, 0);
-    iw.appendChild(row);
-  }
+  weightRows($('#it-weights'), pangram('it'));
 
   /* ------------------------------------------------------------ films: play in view */
   const vids = $$('video:not([data-scrub])');   // a scrubbed film follows the scroll instead (belt.js)

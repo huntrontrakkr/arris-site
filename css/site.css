@@ -699,7 +699,7 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .pail.ready canvas { opacity: 1; }
 .pail.no-gl { display: none; }
 @media (max-width: 860px) {
-  .pail { height: 340px; margin-top: -70px; }
+  .pail { height: 340px; margin-top: -130px; }   /* up into the sign: its rim at the sign's foot, the chopsticks over it */
   .pail canvas { left: 0; width: 100%; top: -18%; height: 122%;
     -webkit-mask-image: linear-gradient(to top, transparent, #000 10%); mask-image: linear-gradient(to top, transparent, #000 10%); }
 }

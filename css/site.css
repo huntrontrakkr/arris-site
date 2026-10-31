@@ -67,6 +67,8 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .face-steel { --bg: var(--steel); --ink: var(--steel-ink); --dim: var(--steel-dim); --line: var(--steel-line); --panel: var(--steel-panel); --accent: var(--cut);
   background: var(--bg); color: var(--ink); color-scheme: light; }
 .face-steel .checks b { color: var(--ink); }
+.face-steel .dl-button { background: var(--steel-ink); color: var(--steel); }      /* on the grey, the button is ink: the amber stays the night's */
+.face-steel .css { background: var(--steel-panel); color: var(--steel-ink); }
 
 .hero { padding-top: clamp(40px, 7vw, 96px); }
 .mark { font-size: clamp(88px, 24vw, 330px); line-height: .86; letter-spacing: -.012em; margin-left: -.04em; user-select: none;

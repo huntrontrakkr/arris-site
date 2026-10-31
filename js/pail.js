@@ -18,7 +18,7 @@ const V = (x, y, z) => new THREE.Vector3(x, y, z);
 /* ------------------------------------------------------------ the pail's measures, in centimetres */
 const H = 9.0;                                     // the body, foot to fold
 const FOOT = { a: 3.5, b: 3.1, c: 0.85, d: 0.0 };  // half-width, half-depth, corner cut, pleat depth
-const MOUTH = { a: 5.4, b: 4.5, c: 1.35, d: 0.32 };
+const MOUTH = { a: 5.4, b: 4.5, c: 1.35, d: 0.7 };     // (d: the corner gussets' tuck, so their folds read)
 const T = 0.05;                                    // the board's thickness
 
 // a seeded random, so the noodles fall the same way on every visit
@@ -228,15 +228,17 @@ function buildPail(renderer) {
   add(fi.geometry(), inside);
   add(fe.geometry(), edge);
 
-  /* the wire handle: hooked through each end panel below the fold, arching
-     over the mouth, leant back off the noodles */
+  /* the wire handle: hooked through each end panel below the fold, swung
+     down over the front, across the top of the print. Its ends run out
+     past the corners first (rx), so the loop clears the pleats as it
+     falls; standing up, it went through the end flaps */
   const yA = H - 1.0, xA = FOOT.a + (MOUTH.a - FOOT.a) * yA / H;
-  const lean = 0.62, rx = xA + 0.35, ry = 6.2, pts = [];
+  const fall = THREE.MathUtils.degToRad(103), rx = 6.3, ry = 6.2, pts = [];
   pts.push(V(-xA + 0.35, yA - 0.25, 0), V(-xA + 0.1, yA, 0), V(-xA - 0.25, yA + 0.05, 0));
   for (let k = 0; k <= 24; k++) {
     const th = Math.PI - (k / 24) * Math.PI;
     const s = Math.sin(th);
-    pts.push(V(rx * Math.cos(th), yA + 0.35 + ry * s * Math.cos(lean), -ry * s * Math.sin(lean)));
+    pts.push(V(rx * Math.cos(th), yA + 0.35 + ry * s * Math.cos(fall), ry * s * Math.sin(fall)));
   }
   pts.push(V(xA + 0.25, yA + 0.05, 0), V(xA - 0.1, yA, 0), V(xA - 0.35, yA - 0.25, 0));
   const wire = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, false, 'centripetal'), 160, 0.045, 8, false),
@@ -350,7 +352,8 @@ function buildChopsticks(renderer) {
   const group = new THREE.Group();
   const wood = new THREE.MeshStandardMaterial({ map: woodTexture(renderer), roughness: 0.68, flatShading: true });
   const len = 20;
-  for (const [tip, dir, roll] of [[V(0.2, H - 1.7, 0.8), V(0.8, 1, 0.42), 0.08], [V(1.2, H - 1.4, 0.0), V(0.95, 1, 0.16), -0.05]]) {
+  // their tips nearly together in the noodles, splaying apart as they rise
+  for (const [tip, dir, roll] of [[V(0.6, H - 1.65, 0.6), V(0.78, 1, 0.47), 0.08], [V(0.9, H - 1.6, 0.35), V(0.98, 1, 0.17), -0.05]]) {
     const g = new THREE.CylinderGeometry(0.31, 0.15, len, 4, 1);
     g.rotateY(Math.PI / 4 + roll);
     const m = new THREE.Mesh(g, wood);

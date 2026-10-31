@@ -1,0 +1,26 @@
+# Who came to the site: Cloudflare's analytics for arristype.com (page
+# views and visitors by hour; for page loads the referring sites, pages,
+# countries and devices) and the Reddit posts linking to it
+# (tools/traffic.py). Run it by hand (Actions, "Traffic", Run workflow);
+# the report is the run's summary. Needs CLOUDFLARE_API_TOKEN with
+# Zone > Analytics > Read; without it, says what is missing.
+name: Traffic
+
+on:
+  workflow_dispatch:
+    inputs:
+      hours:
+        description: How many hours back
+        type: string
+        default: '48'
+
+jobs:
+  traffic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Traffic
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: python3 tools/traffic.py "${{ inputs.hours }}"

@@ -17,8 +17,8 @@ const V = (x, y, z) => new THREE.Vector3(x, y, z);
 
 /* ------------------------------------------------------------ the pail's measures, in centimetres */
 const H = 9.0;                                     // the body, foot to fold
-const FOOT = { a: 3.5, b: 3.1, c: 0.85, d: 0.0 };  // half-width, half-depth, corner cut, pleat depth
-const MOUTH = { a: 5.4, b: 4.5, c: 1.35, d: 0.32 };
+const FOOT = { a: 3.5, b: 3.1, c: 0.12, d: 0.0 };  // half-width, half-depth, corner cut, pleat depth
+const MOUTH = { a: 5.4, b: 4.5, c: 0.12, d: 0.0 };  // (square corners, a trace of a cut so the facets stay sound; no pleats)
 const T = 0.05;                                    // the board's thickness
 
 // a seeded random, so the noodles fall the same way on every visit
@@ -189,39 +189,44 @@ function buildPail(renderer) {
   add(innerM.geometry(), inside);
   add(rim.geometry(), edge);
 
-  /* the ends' folds: on each plain end the front panel's board comes round
-     the corner and lies over the end, a second layer whose cut edge is a
-     long crease from the top, by the wire's hook, down to the far bottom
-     corner (as on a real pail) */
-  const lap = new Mesher(), lapEdge = new Mesher(), lapShade = new Mesher();
+  /* the ends' gussets. The pail is one sheet: at each corner the board
+     between two panels folds in half on a diagonal and lies flat against
+     the end, a triangle from the corner's foot up to a point past the
+     middle of the end's top edge. The front corner's and the back's
+     overlap at the top, the back one outermost, and the wire's hook goes
+     through all three layers. Each is a second thickness of board on the
+     end; its fold is a soft ridge with a shade beside it. */
+  const gus = new Mesher(), gusFold = new Mesher(), gusShade = new Mesher(), gusCap = new Mesher();
+  const APEX = 0.58;                                   // how far across the end's top each gusset reaches
   for (const side of ['left', 'right']) {
     const [i, j] = SIDES[side];
-    const [near, far] = side === 'left' ? [j, i] : [i, j];   // near: the corner with the front
     const f = frame(bot, top, i, j);
+    const [fr, bk] = side === 'left' ? [j, i] : [i, j];   // the corner shared with the front, and with the back
     const out = h => f.n.clone().multiplyScalar(h);
-    const apex = top[far].clone().lerp(top[near], 0.42), foot = bot[far].clone().lerp(bot[near], 0.06);
-    // the layer stands a little proud along its edge, as folded board does,
-    // and lies down at the corner it comes round
-    const P = [apex.clone().add(out(0.13)), foot.clone().add(out(0.1)), bot[near].clone().add(out(T)), top[near].clone().add(out(T))];
     const uv = q => { const d = q.clone().sub(f.c0); return [(d.dot(f.e) / f.w + 0.5) * 0.25, d.dot(f.u) / f.len * 0.25]; };
-    lap.poly(P, f.n, P.map(uv));
-    // its cut edge along the crease, facing away from the layer
-    const away = top[far].clone().sub(apex).projectOnPlane(f.n).normalize();
-    lapEdge.poly([apex, foot, P[1], P[0]], away);
-    // and the shade it lays on the panel beside it: dark at the edge, gone
-    // a few millimetres out
-    const w = away.clone().multiplyScalar(0.32), lift = out(0.006);
-    const S = [apex.clone().add(lift), foot.clone().add(lift), foot.clone().add(w).add(lift), apex.clone().add(w).add(lift)];
-    lapShade.poly(S, f.n, [[0, 0], [0, 1], [1, 1], [1, 0]]);
+    // (the corner's foot, its top, the apex, the board's height off the panel)
+    const layers = [[bot[fr], top[fr], top[fr].clone().lerp(top[bk], APEX), T],
+                    [bot[bk], top[bk], top[bk].clone().lerp(top[fr], APEX), 2 * T]];
+    for (const [B, C, A, h] of layers) {
+      const P = [B, C, A].map(q => q.clone().add(out(h)));
+      gus.poly(P, f.n, P.map(uv));
+      const away = A.clone().sub(C).normalize();        // along the top edge, from the gusset's corner past its apex
+      gusFold.poly([B, A, A.clone().add(out(h)), B.clone().add(out(h))], away);
+      const w = away.clone().multiplyScalar(0.3), lift = out(h - T + 0.006);
+      gusShade.poly([A.clone().add(lift), B.clone().add(lift), B.clone().add(w).add(lift), A.clone().add(w).add(lift)],
+                    f.n, [[0, 0], [0, 0], [1, 0], [1, 0]]);
+    }
+    gusCap.poly([top[i], top[j], top[j].clone().add(out(2 * T)), top[i].clone().add(out(2 * T))], V(0, 1, 0));
   }
-  add(lap.geometry(), paper);
-  add(lapEdge.geometry(), edge);
+  add(gus.geometry(), paper).castShadow = false;       // flat on the end: no shadow of its own
+  add(gusFold.geometry(), edge).castShadow = false;
+  add(gusCap.geometry(), edge).castShadow = false;
   const fade = document.createElement('canvas'); fade.width = 64; fade.height = 2;
   const fg = fade.getContext('2d'), grad = fg.createLinearGradient(0, 0, 64, 0);
-  grad.addColorStop(0, 'rgba(40,30,20,0.55)'); grad.addColorStop(1, 'rgba(40,30,20,0)');
+  grad.addColorStop(0, 'rgba(40,30,20,0.5)'); grad.addColorStop(1, 'rgba(40,30,20,0)');
   fg.fillStyle = grad; fg.fillRect(0, 0, 64, 2);
-  const shade = new THREE.Mesh(lapShade.geometry(), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(fade), transparent: true, depthWrite: false }));
-  group.add(shade);
+  group.add(new THREE.Mesh(gusShade.geometry(), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(fade), transparent: true, depthWrite: false })));
+
   for (const side of ['front', 'back']) {
     const mat = new THREE.MeshStandardMaterial({ color: '#ffffff', map: printTexture(printed[side].f, footW, renderer), roughness: 0.5 });
     add(printed[side].mesh.geometry(), mat);
@@ -262,19 +267,25 @@ function buildPail(renderer) {
   add(fi.geometry(), inside);
   add(fe.geometry(), edge);
 
-  /* the wire handle: hooked through each end panel below the fold, swung
-     down over the front, across the top of the print. Its ends run out
-     past the corners first (rx), so the loop clears the pleats as it
-     falls; standing up, it went through the end flaps */
+  /* the wire bail: a hook through each end (all three layers, a little
+     below the fold), a stub out from the end, a straight leg just outside
+     the pail's corner, a bend, and the bar between the legs. It hangs
+     swung down over the front, 103 degrees from upright, across the top
+     of the print. */
   const yA = H - 1.0, xA = FOOT.a + (MOUTH.a - FOOT.a) * yA / H;
-  const fall = THREE.MathUtils.degToRad(103), rx = 6.3, ry = 6.2, pts = [];
-  pts.push(V(-xA + 0.35, yA - 0.25, 0), V(-xA + 0.1, yA, 0), V(-xA - 0.25, yA + 0.05, 0));
-  for (let k = 0; k <= 24; k++) {
-    const th = Math.PI - (k / 24) * Math.PI;
-    const s = Math.sin(th);
-    pts.push(V(rx * Math.cos(th), yA + 0.35 + ry * s * Math.cos(fall), ry * s * Math.sin(fall)));
-  }
-  pts.push(V(xA + 0.25, yA + 0.05, 0), V(xA - 0.1, yA, 0), V(xA - 0.35, yA - 0.25, 0));
+  const fall = THREE.MathUtils.degToRad(103), dir = V(0, Math.cos(fall), Math.sin(fall));
+  const L = MOUTH.a + 0.25, LEG = 5.3, BEND = 1.1, pts = [];
+  const half = sx => {                                   // one side, hook to the bar's end (sx: -1 left, 1 right)
+    const foot = V(sx * L, yA, 0), p = [V(sx * (xA - 0.35), yA - 0.25, 0), V(sx * (xA - 0.1), yA, 0), V(sx * (xA + 0.15), yA + 0.02, 0), foot];
+    for (let k = 1; k <= 5; k++) p.push(foot.clone().addScaledVector(dir, LEG * k / 5));
+    const centre = foot.clone().addScaledVector(dir, LEG).add(V(-sx * BEND, 0, 0));
+    for (let k = 1; k <= 4; k++) {
+      const th = (k / 4) * Math.PI / 2;
+      p.push(centre.clone().add(V(sx * BEND * Math.cos(th), 0, 0)).addScaledVector(dir, BEND * Math.sin(th)));
+    }
+    return p;
+  };
+  pts.push(...half(-1), ...half(1).reverse());
   const wire = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, false, 'centripetal'), 160, 0.045, 8, false),
     new THREE.MeshStandardMaterial({ color: '#b9bcc0', metalness: 1, roughness: 0.28 }));
   wire.castShadow = true;
@@ -321,8 +332,8 @@ function buildNoodles(top) {
   const bp = bed.attributes.position;
   for (let i = 0; i < bp.count; i++) {
     let x = bp.getX(i), z = bp.getZ(i);
-    const over = Math.abs(x) + Math.abs(z) - lim;
-    if (over > 0) { const s = lim / (Math.abs(x) + Math.abs(z)); x *= s; z *= s; }
+    const over = Math.abs(x) + Math.abs(z) - (lim - 0.15);
+    if (over > 0) { const s = (lim - 0.15) / (Math.abs(x) + Math.abs(z)); x *= s; z *= s; }
     bp.setXYZ(i, x, dome(x, z) - 0.3, z);
   }
   bed.computeVertexNormals();

@@ -353,13 +353,17 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .m-ctl input { flex: 1; accent-color: var(--cut); }
 
 /* ---------------------------------------------------------------- the arris */
-.crossing { max-width: none; padding: 0; height: 170vh; position: relative; background: var(--night); }
+/* the crossing begins under the end of the paper half and the night half
+   begins under its end: the workshop's last figures are still in view as
+   the cut starts, and the Belt's paperwork is in view before it is done */
+.crossing { max-width: none; padding: 0; height: 190vh; margin-top: -45vh; position: relative;
+  background: linear-gradient(var(--paper), var(--paper)) 0 45vh / 100% calc(100% - 45vh) no-repeat; }   /* bare where it overlaps */
 .crossing-sticky { position: sticky; top: 0; --h: 100vh; height: var(--h); overflow: hidden; --p: 0; }
 @supports (height: 100svh) { .crossing-sticky { --h: 100svh; } }
 .cface { position: absolute; inset: 0; display: grid; align-items: end; padding: 0 var(--gut-r) 48px var(--gut); }
 .cface span { font-size: clamp(56px, 13vw, 200px); line-height: .9; }
-.cface-paper { background: var(--paper); color: var(--paper-ink); font-variation-settings: "wght" 200, "GRAD" 0, "WTCH" 0; }
-.cface-go { position: absolute; left: var(--gut); top: calc(68px + env(safe-area-inset-top, 0px)); font-style: normal; font-family: var(--mono); font-size: 13px;
+.cface-paper { color: var(--paper-ink); font-variation-settings: "wght" 200, "GRAD" 0, "WTCH" 0; align-content: end; }   /* no ground of its own: the page shows through */
+.cface-go { display: block; margin-top: 14px; font-style: normal; font-family: var(--mono); font-size: 13px;
   letter-spacing: .1em; text-transform: uppercase; color: var(--cut); font-variation-settings: normal; }
 .cface-go b { display: inline-block; font-weight: inherit; margin-left: .3em; animation: go 1.6s ease-in-out infinite; }
 @keyframes go { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
@@ -384,12 +388,11 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .slogan-cut { display: flex; align-items: center; gap: .5em; width: 160vmax; transform: rotate(-45deg) translate(-.6em, -18px); }
 .slogan-x { font-family: var(--sans); font-size: 1.9em; line-height: 1; }
 .slogan-dash { flex: 1; height: 2px; background: repeating-linear-gradient(to right, var(--cut) 0 7px, transparent 7px 14px); }
-/* the Belt's paperwork comes up into the night face before the crossing is
-   done, so the dark frame is never empty and the page is seen to go on */
 .face-night { position: relative; margin-top: -45vh; }
-@supports (height: 100svh) { .face-night { margin-top: -45svh; } }
+@supports (height: 100svh) { .crossing, .face-night { margin-top: -45svh; } .crossing { background-position: 0 45svh; background-size: 100% calc(100% - 45svh); } }
 @media (prefers-reduced-motion: reduce) {
-  .crossing { height: auto; } .crossing-sticky { position: relative; --h: 60vh; --p: .5 !important; }
+  .crossing { height: auto; margin-top: 0; background: var(--paper); } .crossing-sticky { position: relative; --h: 60vh; --p: .5 !important; }
+  .cface-paper { background: var(--paper); }
   .face-night { margin-top: 0; }
 }
 

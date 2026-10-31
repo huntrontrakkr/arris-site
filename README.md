@@ -91,6 +91,8 @@ seeks as the page scrolls. `www.arristype.com` is a second, tiny Worker
 | `js/site.js` | the name, the upright (the watch, how it's built, the weights), the designspace, the italic, the specimen, the features, the crossing |
 | `js/mono.js` | Arris Mono: the code window, the ligature board, the terminal |
 | `js/belt.js` | the paperwork and its torn edges, and the two long reads (two pages, one on the other, shuffled by a click on the one behind) whose lines fill in as you reach them |
+| `js/pail.js` | the takeout pail beside the noodle shop's sign, in WebGL: built from code, printed in Arris, its shadow on the sign; loaded by belt.js as it comes near |
+| `js/vendor/` | three.js 0.170.0 (MIT, its licence beside it) and its RoomEnvironment, for the pail |
 | `data/font.json` | written by `tools/fonts.py` |
 | `data/transfer.json` | written by `tools/transfer.py` |
 | `media/` | written by `tools/media.sh` |

@@ -74,6 +74,16 @@
   if (receipt) tear(receipt, 11, 6, 0);
   if (telegram) tear(telegram, 41, 8, 0);
 
+  /* ------------------------------------------------------------ the pail to go (pail.js, WebGL, loaded as it comes near) */
+  const pailStage = $('#pail');
+  if (pailStage && 'IntersectionObserver' in window) {
+    new IntersectionObserver((es, io) => {
+      if (!es[0].isIntersecting) return;
+      io.disconnect();
+      import('/js/pail.js').then(m => m.mount(pailStage)).catch(() => pailStage.classList.add('no-gl'));
+    }, { rootMargin: '800px' }).observe(pailStage);
+  }
+
   /* ------------------------------------------------------------ the long read */
   const paras = $$('.sheet .taper');
   if (!paras.length) return;

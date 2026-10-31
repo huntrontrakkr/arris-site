@@ -684,6 +684,20 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .tui .p3 { color: var(--t700); } .tui .ok { color: var(--t900); } .tui .dim { color: var(--night-dim); }
 .tui .w1 { color: var(--t100); } .tui .w4 { color: var(--t400); } .tui .w6 { color: var(--t600); } .tui .w9 { color: var(--t900); }
 
+/* the takeout pail (pail.js): a transparent WebGL canvas reaching left
+   over the sign, so the pail stands in front of it and its shadow falls
+   across it */
+.pail { position: relative; height: clamp(300px, 32vw, 420px); }
+.pail canvas { position: absolute; z-index: 2; pointer-events: none; left: -50%; top: -22%; width: 150%; height: 130%; opacity: 0; transition: opacity .6s;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 22%), linear-gradient(to top, transparent, #000 10%); -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, transparent, #000 22%), linear-gradient(to top, transparent, #000 10%); mask-composite: intersect; }
+.pail.ready canvas { opacity: 1; }
+.pail.no-gl { display: none; }
+@media (max-width: 860px) {
+  .pail { height: 340px; margin-top: -70px; }
+  .pail canvas { left: 0; width: 100%; top: -18%; height: 122%;
+    -webkit-mask-image: linear-gradient(to top, transparent, #000 10%); mask-image: linear-gradient(to top, transparent, #000 10%); }
+}
 .shopfront { background: #1b1410; border-top: 10px solid var(--t600); padding: clamp(22px, 4vw, 40px); display: grid; gap: 10px;
   clip-path: polygon(0 0, 100% 0, 100% 100%, 26px 100%, 0 calc(100% - 26px)); }
 .shop-name { font-style: italic; font-size: clamp(44px, 7.5vw, 92px); line-height: 1; color: var(--t600); font-variation-settings: "wght" 750, "GRAD" -50, "WTCH" 0; }

@@ -1023,7 +1023,10 @@
     // browser restyle and lay out the page again in the middle of each frame
     const r = crossing.getBoundingClientRect(), nt = night.getBoundingClientRect().top;
     const st = sticky.getBoundingClientRect().top, sh = sticky.offsetHeight, steelTop = steel.getBoundingClientRect().top;
-    const p = reduce ? 0.5 : clamp(-r.top / (r.height - innerHeight), 0, 1);
+    // the sweep runs while the stage is pinned: over the crossing's height less
+    // the stage's (100lvh), which a phone's toolbar does not change; over
+    // innerHeight, which it does, the edge jumped as the toolbar slid away
+    const p = reduce ? 0.5 : clamp(-r.top / (r.height - sh), 0, 1);
     put(sticky, '--p', p.toFixed(4));
     put(sticky, '--o', Math.max(0, 1 - Math.abs(p - 0.5) * 2.6).toFixed(3));
     // the night half begins under the stage: while the sweep runs, its ground

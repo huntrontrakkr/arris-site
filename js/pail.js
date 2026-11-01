@@ -291,9 +291,7 @@ function buildPail(renderer) {
   wire.castShadow = true;
   group.add(wire);
 
-  group.add(buildNoodles(top));
-  group.add(buildChopsticks(renderer));
-  return group;
+  return group;                                   // the noodles and chopsticks go in after (mount), each a step of its own
 }
 
 /* ------------------------------------------------------------ the noodles */
@@ -318,7 +316,7 @@ function mergeGeometries(list) {
   return m;
 }
 
-function buildNoodles(top) {
+async function buildNoodles(top, pause = async () => {}) {   // (a pause between batches of strands: see mount)
   const group = new THREE.Group(), r = rng(3);
   const A = MOUTH.a - 0.5, B = MOUTH.b - 0.5, lim = MOUTH.a + MOUTH.b - MOUTH.c - 1.1;
   const inside = (x, z) => Math.abs(x) < A && Math.abs(z) < B && Math.abs(x) + Math.abs(z) < lim;
@@ -360,6 +358,7 @@ function buildNoodles(top) {
       x = nx; z = nz;
     }
     strands.push([tube(pts, 0.11 + r() * 0.03), tones[Math.floor(r() * tones.length)]]);
+    if (s % 30 === 29) await pause();
   }
   const noodles = new THREE.Mesh(mergeGeometries(strands),
     new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.36, clearcoat: 0.55, clearcoatRoughness: 0.3 }));
@@ -413,6 +412,31 @@ function buildChopsticks(renderer) {
 }
 
 /* ------------------------------------------------------------ the stage */
+/* Setting the pail up holds the page (the environment's shaders, the board's
+ * print, the first frame's shadows): 1.2 s at once on a laptop, 3.4 s on a
+ * slow phone, and the arris above it, which the page's script draws as the
+ * page scrolls, stopped dead and then jumped. So it is set up in steps, each
+ * after the reader has been still a moment and while the arris's sweep is
+ * not on screen; its shaders compile beside the page, not in its way
+ * (compileAsync). Once the pail itself is in view it goes on regardless. */
+let lastScroll = 0;
+addEventListener('scroll', () => { lastScroll = performance.now(); }, { passive: true });
+const idle = window.requestIdleCallback ? f => requestIdleCallback(f, { timeout: 800 }) : f => setTimeout(f, 60);
+function sweeping() {
+  const c = document.getElementById('crossing');
+  if (!c) return false;
+  const r = c.getBoundingClientRect();
+  return r.top < innerHeight * 0.25 && r.bottom > innerHeight * 0.75;    // pinned, the edge moving with the scroll
+}
+function inView(el) { const r = el.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; }
+async function quiet(stage) {
+  for (;;) {
+    await new Promise(idle);
+    if (inView(stage) || (performance.now() - lastScroll > 300 && !sweeping())) return;
+    await new Promise(r => setTimeout(r, 150));
+  }
+}
+
 export async function mount(stage) {
   const canvas = stage.querySelector('canvas');
   // the print is set in Arris: its weights in hand before the board is printed
@@ -421,6 +445,7 @@ export async function mount(stage) {
   // lower pixel ratio, and no multisampling on a dense screen (its pixels
   // are small enough without it)
   const light = matchMedia('(max-width: 860px), (pointer: coarse)').matches;
+  await quiet(stage);
   let renderer;
   try {
     renderer = new THREE.WebGLRenderer({ canvas, antialias: !light || devicePixelRatio < 2, alpha: true, powerPreference: 'low-power' });
@@ -439,6 +464,7 @@ export async function mount(stage) {
   renderer.shadowMap.type = THREE.VSMShadowMap;          // soft: a shadow on a sign, not a cut-out
 
   const scene = new THREE.Scene();
+  await quiet(stage);
   const pmrem = new THREE.PMREMGenerator(renderer);
   scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
   scene.environmentIntensity = 0.55;
@@ -459,8 +485,13 @@ export async function mount(stage) {
   glow.position.set(-14, 7, 2);
   scene.add(glow);
 
+  await quiet(stage);
   const pail = buildPail(renderer);
   scene.add(pail);
+  await quiet(stage);
+  pail.add(await buildNoodles(ring(MOUTH, H), () => quiet(stage)));
+  await quiet(stage);
+  pail.add(buildChopsticks(renderer));
 
   // the shadow on the page: a wall in the sign's plane catches the pail's
   // shadow, and a soft patch under its foot sets it down
@@ -508,6 +539,11 @@ export async function mount(stage) {
   const ask = () => { if (visible && !queued) { queued = true; requestAnimationFrame(draw); } };
   addEventListener('scroll', ask, { passive: true });
   addEventListener('resize', () => { size = [0, 0]; ask(); });
+  // the shaders compiled beside the page (KHR_parallel_shader_compile where
+  // the browser has it), then the first frame, with its shadow passes
+  await quiet(stage);
+  await renderer.compileAsync(scene, camera).catch(() => {});
+  await quiet(stage);
   new IntersectionObserver(es => { visible = es[0].isIntersecting; ask(); }, { rootMargin: '100px' }).observe(stage);
   draw();
   stage.classList.add('ready');

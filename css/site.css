@@ -243,14 +243,28 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .field figcaption { margin-top: 12px; }
 
 /* specimen */
-.spec { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 24px; align-items: start; margin-bottom: 16px; }
+/* the examiner and the set, one surface: the examiner pinned and as tall as
+   the screen, its outer corners cut, flush against the set, which scrolls
+   with the page; the scripts at the examiner's foot */
+.spec { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 0; align-items: start; margin-bottom: 16px; }
 @media (max-width: 860px) { .spec { grid-template-columns: 1fr; } }
-.card { position: sticky; top: 72px; background: var(--night); color: var(--night-ink); padding: 16px 18px 18px;
-  clip-path: polygon(0 0, calc(100% - 40px) 0, 100% 40px, 100% 100%, 0 100%); }
+.card { position: sticky; top: calc(var(--bar-h, 49px) + 16px); z-index: 5; height: calc(100svh - var(--bar-h, 49px) - 32px); min-height: 560px;
+  display: flex; flex-direction: column; gap: 8px; background: var(--night); color: var(--night-ink); padding: 16px 18px 18px; overflow-y: auto; scrollbar-width: none;
+  clip-path: polygon(28px 0, 100% 0, 100% 100%, 28px 100%, 0 calc(100% - 28px), 0 28px); }
+.card::-webkit-scrollbar { display: none; }
 @media (max-width: 860px) { .card { position: static; } }
 .card-head { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 13px; color: var(--amber); }
-.card-head #card-block { color: var(--night-dim); margin-right: 32px; }
-.card-stage { position: relative; aspect-ratio: 1; overflow: hidden; }
+.card-head #card-block { color: var(--night-dim); margin-left: 12px; margin-right: auto; }
+.card-head { align-items: center; }
+.card-step { display: inline-flex; gap: 4px; }
+.card-step button { font: inherit; font-size: 15px; line-height: 1; width: 28px; height: 24px; padding: 0; background: none; color: var(--night-ink); border: 1px solid var(--night-line); cursor: pointer; }
+@media (hover: hover) { .card-step button:hover { border-color: var(--night-ink); } }
+.card-stage { position: relative; flex: 1 1 0; min-height: 200px; overflow: hidden; }   /* the character takes what height the pane has left */
+@media (min-width: 861px) and (max-height: 820px) {   /* short windows: the pane still fits, scripts and all */
+  .card-stage { min-height: 130px; }
+  .card-name { min-height: 0; }
+  .card .tri { max-width: 212px; }
+}
 .card-lines div { position: absolute; left: 0; right: 0; height: 0; border-top: 1px solid rgba(241,235,221,.14); }
 .card-lines div.base { border-top-color: rgba(255,176,0,.7); }
 .card-lines span { position: absolute; left: 2px; bottom: 3px; font-family: var(--mono); font-size: 10.5px; color: rgba(241,235,221,.45); white-space: nowrap; }
@@ -297,15 +311,18 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .card-name { font-family: var(--mono); font-size: 13px; letter-spacing: .04em; min-height: 2.6em; }
 .card-metrics { font-family: var(--mono); font-size: 11px; color: var(--night-dim); }
 .groups { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.card .groups { flex: none; margin: 4px 0 0; padding-top: 12px; border-top: 1px solid var(--night-line); }
+.card .groups button { color: var(--night-ink); border-color: var(--night-line); }
+.card .groups button[aria-selected="true"] { background: var(--amber); color: var(--night); border-color: var(--amber); }
 .groups button { font: inherit; font-family: var(--mono); font-size: 12px; padding: 5px 10px; background: none; color: var(--ink); border: 1px solid var(--line); cursor: pointer; }
 .groups button[aria-selected="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .groups small { opacity: .6; margin-left: 4px; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); border-top: 1px solid var(--line); border-left: 1px solid var(--line);
-  max-height: 560px; overflow-y: auto; overscroll-behavior: contain; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); border-top: 1px solid var(--line); }
 .grid button { font: inherit; font-size: 24px; line-height: 1; aspect-ratio: 4 / 5; background: none; color: var(--ink); border: 0;   /* taller than wide: room above for stacked accents at Black (Ẵ) */
   border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); cursor: cell; padding: 0; min-width: 0; }
 @media (hover: hover) { .grid button:hover { background: var(--panel); } }
 .grid button[aria-selected="true"] { background: var(--cut); color: var(--paper); }
+.grid button { scroll-margin-top: calc(var(--bar-h, 49px) + 16px); scroll-margin-bottom: 16px; }
 
 /* ---- phones: the weight rows ---------------------------------------------
    the label over its line, the line the full width; on touch a line can be
@@ -329,19 +346,17 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
    triangle that sets its place, its values, and at its foot the scripts),
    its outer corners cut; on the right, flush against it, the whole set in
    the page's own scroll: one surface, dark half and light */
-.card-step { display: none; }
 @media (max-width: 860px) {
   .spec { display: grid; grid-template-columns: minmax(0, 48%) minmax(0, 1fr); grid-template-areas: "card grid"; column-gap: 0; align-items: start; }
   .spec-side { display: contents; }
-  .card { grid-area: card; position: sticky; top: calc(var(--bar-h, 49px) + 8px); z-index: 5; height: calc(100svh - var(--bar-h, 49px) - 16px);
-    display: flex; flex-direction: column; gap: 6px; padding: 10px 10px 12px; overflow-y: auto; scrollbar-width: none;
+  .card { grid-area: card; top: calc(var(--bar-h, 49px) + 8px); height: calc(100svh - var(--bar-h, 49px) - 16px); min-height: 0;
+    gap: 6px; padding: 10px 10px 12px;
     clip-path: polygon(16px 0, 100% 0, 100% 100%, 16px 100%, 0 calc(100% - 16px), 0 16px); }
-  .card::-webkit-scrollbar { display: none; }
-  .card-head { align-items: center; gap: 6px; font-size: 12px; }
+  .card-head { gap: 6px; font-size: 12px; }
   .card-head #card-block { display: none; }
-  .card-step { display: inline-flex; gap: 4px; margin: 0 0 0 auto; }
-  .card-step button { font: inherit; font-size: 15px; line-height: 1; width: 26px; height: 24px; padding: 0; background: none; color: var(--night-ink); border: 1px solid var(--night-line); cursor: pointer; }
-  .card-stage { flex: none; touch-action: pan-y; }
+  .card-step { margin: 0 0 0 auto; }
+  .card-step button { width: 26px; }
+  .card-stage { flex: none; aspect-ratio: 1; min-height: 0; touch-action: pan-y; }
   .card-lines b { display: none; }
   .card-lines span { left: auto; right: 0; bottom: 1px; font-size: 9px; }
   .card-name { font-size: 10.5px; min-height: 2.6em; }
@@ -353,17 +368,16 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
   .card-side { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
   .card-metrics { flex-basis: 100%; grid-template-columns: auto auto; justify-content: start; column-gap: 10px; font-size: 10px; }
   .card-side .switch.small button { padding: 4px 8px; font-size: 11px; }
-  .card .groups { margin: auto 0 0; padding: 10px 0 0; border-top: 1px solid var(--night-line); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; }
+  .card .groups { margin: auto 0 0; padding: 10px 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; }
   .card .groups button[data-group="Punctuation"] { grid-column: span 2; }
-  .card .groups button { color: var(--night-ink); border-color: var(--night-line); font-size: 10.5px; padding: 4px 5px; text-align: left; white-space: nowrap; }
+  .card .groups button { font-size: 10.5px; padding: 4px 5px; text-align: left; white-space: nowrap; }
   .card .groups small { display: none; }   /* the names whole, two to a row; the counts are on desktop */
-  .card .groups button[aria-selected="true"] { background: var(--amber); color: var(--night); border-color: var(--amber); }
-  .grid { grid-area: grid; max-height: none; overflow: visible; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); border-left: 0; }
+  .grid { grid-area: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); }
 }
 @media (max-width: 860px) and (max-height: 780px) {   /* short screens: a little less stage, so the scripts fit at the foot */
   .card-stage { aspect-ratio: 5 / 4; }
   .card-name { min-height: 0; }
-  .grid button { font-size: 19px; scroll-margin-top: calc(var(--bar-h, 49px) + 8px); scroll-margin-bottom: 16px; }
+  .grid button { font-size: 19px; scroll-margin-top: calc(var(--bar-h, 49px) + 8px); }
 }
 
 /* features */

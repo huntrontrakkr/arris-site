@@ -754,10 +754,8 @@
     const dx = e.clientX - swipe[0], dy = e.clientY - swipe[1]; swipe = null;
     if (Math.abs(dx) > 36 && Math.abs(dx) > 1.5 * Math.abs(dy)) step(dx < 0 ? 1 : -1);
   });
-  // on phones the script tabs live at the foot of the examiner; elsewhere over the grid
-  const groupsEl = $('#groups'), narrow = matchMedia('(max-width: 860px)');
-  const placeGroups = () => { if (narrow.matches) $('#card').appendChild(groupsEl); else $('#grid').before(groupsEl); };
-  narrow.addEventListener('change', placeGroups); placeGroups();
+  // the script tabs live at the foot of the examiner
+  $('#card').appendChild($('#groups'));
   $('#card-up').addEventListener('click', () => { CL.ital = false; drawCard(); loadCard(); });
   $('#card-it').addEventListener('click', () => { CL.ital = true; drawCard(); loadCard(); });
   $('#card-mono').addEventListener('click', () => { CL.mono = !CL.mono; drawCard(); if (CL.mono) loadCard(); });

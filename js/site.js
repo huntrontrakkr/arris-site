@@ -609,7 +609,12 @@
     const io = new IntersectionObserver(es => es.forEach(e => {
       if (e.isIntersecting) { e.target.preload = 'auto'; e.target.play().catch(() => {}); } else e.target.pause();
     }), { threshold: 0.35 });
-    vids.forEach(v => io.observe(v));
+    // a film starts loading a screen before it is in view, so it is
+    // buffered when it plays and does not start as the reader arrives
+    const early = new IntersectionObserver(es => es.forEach(e => {
+      if (e.isIntersecting) { e.target.preload = 'auto'; early.unobserve(e.target); }
+    }), { rootMargin: '100% 0px' });
+    vids.forEach(v => { io.observe(v); early.observe(v); });
   }
   vids.forEach(v => v.addEventListener('click', () => (v.paused ? v.play() : v.pause())));
 
@@ -666,10 +671,20 @@
       const b = document.createElement('button');
       b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.group = g;
       b.innerHTML = `${g}<small>${groups[g].length}</small>`;
-      b.addEventListener('click', () => openGroup(g));
+      b.addEventListener('click', () => { if (g !== group) { toSetTop(); openGroup(g); } });
       bar.appendChild(b);
     });
     openGroup('Latin');
+  }
+
+  // The set is one surface beside the pinned card: a reader deep in the
+  // Latin who opens Figures had the page shorten under them and was thrown
+  // on past the set. A group opened from the tabs starts at the set's top,
+  // under the card, at once (no smooth scroll across a long set)
+  function toSetTop() {
+    const grid = $('#grid'), card = $('#card');
+    const y = grid.getBoundingClientRect().top + scrollY - parseFloat(getComputedStyle(card).top);
+    if (scrollY > y) scrollTo({ top: y, behavior: 'instant' });
   }
 
   let opening = 0;
@@ -981,20 +996,33 @@
 
   /* ------------------------------------------------------------ the arris */
   const crossing = $('#crossing'), sticky = $('.crossing-sticky'), night = $('.face-night'), steel = $('.face-steel');
+  // what was last written, so a frame that changes nothing writes nothing
+  const wrote = new Map();
+  const put = (el, k, v) => {
+    if (wrote.get(el.className + k) === v) return;
+    wrote.set(el.className + k, v);
+    if (k.startsWith('--')) el.style.setProperty(k, v); else el.style[k] = v;
+  };
   function onScroll() {
-    const r = crossing.getBoundingClientRect();
+    // every measure first, then every write: a measure after a write made the
+    // browser restyle and lay out the page again in the middle of each frame
+    const r = crossing.getBoundingClientRect(), nt = night.getBoundingClientRect().top;
+    const st = sticky.getBoundingClientRect().top, sh = sticky.offsetHeight, steelTop = steel.getBoundingClientRect().top;
     const p = reduce ? 0.5 : clamp(-r.top / (r.height - innerHeight), 0, 1);
-    sticky.style.setProperty('--p', p.toFixed(4));
-    sticky.style.setProperty('--o', Math.max(0, 1 - Math.abs(p - 0.5) * 2.6).toFixed(3));
+    put(sticky, '--p', p.toFixed(4));
+    put(sticky, '--o', Math.max(0, 1 - Math.abs(p - 0.5) * 2.6).toFixed(3));
     // the night half begins under the stage: while the sweep runs, its ground
-    // is cut along the edge carried on (css .face-night --c): the edge's top
-    // is at x in the stage, and it runs down-left one for one
-    const nt = night.getBoundingClientRect().top;
-    const x = (1 - p) * (innerWidth + sticky.offsetHeight);
-    night.style.setProperty('--c', !reduce && p < 1 && nt < innerHeight
-      ? (x - (nt - sticky.getBoundingClientRect().top)).toFixed(1) + 'px' : '-99999px');
+    // is cut along the edge carried on: the edge's top is at x in the stage,
+    // and it runs down-left one for one. The cut is written as the half's own
+    // clip-path, not a custom property: those inherit, and every element of
+    // the night half was restyled on every frame of the sweep
+    if (!reduce) {
+      const x = (1 - p) * (innerWidth + sh);
+      const c = p < 1 && nt < innerHeight ? (x - (nt - st)).toFixed(1) : '-99999';
+      put(night, 'clipPath', `polygon(${c}px 0, 100% 0, 100% 100%, 0 100%, 0 ${c}px)`);
+    }
     document.body.classList.toggle('past', r.top + r.height * 0.45 < 0);
-    document.body.classList.toggle('steel', steel.getBoundingClientRect().top < 44);
+    document.body.classList.toggle('steel', steelTop < 44);
   }
   addEventListener('scroll', onScroll, { passive: true });
   addEventListener('resize', onScroll);

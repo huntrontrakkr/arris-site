@@ -75,12 +75,34 @@
   if (telegram) tear(telegram, 41, 8, 0);
 
   /* ------------------------------------------------------------ the pail to go (pail.js, WebGL, loaded as it comes near) */
-  const pailStage = $('#pail');
+  // Setting the pail up (three.js, the scene, its shaders) holds the page for
+  // a moment. Started 800px short of it, that moment fell just past the
+  // arris, in the middle of a reader's scroll. It starts instead the first
+  // time the reader stops for a moment (the scroll still for 400 ms, then
+  // the browser idle) within a screen of the arris or past it; the old
+  // trigger stays for a reader who never stops
+  const pailStage = $('#pail'), crossingEl = $('#crossing');
   if (pailStage && 'IntersectionObserver' in window) {
+    let started = false, near = false, still;
+    const start = () => {
+      if (started) return;
+      started = true; clearTimeout(still);
+      import('/js/pail.js').then(m => m.mount(pailStage)).catch(() => pailStage.classList.add('no-gl'));
+    };
+    const idle = window.requestIdleCallback || (f => setTimeout(f, 200));
+    const atRest = () => {
+      clearTimeout(still);
+      if (near && !started) still = setTimeout(() => idle(start, { timeout: 2000 }), 400);
+    };
+    if (crossingEl) {
+      new IntersectionObserver(es => { near = near || es[0].isIntersecting || es[0].boundingClientRect.top < 0; atRest(); },
+        { rootMargin: '0px 0px 100% 0px' }).observe(crossingEl);
+      addEventListener('scroll', atRest, { passive: true });
+    }
     new IntersectionObserver((es, io) => {
       if (!es[0].isIntersecting) return;
       io.disconnect();
-      import('/js/pail.js').then(m => m.mount(pailStage)).catch(() => pailStage.classList.add('no-gl'));
+      start();
     }, { rootMargin: '800px' }).observe(pailStage);
   }
 

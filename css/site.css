@@ -47,16 +47,14 @@ section { padding: clamp(64px, 10vw, 128px) var(--gut-r) 0 var(--gut); max-width
 .tab { display: grid; place-items: center; width: 28px; height: 24px; background: var(--amber); color: var(--night); text-decoration: none;
   font-family: var(--sans); font-variation-settings: "wght" 800, "GRAD" 0, "WTCH" 0; font-size: 15px;
   clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 0 100%); position: relative; isolation: isolate; }
-/* the tab, touched with a flame at its cut corner: the oxide's colours, thickest
-   there and fading into the amber across it, drifting slowly through their
-   sequence as if still cooling */
-.tab::before { content: ""; position: absolute; inset: 0; z-index: -1; opacity: .62;
-  background: linear-gradient(120deg, var(--t100), var(--t200), var(--t300), var(--t400), var(--t500), var(--t600), var(--t700), var(--t800), var(--t900), var(--t100)) 0 0 / 900% 100%;
-  -webkit-mask-image: radial-gradient(circle at 100% 0, #000 0, rgba(0,0,0,.75) 30%, rgba(0,0,0,.25) 62%, transparent 85%);
-  mask-image: radial-gradient(circle at 100% 0, #000 0, rgba(0,0,0,.75) 30%, rgba(0,0,0,.25) 62%, transparent 85%);
-  animation: tab-heat 28s linear infinite; }
-@keyframes tab-heat { to { background-position: 100% 0; } }
-@media (prefers-reduced-motion: reduce) { .tab::before { animation: none; background-position: 40% 0; } }
+/* the tab, annealed (js/anneal.js): a flame touches it at one spot and the
+   oxide's colour spreads from there across the metal until the tab is that
+   colour evenly, then again, through titanium's sequence. The film is drawn
+   on a canvas of its own layer, a dozen times a second while it moves and
+   not at all at rest; the A takes the paper's ink on the dark films */
+.tab-metal { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; will-change: transform; }
+.tab { transition: color 3s; }
+.tab.tab-dark { color: var(--paper); }
 .bar-name { font-family: var(--sans); font-size: 16px; font-variation-settings: "wght" 650, "GRAD" 0, "WTCH" 0; letter-spacing: 0; }
 .ver { font-family: var(--mono); font-size: 10px; color: var(--paper-dim); font-variation-settings: normal; }
 .bar nav { margin-left: auto; display: flex; gap: 18px; flex-wrap: wrap; justify-content: flex-end; }
@@ -452,6 +450,11 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .crossing { max-width: none; padding: 0; height: 190vh; margin-top: -65vh; position: relative;
   background: linear-gradient(var(--paper), var(--paper)) 0 65vh / 100% calc(100% - 65vh) no-repeat; }   /* bare where it overlaps */
 .crossing-sticky { position: sticky; top: 0; --h: 100vh; height: var(--h); overflow: hidden; --p: 0; }
+/* the crossing rides over the workshop's last figures: bare there, it lets
+   the pointer through to them (the squint slider sat under it and could
+   not be moved); the night and the red band, drawn, take it */
+.crossing { pointer-events: none; }
+.cface-night, .cface-cut { pointer-events: auto; }
 /* on a phone the browser's bar comes and goes: the face is as tall as the
    window with the bar gone (lvh), and its foot keeps clear of the bar by the
    difference, so nothing shows beneath it either way */
@@ -478,17 +481,19 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
    strip; both sit just off the red band, on the paper side */
 .crossing-sticky { --f: .5; --ax: calc(var(--x) - var(--h) * var(--f) - 4px); }   /* the scissors, --f down the edge */
 @media (max-width: 640px) { .crossing-sticky { --f: .4; } }                        /* room below them for the whole line */
-.slogan, .slogan-cut { position: absolute; left: var(--ax); top: calc(var(--f) * 100%); margin: 0; height: 1.4em; margin-top: -.7em; line-height: 1.4em; white-space: nowrap;
-  font-family: var(--mono); font-size: clamp(13px, 1.6vw, 17px); color: var(--cut); opacity: var(--o, 0); transform-origin: 0 50%; }
-.slogan { max-width: none; letter-spacing: .14em; text-transform: uppercase; transform: rotate(-45deg) translate(calc(-100% - .9em), -18px); }
-.slogan-cut { display: flex; align-items: center; gap: .5em; width: 160vmax; transform: rotate(-45deg) translate(-.6em, -18px); }
+/* they ride the edge by a transform (--ax, first, so it moves them as left
+   would), never by left: a moved left laid the page out again every frame */
+.slogan, .slogan-cut { position: absolute; left: 0; top: calc(var(--f) * 100%); margin: 0; height: 1.4em; margin-top: -.7em; line-height: 1.4em; white-space: nowrap;
+  font-family: var(--mono); font-size: clamp(13px, 1.6vw, 17px); color: var(--cut); opacity: var(--o, 0); transform-origin: 0 50%; will-change: transform, opacity; }
+.slogan { max-width: none; letter-spacing: .14em; text-transform: uppercase; transform: translateX(var(--ax)) rotate(-45deg) translate(calc(-100% - .9em), -18px); }
+.slogan-cut { display: flex; align-items: center; gap: .5em; width: 160vmax; transform: translateX(var(--ax)) rotate(-45deg) translate(-.6em, -18px); }
 .slogan-x { font-family: var(--sans); font-size: 1.9em; line-height: 1; }
 .slogan-dash { flex: 1; height: 2px; background: repeating-linear-gradient(to right, var(--cut) 0 7px, transparent 7px 14px); }
 /* the night half's ground is cut along the same edge while the sweep runs
-   (--c from site.js: where the edge, carried on, meets the half's top and
-   left), else its straight top showed across the paper side on a wide
-   window; -99999px cuts nothing */
-.face-night { position: relative; margin-top: -60vh; --c: -99999px; clip-path: polygon(var(--c) 0, 100% 0, 100% 100%, 0 100%, 0 var(--c)); }
+   (site.js writes the polygon: where the edge, carried on, meets the half's
+   top and left), else its straight top showed across the paper side on a
+   wide window; -99999px cuts nothing */
+.face-night { position: relative; margin-top: -60vh; clip-path: polygon(-99999px 0, 100% 0, 100% 100%, 0 100%, 0 -99999px); }
 @supports (height: 100svh) { .crossing { margin-top: -65svh; background-position: 0 65svh; background-size: 100% calc(100% - 65svh); } .face-night { margin-top: -60svh; } }
 @media (prefers-reduced-motion: reduce) {
   .crossing { height: auto; margin-top: 0; background: var(--paper); } .crossing-sticky { position: relative; --h: 60vh; --p: .5 !important; }
@@ -502,7 +507,7 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .prop-row.reverse > .prop { order: 2; }
 @media (max-width: 860px) { .prop-row { grid-template-columns: 1fr; } .prop-row.reverse > .prop { order: 0; } }
 .prop-side { display: grid; gap: 16px; min-width: 0; }
-.prop-side video { display: block; width: 100%; height: auto; background: #000;
+.prop-side video { display: block; width: 100%; height: auto; background: #000;   /* its frame from its width and height, before its poster is here */
   clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px)); }
 .prop { min-width: 0; }
 .leak { color: var(--leak); text-decoration: none; }

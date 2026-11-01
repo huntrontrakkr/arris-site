@@ -754,11 +754,8 @@
     const dx = e.clientX - swipe[0], dy = e.clientY - swipe[1]; swipe = null;
     if (Math.abs(dx) > 36 && Math.abs(dx) > 1.5 * Math.abs(dy)) step(dx < 0 ? 1 : -1);
   });
-  $('#card-axes').addEventListener('click', () => {
-    const open = !$('#card').classList.contains('axes-open');
-    $('#card').classList.toggle('axes-open', open); $('#card-axes').setAttribute('aria-expanded', open);
-  });
-  new ResizeObserver(() => $('.spec').style.setProperty('--card-h', $('#card').offsetHeight + 'px')).observe($('#card'));
+  // the tabs' height, for the examiner pinned under them on phones
+  new ResizeObserver(() => $('.spec').style.setProperty('--tabs-h', $('#groups').offsetHeight + 'px')).observe($('#groups'));
   $('#card-up').addEventListener('click', () => { CL.ital = false; drawCard(); loadCard(); });
   $('#card-it').addEventListener('click', () => { CL.ital = true; drawCard(); loadCard(); });
   $('#card-mono').addEventListener('click', () => { CL.mono = !CL.mono; drawCard(); if (CL.mono) loadCard(); });

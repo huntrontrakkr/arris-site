@@ -1,5 +1,6 @@
 # Who came to the site and who took the fonts: the release downloads on
-# GitHub and npm, Cloudflare's analytics for arristype.com (page
+# GitHub and npm, GoatCounter's count of visits and events (GOATCOUNTER_TOKEN,
+# read statistics), Cloudflare's analytics for arristype.com (page
 # views and visitors by hour; for page loads the referring sites, pages,
 # countries and devices) and the Reddit posts linking to it
 # (tools/traffic.py). Run it by hand (Actions, "Traffic", Run workflow);
@@ -24,4 +25,5 @@ jobs:
       - name: Traffic
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          GOATCOUNTER_TOKEN: ${{ secrets.GOATCOUNTER_TOKEN }}
         run: python3 tools/traffic.py "${{ inputs.hours }}"

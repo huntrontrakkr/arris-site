@@ -33,8 +33,8 @@ def call(url: str, body: dict | None = None, token: str | None = None, ua: str |
     req = urllib.request.Request(url, data=json.dumps(body).encode() if body is not None else None)
     if token:
         req.add_header('Authorization', f'Bearer {token}')
-    if body is not None:
-        req.add_header('Content-Type', 'application/json')
+    if body is not None or token:
+        req.add_header('Content-Type', 'application/json')    # (GoatCounter's API answers in JSON only when asked so)
     req.add_header('User-Agent', ua or 'arristype-traffic/1.0')
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
@@ -153,6 +153,57 @@ def downloads() -> None:
     say()
 
 
+GC = 'https://arristype.goatcounter.com/api/v0'
+
+
+def goatcounter(hours: int) -> None:
+    """The visits GoatCounter counted (the page's own script: people, not
+    bots or prefetches): totals, the pages and the events (downloads, the
+    survey's row, the Glasshouse, kapa/), where visitors came from, where
+    they are and their screens. Needs GOATCOUNTER_TOKEN, an API token made
+    in GoatCounter (Settings, API) with "Read statistics"."""
+    say(f'## GoatCounter, the last {hours} hours')
+    say()
+    token = os.environ.get('GOATCOUNTER_TOKEN', '')
+    if not token:
+        say('No GOATCOUNTER_TOKEN: no GoatCounter numbers. Make one at arristype.goatcounter.com, Settings, API '
+            '(permission: Read statistics) and add it as the repository secret GOATCOUNTER_TOKEN.')
+        say()
+        return
+    now = datetime.now(UTC).replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
+    iso = lambda t: t.strftime('%Y-%m-%dT%H:%M:%SZ')  # noqa: E731
+    q = f'start={iso(now - timedelta(hours=hours))}&end={iso(now)}'
+    status, tot = call(f'{GC}/stats/total?{q}', token=token)
+    if status != 200:
+        say(f'GoatCounter refused (HTTP {status}): {json.dumps(tot)[:300]}')
+        say()
+        return
+    say(f"Visits {tot.get('total', 0)}, events {tot.get('total_events', 0)}.")
+    say()
+    status, r = call(f'{GC}/stats/hits?{q}&limit=50', token=token)
+    hits = r.get('hits', []) if status == 200 else []
+    pages = [(h.get('path', ''), h.get('title', ''), h.get('count', 0)) for h in hits if not h.get('event')]
+    events = [(h.get('path', ''), h.get('title', ''), h.get('count', 0)) for h in hits if h.get('event')]
+    if pages:
+        say('Pages (a wrong address is /404 and the address tried):')
+        say()
+        table(pages, ('page', 'title', 'visits'))
+    if events:
+        say('Events:')
+        say()
+        table(events, ('event', 'what', 'count'))
+    for page, head in (('toprefs', 'came from'), ('locations', 'where'), ('sizes', 'screen')):
+        status, r = call(f'{GC}/stats/{page}?{q}&limit=12', token=token)
+        rows = [(x.get('name') or '(none)', x.get('count', 0)) for x in (r.get('stats', []) if status == 200 else [])]
+        if rows:
+            say(f'{head.capitalize()}:')
+            say()
+            table(rows, (head, 'visits'))
+    if not (pages or events):
+        say('Nothing counted in this time.')
+        say()
+
+
 def reddit() -> None:
     say('## Reddit: posts linking to arristype.com')
     say()
@@ -174,6 +225,7 @@ def reddit() -> None:
 def main() -> int:
     hours = int(sys.argv[1]) if len(sys.argv) > 1 else 48
     downloads()
+    goatcounter(hours)
     cloudflare(hours)
     reddit()
     summary = os.environ.get('GITHUB_STEP_SUMMARY')

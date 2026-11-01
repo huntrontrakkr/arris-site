@@ -21,6 +21,46 @@
   const NAMES = { 100: 'Thin', 200: 'ExtraLight', 300: 'Light', 400: 'Regular', 500: 'Medium', 600: 'SemiBold', 700: 'Bold', 800: 'ExtraBold', 900: 'Black' };
   const fvs = (w, g, x) => `"wght" ${Math.round(w)}, "GRAD" ${Math.round(g)}, "WTCH" ${Math.round(x)}`;
 
+  /* ------------------------------------------------------------ layout that holds still
+     Text that changes weight under the reader must not rewrap, or the page
+     moves. So it is laid out once at its widest, Black at both ends of the
+     watch axis, upright and italic (grade never changes a width): one line
+     if it fits there at its size, or at no less than 0.8 of it; otherwise
+     broken where the widest would break, and those breaks are kept whatever
+     the axes do. Again only when its box or its words change. */
+  const WIDEST = [[900, 0, 0, 'normal'], [900, 0, 100, 'normal'], [900, 0, 0, 'italic'], [900, 0, 100, 'italic']];
+  function holdLines(text, el, ...mirrors) {
+    el.style.fontSize = '';
+    const cs = getComputedStyle(el), size = parseFloat(cs.fontSize), box = el.clientWidth;
+    const probe = document.createElement('span');
+    probe.style.cssText = `position:absolute;left:-99999px;top:0;visibility:hidden;white-space:pre;font-family:${cs.fontFamily};font-size:${size}px;font-feature-settings:${cs.fontFeatureSettings}`;
+    document.body.appendChild(probe);
+    const wide = t => Math.max(...WIDEST.map(([w, g, x, st]) => {
+      probe.style.fontVariationSettings = fvs(w, g, x); probe.style.fontStyle = st; probe.textContent = t;
+      return probe.getBoundingClientRect().width;
+    }));
+    const words = text.trim().split(/\s+/).filter(Boolean), all = wide(words.join(' '));
+    let lines, fit = size;
+    if (all <= box) lines = [words.join(' ')];
+    else if (box / all >= 0.8) { lines = [words.join(' ')]; fit = Math.floor(size * box / all * 10) / 10; }
+    else {
+      lines = [];
+      for (const w of words) {
+        const k = lines.length - 1;
+        if (k >= 0 && wide(lines[k] + ' ' + w) <= box) lines[k] += ' ' + w; else lines.push(w);
+      }
+    }
+    probe.remove();
+    for (const t of [el, ...mirrors]) {
+      t.style.fontSize = fit === size ? '' : fit + 'px';
+      t.textContent = '';
+      lines.forEach(l => { const s = document.createElement('span'); s.className = 'ln'; s.textContent = l; t.appendChild(s); });
+    }
+  }
+  // the bar's height, for whatever is pinned under it
+  const setBarH = () => document.documentElement.style.setProperty('--bar-h', $('.bar').offsetHeight + 'px');
+  setBarH(); addEventListener('resize', setBarH);
+
   /* ------------------------------------------------------------ the shared place */
   const AX = { wght: [100, 900], GRAD: [-100, 100], WTCH: [0, 100] };
   const LOC = { wght: 400, GRAD: 0, WTCH: 0, ital: false };
@@ -282,6 +322,10 @@
       const t = row.querySelector('.it-wtext');
       t.textContent = text;
       t.style.fontVariationSettings = fvs(w, 0, 0);
+      t.addEventListener('scroll', () => {
+        t.classList.toggle('moved', t.scrollLeft > 2);
+        t.classList.toggle('end', t.scrollLeft + t.clientWidth >= t.scrollWidth - 2);
+      }, { passive: true });
       el.appendChild(row);
     }
   }
@@ -374,7 +418,16 @@
   }));
   $('#ds-up').addEventListener('click', () => setLoc({ ital: false }));
   $('#ds-it').addEventListener('click', () => setLoc({ ital: true }));
-  dsText.addEventListener('input', () => { dsGhost.textContent = dsText.textContent; });
+  // the ghost follows the text line for line; the breaks are made again once the editing stops
+  dsText.addEventListener('input', () => {
+    dsGhost.textContent = '';
+    [...dsText.childNodes].forEach(n => { const s = document.createElement('span'); s.className = 'ln'; s.textContent = n.textContent; dsGhost.appendChild(s); });
+  });
+  const holdDS = () => holdLines(dsText.innerText, dsText, dsGhost);
+  dsText.addEventListener('blur', holdDS);
+  document.fonts.ready.then(holdDS);
+  let dsW = 0;
+  new ResizeObserver(() => { if (dsText.clientWidth !== dsW && document.activeElement !== dsText) { dsW = dsText.clientWidth; holdDS(); } }).observe(dsStage);
 
   const PRESETS = [
     ['Thin', { wght: 100, GRAD: 0, WTCH: 0 }], ['Regular', { wght: 400, GRAD: 0, WTCH: 0 }], ['Bold', { wght: 700, GRAD: 0, WTCH: 0 }],
@@ -652,13 +705,14 @@
   const METRICS = [['ASCENDER', 'ascender'], ['CAP HEIGHT', 'cap'], ['X-HEIGHT', 'x'], ['BASELINE', null], ['DESCENDER', 'descender']];
   function layoutCard() {
     const M = FONT ? FONT.metrics : { upm: 1000, ascender: 975, descender: -250, cap: 720, x: 540 };
-    const H = stage.clientHeight, S = H * 0.66 / ((M.ascender - M.descender) / M.upm), top = (H - S * (M.ascender - M.descender) / M.upm) / 2;
+    const fill = matchMedia('(max-width: 860px)').matches ? 0.86 : 0.66;   // the compact card (phones): the character fills its stage, the metrics as tags
+    const H = stage.clientHeight, S = H * fill / ((M.ascender - M.descender) / M.upm), top = (H - S * (M.ascender - M.descender) / M.upm) / 2;
     glyph.style.fontSize = S + 'px';
     glyph.style.top = top + 'px';
     glyph.style.lineHeight = (M.ascender - M.descender) / M.upm;
     linesEl.innerHTML = METRICS.map(([n, k]) => {
       const v = k ? M[k] : 0, y = top + (M.ascender - v) / M.upm * S;
-      return `<div class="${k ? '' : 'base'}" style="top:${y.toFixed(1)}px"><span>${n} ${v}</span></div>`;
+      return `<div class="${k ? '' : 'base'}" style="top:${y.toFixed(1)}px"><span><b>${n}</b> ${v}</span></div>`;
     }).join('');
     return { M, S };
   }
@@ -684,7 +738,27 @@
   }
   // the face the card needs, loaded before its advance is measured
   const loadCard = () => document.fonts.load(`${CL.ital ? 'italic' : 'normal'} ${CL.mono ? CL.wght : 400} 24px ${CL.mono ? '"Arris Mono"' : 'Arris'}`, chEl.textContent).then(drawCard);
-  addEventListener('resize', () => { cardM = layoutCard(); drawCard(); });
+  let stageH = 0;
+  new ResizeObserver(() => { if (stage.clientHeight !== stageH) { stageH = stage.clientHeight; cardM = layoutCard(); drawCard(); } }).observe(stage);
+  function step(d) {
+    const list = groups[group]; if (!list) return;
+    select(list[clamp(list.indexOf(sel) + d, 0, list.length - 1)]);
+    const b = $(`#grid button[aria-selected="true"]`); if (b) b.scrollIntoView({ block: 'nearest' });
+  }
+  $('#card-prev').addEventListener('click', () => step(-1));
+  $('#card-next').addEventListener('click', () => step(1));
+  let swipe = null;
+  stage.addEventListener('pointerdown', e => { swipe = [e.clientX, e.clientY]; });
+  stage.addEventListener('pointerup', e => {
+    if (!swipe) return;
+    const dx = e.clientX - swipe[0], dy = e.clientY - swipe[1]; swipe = null;
+    if (Math.abs(dx) > 36 && Math.abs(dx) > 1.5 * Math.abs(dy)) step(dx < 0 ? 1 : -1);
+  });
+  $('#card-axes').addEventListener('click', () => {
+    const open = !$('#card').classList.contains('axes-open');
+    $('#card').classList.toggle('axes-open', open); $('#card-axes').setAttribute('aria-expanded', open);
+  });
+  new ResizeObserver(() => $('.spec').style.setProperty('--card-h', $('#card').offsetHeight + 'px')).observe($('#card'));
   $('#card-up').addEventListener('click', () => { CL.ital = false; drawCard(); loadCard(); });
   $('#card-it').addEventListener('click', () => { CL.ital = true; drawCard(); loadCard(); });
   $('#card-mono').addEventListener('click', () => { CL.mono = !CL.mono; drawCard(); if (CL.mono) loadCard(); });

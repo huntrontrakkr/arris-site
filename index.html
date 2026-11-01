@@ -184,7 +184,7 @@
 
   <div class="ds" id="ds">
     <div class="ds-stage" id="ds-stage">
-      <p class="ds-text" id="ds-text" contenteditable="true" spellcheck="false">Gate 8 closes at 21:47</p>
+      <p class="ds-text" id="ds-text" contenteditable="plaintext-only" spellcheck="false">Gate 8 closes at 21:47</p>
       <p class="ds-ghost" id="ds-ghost" aria-hidden="true">Gate 8 closes at 21:47</p>
     </div>
 
@@ -282,7 +282,7 @@
   <h2>The character set</h2>
   <div class="spec">
     <div class="card" id="card">
-      <div class="card-head"><span id="card-cp">U+0041</span><span id="card-block">Latin</span></div>
+      <div class="card-head"><span id="card-cp">U+0041</span><span id="card-block">Latin</span><span class="card-step"><button type="button" id="card-prev" aria-label="Previous character">‹</button><button type="button" id="card-next" aria-label="Next character">›</button></span></div>
       <div class="card-stage" id="card-stage" aria-label="The selected character, large, on Arris's metrics">
         <div class="card-lines" id="card-lines" aria-hidden="true"></div>
         <div class="card-glyph" id="card-glyph"><span id="card-ch">A</span></div>
@@ -298,6 +298,7 @@
           </div>
           <button type="button" class="toggle" id="card-mono" role="switch" aria-checked="false"><i aria-hidden="true"></i>Mono</button>
           <button type="button" class="tri-reset" id="tri-reset">Regular</button>
+          <button type="button" class="card-axes" id="card-axes" aria-expanded="false" aria-controls="tri">Axes</button>
         </div>
       </div>
     </div>

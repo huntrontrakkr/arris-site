@@ -141,11 +141,11 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .ds { display: grid; gap: 14px; margin-top: 8px; }
 .ds-stage { position: relative; background: var(--night); padding: clamp(24px, 4vw, 52px) clamp(20px, 4vw, 48px); overflow: hidden;
   clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px)); }
-.ds-text, .ds-ghost { font-size: clamp(34px, 6.4vw, 92px); line-height: 1.1; margin: 0; max-width: none; outline: none; white-space: nowrap; }   /* one line, never rewrapped as it changes; the fade takes what overruns */
+.ds-text, .ds-ghost { font-size: clamp(34px, 6.4vw, 92px); line-height: 1.1; margin: 0; max-width: none; outline: none; }
+.ds-text .ln, .ds-ghost .ln { display: block; white-space: pre; }   /* lines held where the widest instance breaks (site.js holdLines): no axis rewraps them */
 .ds-ghost { position: absolute; left: clamp(20px, 4vw, 48px); right: clamp(20px, 4vw, 48px); top: clamp(24px, 4vw, 52px); pointer-events: none;
   color: transparent; -webkit-text-stroke: 1px var(--cut); opacity: 0; transition: opacity .2s; }
 .ds-stage.graded .ds-ghost { opacity: 1; }
-.ds-text, .ds-ghost { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 90px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 90px), transparent); }
 .ds-panel { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: 14px; }
 @media (max-width: 860px) { .ds-panel { grid-template-columns: 1fr; } }
 .ds-mapbox { background: var(--night); color: var(--night-ink); padding: 14px 16px 12px; display: grid; gap: 10px; min-width: 0; }
@@ -249,11 +249,12 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
   clip-path: polygon(0 0, calc(100% - 40px) 0, 100% 40px, 100% 100%, 0 100%); }
 @media (max-width: 860px) { .card { position: static; } }
 .card-head { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 13px; color: var(--amber); }
-.card-head span:last-child { color: var(--night-dim); margin-right: 32px; }
+.card-head #card-block { color: var(--night-dim); margin-right: 32px; }
 .card-stage { position: relative; aspect-ratio: 1; overflow: hidden; }
 .card-lines div { position: absolute; left: 0; right: 0; height: 0; border-top: 1px solid rgba(241,235,221,.14); }
 .card-lines div.base { border-top-color: rgba(255,176,0,.7); }
 .card-lines span { position: absolute; left: 2px; bottom: 3px; font-family: var(--mono); font-size: 10.5px; color: rgba(241,235,221,.45); white-space: nowrap; }
+.card-lines b { font-weight: inherit; }
 .card-glyph { position: absolute; left: 0; right: 0; text-align: center; white-space: pre; color: var(--night-ink);
   -webkit-mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent); mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent);
   padding: .3em 0; margin-top: -.3em; }   /* the mask clips to the box: room in it for ink past the ascender and descender (stacked accents at Black reach 1178) */
@@ -305,6 +306,55 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
   border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); cursor: cell; padding: 0; min-width: 0; }
 @media (hover: hover) { .grid button:hover { background: var(--panel); } }
 .grid button[aria-selected="true"] { background: var(--cut); color: var(--paper); }
+
+/* ---- phones: the weight rows ---------------------------------------------
+   the label over its line, the line the full width; on touch a line can be
+   pushed along to read all of it, its fades marking where there is more */
+@media (max-width: 640px) {
+  .it-wrow { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 7px 0 5px; }
+  .it-wlabel { font-size: 11px; }
+  .it-wtext { font-size: clamp(28px, 8.4vw, 40px); }
+}
+@media (hover: none) {
+  .it-wtext { overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; }
+  .it-wtext::-webkit-scrollbar { display: none; }
+  .it-wtext.moved { -webkit-mask-image: linear-gradient(to right, transparent, #000 40px, #000 calc(100% - 60px), transparent); mask-image: linear-gradient(to right, transparent, #000 40px, #000 calc(100% - 60px), transparent); }
+  .it-wtext.end { -webkit-mask-image: none; mask-image: none; }
+  .it-wtext.moved.end { -webkit-mask-image: linear-gradient(to right, transparent, #000 40px); mask-image: linear-gradient(to right, transparent, #000 40px); }
+}
+
+/* ---- phones and narrow windows: the character set ------------------------
+   the card pinned under the bar, compact: the character on its metrics
+   beside its name, code and place; its three axes open on demand. The
+   script tabs pinned under the card, and the grid in the page's own scroll */
+.card-step, .card-axes { display: none; }
+@media (max-width: 860px) {
+  .spec { display: block; }
+  .card { position: sticky; top: var(--bar-h, 49px); z-index: 6; display: grid; grid-template-columns: minmax(0, 42%) minmax(0, 1fr);
+    grid-template-areas: "stage head" "stage name" "stage side" "tri tri"; column-gap: 14px; row-gap: 4px; align-items: start; padding: 12px 14px;
+    clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 0 100%); }
+  .card-head { grid-area: head; align-items: center; gap: 8px; }
+  .card-head #card-block { margin-right: auto; }
+  .card-step { display: inline-flex; gap: 4px; margin-right: 14px; }
+  .card-step button { font: inherit; font-size: 16px; line-height: 1; width: 28px; height: 24px; padding: 0; background: none; color: var(--night-ink); border: 1px solid var(--night-line); cursor: pointer; }
+  .card-stage { grid-area: stage; touch-action: pan-y; }
+  .card-lines b { display: none; }
+  .card-lines span { left: auto; right: 0; bottom: 1px; font-size: 9px; }
+  .card-name { grid-area: name; font-size: 11px; min-height: 2.6em; }
+  .card-ctl { display: contents; }
+  .card-side { grid-area: side; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+  .card-metrics { flex-basis: 100%; grid-template-columns: auto auto; justify-content: start; column-gap: 12px; font-size: 10px; }
+  .card-axes { display: inline-block; font: inherit; font-family: var(--mono); font-size: 11px; padding: 4px 10px; background: none; color: var(--amber); border: 1px solid var(--amber); cursor: pointer; }
+  .card-axes[aria-expanded="true"] { background: var(--amber); color: var(--night); }
+  .tri { grid-area: tri; display: none; max-width: 300px; margin: 6px auto 0; }
+  .card.axes-open .tri { display: block; }
+  .groups { position: sticky; top: calc(var(--bar-h, 49px) + var(--card-h, 0px)); z-index: 5; background: var(--bg); flex-wrap: nowrap; overflow-x: auto;
+    scrollbar-width: none; margin: 0; padding: 10px 0; }
+  .groups::-webkit-scrollbar { display: none; }
+  .groups button { flex: none; }
+  .grid { max-height: none; overflow: visible; grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); }
+  .grid button { font-size: 22px; scroll-margin-top: calc(var(--bar-h, 49px) + var(--card-h, 0px) + 56px); scroll-margin-bottom: 16px; }
+}
 
 /* features */
 .feat-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); border-top: 1px solid var(--line); }
@@ -678,6 +728,13 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .lig:focus-visible .lig-raw, .lig.show .lig-raw, .lig:focus-visible .lig-sign::after, .lig.show .lig-sign::after { opacity: 1; }
 @media (hover: hover) { .lig:hover .lig-raw, .lig:hover .lig-sign::after { opacity: 1; } }
 .lig-chars { font-family: var(--mono); font-size: 12px; color: var(--dim); font-feature-settings: "calt" 0; letter-spacing: .2em; }
+@media (max-width: 640px) {   /* four to a row, each sign in its own cells still */
+  .ligs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .lig { padding: 12px 2px 8px; gap: 6px; }
+  .lig-sign { font-size: 26px; }
+  .lig-chars { font-size: 10px; letter-spacing: .08em; }
+  .lig-group { padding: 8px 10px 6px; }
+}
 .lig-group { grid-column: 1 / -1; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent);
   padding: 10px 12px 8px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .never { display: flex; flex-wrap: wrap; gap: 8px 22px; align-items: baseline; margin: 22px 0 10px; font-family: var(--mono); font-size: clamp(22px, 3vw, 32px); }

@@ -252,7 +252,6 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
   display: flex; flex-direction: column; gap: 8px; background: var(--night); color: var(--night-ink); padding: 16px 18px 18px; overflow-y: auto; scrollbar-width: none;
   clip-path: polygon(28px 0, 100% 0, 100% 100%, 28px 100%, 0 calc(100% - 28px), 0 28px); }
 .card::-webkit-scrollbar { display: none; }
-@media (max-width: 860px) { .card { position: static; } }
 .card-head { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 13px; color: var(--amber); }
 .card-head #card-block { color: var(--night-dim); margin-left: 12px; margin-right: auto; }
 .card-head { align-items: center; }

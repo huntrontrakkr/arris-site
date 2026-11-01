@@ -63,6 +63,16 @@ from the arris-films repository:
 tools/media.sh ../arris-films/presentation
 ```
 
+## Visits
+
+GoatCounter counts the visits to the page and to wrong addresses
+(`404.html`) and each click on the download button (the event
+`download-zip`): one script, `gc.zgo.at/count.js`, with no cookies and
+nothing that identifies a visitor kept. The counts are at
+https://arristype.goatcounter.com (the account's code is `arristype`).
+`tools/traffic.py` reads Cloudflare's own count of requests beside the
+release downloads.
+
 ## Publishing
 
 The site is at https://arristype.com: a Cloudflare Worker that serves the

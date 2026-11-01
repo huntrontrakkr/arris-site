@@ -46,7 +46,17 @@ section { padding: clamp(64px, 10vw, 128px) var(--gut-r) 0 var(--gut); max-width
   font-family: var(--mono); font-size: 13px; letter-spacing: .04em; transition: background .4s, color .4s; }
 .tab { display: grid; place-items: center; width: 28px; height: 24px; background: var(--amber); color: var(--night); text-decoration: none;
   font-family: var(--sans); font-variation-settings: "wght" 800, "GRAD" 0, "WTCH" 0; font-size: 15px;
-  clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 0 100%); }
+  clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 0 100%); position: relative; isolation: isolate; }
+/* the tab, touched with a flame at its cut corner: the oxide's colours, thickest
+   there and fading into the amber across it, drifting slowly through their
+   sequence as if still cooling */
+.tab::before { content: ""; position: absolute; inset: 0; z-index: -1; opacity: .62;
+  background: linear-gradient(120deg, var(--t100), var(--t200), var(--t300), var(--t400), var(--t500), var(--t600), var(--t700), var(--t800), var(--t900), var(--t100)) 0 0 / 900% 100%;
+  -webkit-mask-image: radial-gradient(circle at 100% 0, #000 0, rgba(0,0,0,.75) 30%, rgba(0,0,0,.25) 62%, transparent 85%);
+  mask-image: radial-gradient(circle at 100% 0, #000 0, rgba(0,0,0,.75) 30%, rgba(0,0,0,.25) 62%, transparent 85%);
+  animation: tab-heat 28s linear infinite; }
+@keyframes tab-heat { to { background-position: 100% 0; } }
+@media (prefers-reduced-motion: reduce) { .tab::before { animation: none; background-position: 40% 0; } }
 .bar-name { font-family: var(--sans); font-size: 16px; font-variation-settings: "wght" 650, "GRAD" 0, "WTCH" 0; letter-spacing: 0; }
 .ver { font-family: var(--mono); font-size: 10px; color: var(--paper-dim); font-variation-settings: normal; }
 .bar nav { margin-left: auto; display: flex; gap: 18px; flex-wrap: wrap; justify-content: flex-end; }

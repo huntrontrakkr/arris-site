@@ -437,6 +437,33 @@ async function quiet(stage) {
   }
 }
 
+/* The shadows printed as a halftone, as the sign and the pail's print are:
+ * a screen of round dots at 45 degrees, CELL CSS pixels apart, each as large
+ * as the shadow is deep there (its area the shadow's darkness), so a soft
+ * edge is a run of shrinking dots and the shadow reads on the night's dark
+ * ground and across the sign's yellow alike. A few lines in the shadow's own
+ * fragment shader: nothing more to draw. */
+const CELL = 5;
+const DOT = `
+  vec2 hq = mat2(0.7071, -0.7071, 0.7071, 0.7071) * (gl_FragCoord.xy / htCell);
+  float hd = length(fract(hq) - 0.5);
+  float hr = 0.75 * sqrt(clamp(hs, 0.0, 1.0));
+  float haa = max(fwidth(hd), 0.02);
+  float hdot = 1.0 - smoothstep(hr - haa, hr + haa, hd);`;
+function halftone(material, cell, density) {
+  material.onBeforeCompile = sh => {
+    sh.uniforms.htCell = { value: cell };
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform float htCell;')
+      .replace(density.from, density.to);
+  };
+  return material;
+}
+// a shadow catcher's darkness is 1 - its shadow mask; the contact patch's is its texture's alpha
+const WALL = { from: 'gl_FragColor = vec4( color, opacity * ( 1.0 - getShadowMask() ) );',
+               to: `float hs = 1.0 - getShadowMask();${DOT}\n  gl_FragColor = vec4( color, opacity * hdot );` };
+const PATCH = { from: '#include <opaque_fragment>',
+                to: `{ float hs = diffuseColor.a / max(opacity, 1e-3);${DOT}\n  diffuseColor.a = opacity * hdot; }\n#include <opaque_fragment>` };
+
 export async function mount(stage) {
   const canvas = stage.querySelector('canvas');
   // the print is set in Arris: its weights in hand before the board is printed
@@ -461,7 +488,9 @@ export async function mount(stage) {
   renderer.toneMapping = THREE.NeutralToneMapping;
   renderer.toneMappingExposure = 1.0;
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.VSMShadowMap;          // soft: a shadow on a sign, not a cut-out
+  // a narrow soft edge (PCF soft): the chopsticks' shadows keep their shape; the variance
+  // map (VSM) blurred them into a dark wedge, bled light, and cost two blur passes a frame
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   const scene = new THREE.Scene();
   await quiet(stage);
@@ -475,8 +504,7 @@ export async function mount(stage) {
   key.castShadow = true;
   key.shadow.mapSize.setScalar(light ? 1024 : 2048);
   Object.assign(key.shadow.camera, { left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 120 });
-  key.shadow.radius = light ? 3 : 6; key.shadow.blurSamples = light ? 12 : 20;   // (the radius is in the map's texels)
-  key.shadow.bias = -0.0006; key.shadow.normalBias = 0.02;
+  key.shadow.bias = -0.0004; key.shadow.normalBias = 0.03;
   scene.add(key);
   const rimLight = new THREE.DirectionalLight('#cfe2ff', 0.9);         // a cool edge from behind
   rimLight.position.set(-18, 14, -22);
@@ -495,15 +523,27 @@ export async function mount(stage) {
 
   // the shadow on the page: a wall in the sign's plane catches the pail's
   // shadow, and a soft patch under its foot sets it down
-  const wall = new THREE.Mesh(new THREE.PlaneGeometry(140, 90), new THREE.ShadowMaterial({ opacity: 0.5 }));
-  wall.position.set(0, 15, -6.0); wall.receiveShadow = true;
+  const cell = CELL * renderer.getPixelRatio();
+  const wall = new THREE.Mesh(new THREE.PlaneGeometry(140, 90), halftone(new THREE.ShadowMaterial({ opacity: 0.9 }), cell, WALL));
+  // just behind the pail's furthest reach at any turn: at -6 the open back flap reached
+  // through the wall, and the wall's shadow was drawn over the top of the flap (a patch
+  // that made no sense). The pail turns about its axis, so its reach is its widest radius.
+  let reach = 0;
+  pail.updateMatrixWorld(true);
+  pail.traverse(o => {
+    const pos = o.isMesh && o.geometry.attributes.position;
+    if (!pos) return;
+    const v = new THREE.Vector3();
+    for (let i = 0; i < pos.count; i++) { v.fromBufferAttribute(pos, i).applyMatrix4(o.matrixWorld); reach = Math.max(reach, Math.hypot(v.x, v.z)); }
+  });
+  wall.position.set(0, 15, -Math.max(6.0, reach + 0.4)); wall.receiveShadow = true;
   scene.add(wall);
   const blob = document.createElement('canvas'); blob.width = blob.height = 128;
   const bg = blob.getContext('2d'), grad = bg.createRadialGradient(64, 64, 4, 64, 64, 64);
   grad.addColorStop(0, 'rgba(0,0,0,0.85)'); grad.addColorStop(0.55, 'rgba(0,0,0,0.35)'); grad.addColorStop(1, 'rgba(0,0,0,0)');
   bg.fillStyle = grad; bg.fillRect(0, 0, 128, 128);
   const contact = new THREE.Mesh(new THREE.PlaneGeometry(14, 11),
-    new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(blob), transparent: true, depthWrite: false, opacity: 0.7 }));
+    halftone(new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(blob), transparent: true, depthWrite: false, opacity: 0.9 }), cell, PATCH));
   contact.rotation.x = -Math.PI / 2; contact.position.y = -0.02;
   scene.add(contact);
 
@@ -513,7 +553,7 @@ export async function mount(stage) {
     // wide, the pail stands left of centre, over the sign's edge; tall (a
     // phone, the sign above it), nearer the middle
     look.x = camera.aspect > 1.1 ? 5.2 : 2.6;
-    wall.material.opacity = camera.aspect > 1.1 ? 0.5 : 0.18;     // on a phone the sign is above, not behind
+    wall.material.opacity = camera.aspect > 1.1 ? 0.9 : 0.55;     // on a phone the sign is above, not behind: a lighter screen
     const el = THREE.MathUtils.degToRad(19), dist = camera.aspect > 1.1 ? 66 : 72;
     camera.position.set(look.x, look.y + dist * Math.sin(el), dist * Math.cos(el));
     camera.lookAt(look);

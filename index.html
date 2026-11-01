@@ -272,7 +272,8 @@
 </section>
 
 <section class="mono" id="mono">
-  <h2>Arris Mono</h2>
+  <p class="mono-kicker">Arris Mono</p>
+  <h2 class="mono-title">Ten modules to a cell</h2>
   <p class="mono-lede">Arris Mono uses the figures' 10-module pitch. Its 45 ligatures stay inside their cells.</p>
 
   <div class="editor" id="editor">
@@ -292,12 +293,23 @@
     </div>
   </div>
 
+  <figure class="ledger-fig">
+    <pre class="ledger" aria-label="A ledger in Arris Mono, its columns in line, ligatures and all"><span class="lh">ROUTE                   DEP    ARR    LOAD t  NOTE</span>
+<span class="lr">──────────────────────  ─────  ─────  ──────  ────────────────</span>
+dock 07 -> bay 09       03:47  04:12  11.000  seal != broken
+ring 4 -> glasshouse    04:10  04:31   0.214  rh >= 55 %
+arcology 7 -> docks     05:00  05:47   2.950  on time
+bladder lift, ring 4    06:00  06:05   0.340  <= 340 L left
+<span class="lr">──────────────────────  ─────  ─────  ──────  ────────────────</span>
+<span class="lh">4 runs                                14.504 t</span></pre>
+    <figcaption>Columns stay in line: every character is one cell wide, and a ligature takes the cells of the characters it joins.</figcaption>
+  </figure>
+
+  <div class="it-weights mono-weights" id="mono-weights" aria-label="Arris Mono in its four styles"></div>
+
   <h3 class="lig-title">The ligatures</h3>
+  <p class="lig-note">Hover or tap one to see the characters it joins, in their cells. A row scrolls sideways where it runs on.</p>
   <div class="ligs" id="ligs"></div>
-  <div class="never">
-    <span class="never-label">Left alone</span>
-    <span id="never"></span>
-  </div>
 </section>
 
 <section class="specimen" id="specimen">

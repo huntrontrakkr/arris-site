@@ -756,13 +756,19 @@
   function layoutCard() {
     const M = FONT ? FONT.metrics : { upm: 1000, ascender: 975, descender: -250, cap: 720, x: 540 };
     const fill = matchMedia('(max-width: 860px)').matches ? 0.86 : 0.66;   // the compact card (phones): the character fills its stage, the metrics as tags
-    const H = stage.clientHeight, S = H * fill / ((M.ascender - M.descender) / M.upm), top = (H - S * (M.ascender - M.descender) / M.upm) / 2;
+    // the size the stage's height allows, and no more than its width does: an em in 0.72 of it, so a
+    // wide character stays inside on a tall screen (at 3840×2160 the A ran out of the pane)
+    const H = stage.clientHeight, W = stage.clientWidth || H;
+    const S = Math.min(H * fill / ((M.ascender - M.descender) / M.upm), W * 0.72), top = (H - S * (M.ascender - M.descender) / M.upm) / 2;
     glyph.style.fontSize = S + 'px';
     glyph.style.top = top + 'px';
     glyph.style.lineHeight = (M.ascender - M.descender) / M.upm;
+    let lastLeft = -Infinity;
     linesEl.innerHTML = METRICS.map(([n, k]) => {
       const v = k ? M[k] : 0, y = top + (M.ascender - v) / M.upm * S;
-      return `<div class="${k ? '' : 'base'}" style="top:${y.toFixed(1)}px"><span><b>${n}</b> ${v}</span></div>`;
+      const right = y - lastLeft < 18;                    // a label would touch the one above: it goes to the right
+      if (!right) lastLeft = y;
+      return `<div class="${k ? '' : 'base'}${right ? ' r' : ''}" style="top:${y.toFixed(1)}px"><span><b>${n}</b> ${v}</span></div>`;
     }).join('');
     return { M, S };
   }
@@ -788,8 +794,8 @@
   }
   // the face the card needs, loaded before its advance is measured
   const loadCard = () => document.fonts.load(`${CL.ital ? 'italic' : 'normal'} ${CL.mono ? CL.wght : 400} 24px ${CL.mono ? '"Arris Mono"' : 'Arris'}`, chEl.textContent).then(drawCard);
-  let stageH = 0;
-  new ResizeObserver(() => { if (stage.clientHeight !== stageH) { stageH = stage.clientHeight; cardM = layoutCard(); drawCard(); } }).observe(stage);
+  let stageH = 0, stageW = 0;
+  new ResizeObserver(() => { if (stage.clientHeight !== stageH || stage.clientWidth !== stageW) { stageH = stage.clientHeight; stageW = stage.clientWidth; cardM = layoutCard(); drawCard(); } }).observe(stage);
   function step(d) {
     const list = groups[group]; if (!list) return;
     select(list[clamp(list.indexOf(sel) + d, 0, list.length - 1)]);

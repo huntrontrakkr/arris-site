@@ -179,24 +179,91 @@ main = print (tonnage ["3000", "470"])` },
     ['Hash', '#{ #[ #( #_'],
     ['Dashes', '-- ++'],
   ];
+  const NEVER = '<=< >>= //= ||= ----> :: // ||';
+  // a row a kind: its name and count, then its signs in a strip that scrolls
+  // sideways where it runs on (a mouse can drag it; its ends fade while
+  // there is more past them)
   const ligs = $('#ligs');
-  LIGS.forEach(([name, list]) => {
-    const g = document.createElement('div');
-    g.className = 'lig-group'; g.textContent = name;
-    ligs.appendChild(g);
-    list.split(' ').forEach(seq => {
-      const b = document.createElement('button');
-      b.type = 'button'; b.className = 'lig';
-      b.setAttribute('aria-label', `${seq}: ${seq.length} cells`);
-      b.innerHTML = '<span class="lig-sign"><span class="lig-raw" aria-hidden="true"></span></span><span class="lig-chars"></span>';
+  function row(name, list, never = false) {
+    const r = document.createElement('div');
+    r.className = 'lig-row' + (never ? ' lig-never' : '');
+    const head = document.createElement('div');
+    head.className = 'lig-group';
+    head.append(name);
+    if (!never) { const n = document.createElement('small'); n.textContent = `${list.length}`; head.appendChild(n); }
+    const strip = document.createElement('div');
+    strip.className = 'lig-strip';
+    list.forEach(seq => {
+      const b = document.createElement(never ? 'span' : 'button');
+      b.className = 'lig';
+      if (never) b.setAttribute('aria-label', `${seq}: left as it is`);
+      else { b.type = 'button'; b.setAttribute('aria-label', `${seq}: ${seq.length} cells`); }
+      b.innerHTML = `<span class="lig-sign">${never ? '' : '<span class="lig-raw" aria-hidden="true"></span>'}</span><span class="lig-chars"></span>`;
       b.querySelector('.lig-sign').prepend(seq);
-      b.querySelector('.lig-raw').textContent = seq;
+      if (!never) {
+        b.querySelector('.lig-raw').textContent = seq;
+        b.addEventListener('click', () => { if (!strip._dragged) b.classList.toggle('show'); });
+      }
       b.querySelector('.lig-chars').textContent = seq.split('').join(' ');
-      b.addEventListener('click', () => b.classList.toggle('show'));
-      ligs.appendChild(b);
+      strip.appendChild(b);
     });
-  });
-  $('#never').textContent = '<=<  >>=  //=  ||=  ---->  ::  //  ||';
+    r.append(head, strip);
+    ligs.appendChild(r);
+    edges(strip);
+    drag(strip);
+  }
+  function edges(strip) {
+    const set = () => {
+      const max = strip.scrollWidth - strip.clientWidth;
+      strip.classList.toggle('more-l', strip.scrollLeft > 2);
+      strip.classList.toggle('more-r', max > 2 && strip.scrollLeft < max - 2);
+    };
+    strip.addEventListener('scroll', set, { passive: true });
+    if ('ResizeObserver' in window) new ResizeObserver(set).observe(strip);
+    document.fonts.ready.then(set);
+    set();
+  }
+  // a mouse drags a strip sideways (touch and trackpads scroll it themselves);
+  // a drag of more than a few pixels is not a click on the sign under it
+  function drag(strip) {
+    let x0 = 0, s0 = 0, on = false;
+    strip.addEventListener('pointerdown', e => {
+      if (e.pointerType !== 'mouse' || e.button !== 0 || strip.scrollWidth <= strip.clientWidth) return;
+      on = true; strip._dragged = false; x0 = e.clientX; s0 = strip.scrollLeft;
+    });
+    addEventListener('pointermove', e => {
+      if (!on) return;
+      const dx = e.clientX - x0;
+      if (!strip._dragged && Math.abs(dx) > 5) { strip._dragged = true; strip.classList.add('dragging'); }
+      if (strip._dragged) strip.scrollLeft = s0 - dx;
+    });
+    addEventListener('pointerup', () => {
+      if (!on) return;
+      on = false; strip.classList.remove('dragging');
+      setTimeout(() => { strip._dragged = false; }, 0);     // after the click this drag would have made
+    });
+  }
+  LIGS.forEach(([name, list]) => row(name, list.split(' ')));
+  row('Left alone', NEVER.split(' '), true);
+
+  /* ------------------------------------------------------------ the four styles */
+  // Mono is static: Regular and Bold, each upright and italic; one line each,
+  // with the characters a coding face must keep apart
+  const styles = $('#mono-weights');
+  if (styles) {
+    const LINE = 'Sphinx of black quartz, judge my vow: 0O 1lI| 5S 8B 2Z rn m {[()]} 3.14';
+    [[400, false, 'Regular'], [400, true, 'Italic'], [700, false, 'Bold'], [700, true, 'Bold Italic']].forEach(([w, it, name]) => {
+      const r = document.createElement('div');
+      r.className = 'it-wrow';
+      r.innerHTML = '<span class="it-wlabel"><i></i></span><span class="it-wtext"></span>';
+      r.querySelector('i').style.background = `var(--t${w})`;
+      r.querySelector('.it-wlabel').append(`${w} ${name}`);
+      const t = r.querySelector('.it-wtext');
+      t.textContent = LINE;
+      t.style.fontWeight = w; t.style.fontStyle = it ? 'italic' : 'normal';
+      styles.appendChild(r);
+    });
+  }
 
   /* ------------------------------------------------------------ the terminal: the Glasshouse's console */
   // The module from the long read above, as its night-shift console: a

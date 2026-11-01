@@ -754,8 +754,10 @@
     const dx = e.clientX - swipe[0], dy = e.clientY - swipe[1]; swipe = null;
     if (Math.abs(dx) > 36 && Math.abs(dx) > 1.5 * Math.abs(dy)) step(dx < 0 ? 1 : -1);
   });
-  // the tabs' height, for the examiner pinned under them on phones
-  new ResizeObserver(() => $('.spec').style.setProperty('--tabs-h', $('#groups').offsetHeight + 'px')).observe($('#groups'));
+  // on phones the script tabs live at the foot of the examiner; elsewhere over the grid
+  const groupsEl = $('#groups'), narrow = matchMedia('(max-width: 860px)');
+  const placeGroups = () => { if (narrow.matches) $('#card').appendChild(groupsEl); else $('#grid').before(groupsEl); };
+  narrow.addEventListener('change', placeGroups); placeGroups();
   $('#card-up').addEventListener('click', () => { CL.ital = false; drawCard(); loadCard(); });
   $('#card-it').addEventListener('click', () => { CL.ital = true; drawCard(); loadCard(); });
   $('#card-mono').addEventListener('click', () => { CL.mono = !CL.mono; drawCard(); if (CL.mono) loadCard(); });
@@ -797,7 +799,7 @@
   });
   // the ends: the axis at its vertex, the low end at the foot
   const label = (x, y, anchor, text, cls = 'tri-label') => { const t = el('text', { x: f1(x), y: f1(y), 'text-anchor': anchor, class: cls }); t.textContent = text; return t; };
-  label(120, 14 - 9, 'middle', 'Weight 900'); label(120, 194 + 13, 'middle', '100');
+  label(120, 14 - 9, 'middle', 'Weight 900'); label(120, 194 + 13, 'middle', '100', 'tri-label tri-mid');
   label(16 - 4, 194 + 13, 'start', 'Grade +100'); label(172 + 8, 104 + 3.5, 'start', '-100');
   label(224 + 4, 194 + 13, 'end', 'Watch 100');
   const shape = el('polygon', { class: 'tri-shape' });

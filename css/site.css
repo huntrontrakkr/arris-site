@@ -324,37 +324,46 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 }
 
 /* ---- phones and narrow windows: the character set -------------------------
-   two panes, as on a desk: on the left the examiner, pinned (the character
-   on its metric lines, its code and name, the triangle that sets its place,
-   its values); on the right the whole set in the page's own scroll. The
-   script tabs pinned across the top of both */
+   two panes, as on a desk: on the left the examiner, pinned and as tall as
+   the screen (the character on its metric lines, its code and name, the
+   triangle that sets its place, its values, and at its foot the scripts),
+   both corners that face the set cut; on the right the whole set in the
+   page's own scroll */
 .card-step { display: none; }
 @media (max-width: 860px) {
-  .spec { display: grid; grid-template-columns: minmax(0, 48%) minmax(0, 1fr); grid-template-areas: "groups groups" "card grid"; column-gap: 10px; align-items: start; }
+  .spec { display: grid; grid-template-columns: minmax(0, 48%) minmax(0, 1fr); grid-template-areas: "card grid"; column-gap: 10px; align-items: start; }
   .spec-side { display: contents; }
-  .groups { grid-area: groups; position: sticky; top: var(--bar-h, 49px); z-index: 6; background: var(--bg); flex-wrap: nowrap; overflow-x: auto;
-    scrollbar-width: none; margin: 0; padding: 10px 0; }
-  .groups::-webkit-scrollbar { display: none; }
-  .groups button { flex: none; }
-  .card { grid-area: card; position: sticky; top: calc(var(--bar-h, 49px) + var(--tabs-h, 52px)); z-index: 5; display: grid; grid-template-columns: minmax(0, 1fr);
-    row-gap: 6px; padding: 10px 10px 12px; clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%); }
+  .card { grid-area: card; position: sticky; top: calc(var(--bar-h, 49px) + 8px); z-index: 5; height: calc(100svh - var(--bar-h, 49px) - 16px);
+    display: flex; flex-direction: column; gap: 6px; padding: 10px 10px 12px; overflow-y: auto; scrollbar-width: none;
+    clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%); }
+  .card::-webkit-scrollbar { display: none; }
   .card-head { align-items: center; gap: 6px; font-size: 12px; }
   .card-head #card-block { display: none; }
   .card-step { display: inline-flex; gap: 4px; margin: 0 12px 0 auto; }
   .card-step button { font: inherit; font-size: 15px; line-height: 1; width: 26px; height: 24px; padding: 0; background: none; color: var(--night-ink); border: 1px solid var(--night-line); cursor: pointer; }
-  .card-stage { touch-action: pan-y; }
+  .card-stage { flex: none; touch-action: pan-y; }
   .card-lines b { display: none; }
   .card-lines span { left: auto; right: 0; bottom: 1px; font-size: 9px; }
   .card-name { font-size: 10.5px; min-height: 2.6em; }
   .card-ctl { display: contents; }
-  .tri { max-width: none; margin: 0; }
+  .tri { flex: none; max-width: none; margin: 0; }
   .tri-label { font-size: 15px; }
+  .tri-mid { display: none; }
   .tri-knob text { font-size: 13px; }
   .card-side { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
   .card-metrics { flex-basis: 100%; grid-template-columns: auto auto; justify-content: start; column-gap: 10px; font-size: 10px; }
   .card-side .switch.small button { padding: 4px 8px; font-size: 11px; }
+  .card .groups { margin: auto 0 0; padding: 10px 0 0; border-top: 1px solid var(--night-line); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; }
+  .card .groups button[data-group="Punctuation"] { grid-column: span 2; }
+  .card .groups button { color: var(--night-ink); border-color: var(--night-line); font-size: 10.5px; padding: 4px 5px; text-align: left; white-space: nowrap; }
+  .card .groups small { display: none; }   /* the names whole, two to a row; the counts are on desktop */
+  .card .groups button[aria-selected="true"] { background: var(--amber); color: var(--night); border-color: var(--amber); }
   .grid { grid-area: grid; max-height: none; overflow: visible; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); }
-  .grid button { font-size: 19px; scroll-margin-top: calc(var(--bar-h, 49px) + var(--tabs-h, 52px) + 8px); scroll-margin-bottom: 16px; }
+}
+@media (max-width: 860px) and (max-height: 780px) {   /* short screens: a little less stage, so the scripts fit at the foot */
+  .card-stage { aspect-ratio: 5 / 4; }
+  .card-name { min-height: 0; }
+  .grid button { font-size: 19px; scroll-margin-top: calc(var(--bar-h, 49px) + 8px); scroll-margin-bottom: 16px; }
 }
 
 /* features */

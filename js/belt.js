@@ -17,6 +17,15 @@
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const READ = 430, THIN = 100;
+  // a moment worth counting, sent to GoatCounter as an event (once a visit
+  // unless every time is asked); dropped quietly where the counter is blocked
+  const counted = new Set();
+  function track(path, title, every = false) {
+    if (!every && counted.has(path)) return;
+    counted.add(path);
+    const send = () => { try { const gc = window.goatcounter; if (gc && typeof gc.count === 'function') gc.count({ path, title, event: true }); } catch (e) { /* not counted */ } };
+    if (window.goatcounter && typeof window.goatcounter.count === 'function') send(); else addEventListener('load', send, { once: true });
+  }
 
   /* ------------------------------------------------------------ paperwork: tap to straighten */
   $$('.desk .doc').forEach(d => d.addEventListener('click', e => {
@@ -128,7 +137,7 @@
     }
   });
 
-  let lines = [];
+  let lines = [], ends = null;
   function layout() {
     lines = [];
     paras.filter(p => !p.closest('.sheet').hidden).forEach(p => {
@@ -144,6 +153,9 @@
       p.innerHTML = groups.map(g => `<span class="tl">${g.map(k => mark(...words[k])).join(' ')}</span>`).join('');
       lines.push(...$$('.tl', p));
     });
+    // the first and last lines of the marked paragraphs, while their story is the one shown
+    const shown = clue.filter(p => !p.closest('.sheet').hidden);
+    ends = shown.length ? [$('.tl', shown[0]), $$('.tl', shown[shown.length - 1]).pop()] : null;
     lines.forEach(l => { l._w = -1; });
     update();
   }
@@ -156,6 +168,8 @@
       const w = Math.round(THIN + (READ - THIN) * ease(clamp((lo - tops[i]) / (lo - hi), 0, 1)));
       if (w !== l._w) { l._w = w; l.style.fontVariationSettings = `"wght" ${w}, "GRAD" 0, "WTCH" 0`; }
     });
+    if (ends && ends[0] && ends[0]._w === READ) track('glasshouse-read-start', 'The Glasshouse: its marked paragraphs reached');
+    if (ends && ends[1] && ends[1]._w === READ) track('glasshouse-read-end', 'The Glasshouse: read through its marked paragraphs');
   }
 
   let near = false, queued = false;

@@ -65,10 +65,20 @@ tools/media.sh ../arris-films/presentation
 
 ## Visits
 
-GoatCounter counts the visits to the page and to wrong addresses
-(`404.html`) and each click on the download button (the event
-`download-zip`): one script, `gc.zgo.at/count.js`, with no cookies and
-nothing that identifies a visitor kept. The counts are at
+GoatCounter counts the visits to the page, to `kapa/` and to wrong
+addresses (`404.html`, counted as `/404` and the address tried, so the
+addresses people guess stand apart), with no cookies and nothing that
+identifies a visitor kept: one script, `gc.zgo.at/count.js`. And these
+events, each once a visit unless said:
+
+| event | when |
+|---|---|
+| `download-zip` | a click on the download button (every click) |
+| `survey-fifth-row` | the visitor shows the survey's fifth row (mouse over it, or a tap), not the slices' own cycle |
+| `glasshouse-read-start` | the Glasshouse story's first marked paragraph reaches reading weight |
+| `glasshouse-read-end` | its last marked paragraph's last line does |
+| `kapa-denied` | a wrong access code on `kapa/` (every try; never what was typed) |
+| `kapa-granted` | the right one | The counts are at
 https://arristype.goatcounter.com (the account's code is `arristype`).
 `tools/traffic.py` reads Cloudflare's own count of requests beside the
 release downloads.

@@ -6,6 +6,15 @@
 (() => {
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+  // a moment worth counting, sent to GoatCounter as an event (once a visit
+  // unless every time is asked); dropped quietly where the counter is blocked
+  const counted = new Set();
+  function track(path, title, every = false) {
+    if (!every && counted.has(path)) return;
+    counted.add(path);
+    const send = () => { try { const gc = window.goatcounter; if (gc && typeof gc.count === 'function') gc.count({ path, title, event: true }); } catch (e) { /* not counted */ } };
+    if (window.goatcounter && typeof window.goatcounter.count === 'function') send(); else addEventListener('load', send, { once: true });
+  }
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const two = n => String(n).padStart(2, '0');
@@ -1042,10 +1051,11 @@
   // it is not asked)
   let hovering = false, hold = 0;
   const cycling = !reduce && slice;
-  leakRow.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') { hovering = true; leaking(true); } });
+  leakRow.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') { hovering = true; leaking(true); track('survey-fifth-row', 'The survey: its fifth row shown'); } });
   leakRow.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') { hovering = false; leaking(false); } });
   leakRow.addEventListener('click', () => {
     if (hovering) return;
+    track('survey-fifth-row', 'The survey: its fifth row shown');
     if (cycling) { leaking(true); hold = 10; } else leaking(!leakRow.classList.contains('on'));
   });
   if (cycling) {

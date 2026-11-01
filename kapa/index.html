@@ -39,6 +39,8 @@
   @media (prefers-reduced-motion: reduce) { .frames figure { animation: none; } }
   @media (prefers-reduced-motion: reduce) { .blink { animation: none; } }
 </style>
+<!-- visits and tries at the code counted by GoatCounter (whether a try opened it, never what was typed) -->
+<script data-goatcounter="https://arristype.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 </head>
 <body>
 <main>
@@ -67,6 +69,15 @@
   const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
   const state = document.getElementById('state'), out = document.getElementById('out'), form = document.getElementById('gate'), frames = document.getElementById('frames');
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // a moment worth counting, sent to GoatCounter as an event (once a visit
+  // unless every time is asked); dropped quietly where the counter is blocked
+  const counted = new Set();
+  function track(path, title, every = false) {
+    if (!every && counted.has(path)) return;
+    counted.add(path);
+    const send = () => { try { const gc = window.goatcounter; if (gc && typeof gc.count === 'function') gc.count({ path, title, event: true }); } catch (e) { /* not counted */ } };
+    if (window.goatcounter && typeof window.goatcounter.count === 'function') send(); else addEventListener('load', send, { once: true });
+  }
   async function keyFor(code, sealed) {
     const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(code), 'PBKDF2', false, ['deriveKey']);
     return crypto.subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt: b64(sealed.salt), iterations: sealed.iter }, base,
@@ -100,12 +111,14 @@
       const key = await keyFor(code, sealed);
       const msg = JSON.parse(new TextDecoder().decode(await open(key, sealed.iv, b64(sealed.ct))));
       state.textContent = 'GRANTED'; state.className = '';
+      track('kapa-granted', '0347 KAPA: opened');
       form.hidden = true;
       await type(msg.text);
       await show(key, msg.files);
       document.getElementById('credit').hidden = false;
     } catch (err) {
       state.textContent = 'DENIED'; state.className = 'denied';
+      track('kapa-denied', '0347 KAPA: a wrong code', true);
     }
   });
 })();

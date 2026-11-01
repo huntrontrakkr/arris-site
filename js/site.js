@@ -83,7 +83,33 @@
     const w = Math.round(cur.w), x = Math.round(cur.x);
     mark.style.setProperty('--w', w); mark.style.setProperty('--x', x);
     rw.textContent = w; rx.textContent = x;
+    wake();
   }
+  // the film: its copy follows the name through something thick (a lag of
+  // about a sixth of a second), shows as much as it lags and the name moves,
+  // and fades over a few seconds once the name is still; then it is hidden
+  const film = $('#mark-film'), fBlur = $('#film-blur'), fDisp = $('#film-disp');
+  let fw = 500, fx = 0, glow = 0, filmOn = false, filmT = 0;
+  function sizeFilm() {
+    const fs = parseFloat(getComputedStyle(mark).fontSize);
+    fBlur.setAttribute('stdDeviation', (fs * 0.05).toFixed(1)); fDisp.setAttribute('scale', (fs * 0.07).toFixed(1));
+  }
+  function filmStep(t) {
+    const dt = Math.min(0.25, (t - filmT) / 1000 || 0.016); filmT = t;   // real time, so a slow device fades as soon as a fast one
+    const a = 1 - Math.exp(-dt / 0.16);
+    fw += (cur.w - fw) * a; fx += (cur.x - fx) * a;
+    const stir = Math.abs(cur.w - fw) / 110 + Math.abs(cur.x - fx) / 25 + Math.abs(vel.w) / 1400;
+    glow = Math.max(glow * Math.exp(-dt / 0.7), Math.min(1, stir));
+    film.style.setProperty('--fw', fw.toFixed(1)); film.style.setProperty('--fx', fx.toFixed(1));
+    film.style.opacity = (0.6 * glow).toFixed(3);
+    if (glow < 0.008 && Math.abs(cur.w - fw) < 0.5 && Math.abs(cur.x - fx) < 0.2) { filmOn = false; film.style.visibility = 'hidden'; film.style.opacity = 0; return; }
+    requestAnimationFrame(filmStep);
+  }
+  function wake() {
+    if (reduce || filmOn) return;
+    filmOn = true; film.style.visibility = 'visible'; filmT = performance.now(); requestAnimationFrame(filmStep);
+  }
+  sizeFilm(); addEventListener('resize', sizeFilm);
   function spring(t) {
     const dt = Math.min(0.034, (t - last) / 1000 || 0.016); last = t;
     for (const k of ['w', 'x']) {

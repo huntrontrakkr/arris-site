@@ -110,7 +110,27 @@
 <div class="face-paper">
 
 <section class="hero">
-  <h1 class="mark" id="mark" aria-label="Arris">Arris</h1>
+  <div class="mark-wrap">
+    <div class="mark mark-film" id="mark-film" aria-hidden="true">Arris</div>
+    <h1 class="mark" id="mark" aria-label="Arris">Arris</h1>
+  </div>
+  <!-- the film the name drags while it moves: nearness to the letters taken as
+       the thickness of an oxide film, its colour the titanium's own (the same
+       interference as the films' anodizing), swirled a little like oil -->
+  <svg class="defs" width="0" height="0" aria-hidden="true" focusable="false">
+    <filter id="film" x="-6%" y="-30%" width="112%" height="160%" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="16" result="near" id="film-blur"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.0045 0.009" numOctaves="2" seed="7" result="swirl"/>
+      <feDisplacementMap in="near" in2="swirl" scale="20" xChannelSelector="R" yChannelSelector="G" result="oil" id="film-disp"/>
+      <feColorMatrix in="oil" type="matrix" values="0 0 0 1 0  0 0 0 1 0  0 0 0 1 0  0 0 0 1 0"/>
+      <feComponentTransfer>
+        <feFuncR type="table" tableValues="0.498 0.443 0.529 0.667 0.780 0.835 0.820 0.710 0.514 0.231 0.255 0.561 0.773 0.878 0.882 0.816 0.671 0.435 0.000 0.082 0.580 0.796 0.851 0.835 0.808 0.773 0.698 0.557 0.310 0.145 0.427 0.604 0.690"/>
+        <feFuncG type="table" tableValues="0.722 0.710 0.659 0.596 0.549 0.561 0.631 0.718 0.769 0.765 0.686 0.549 0.435 0.486 0.627 0.753 0.820 0.812 0.729 0.553 0.302 0.349 0.592 0.761 0.816 0.820 0.792 0.722 0.576 0.325 0.180 0.459 0.620"/>
+        <feFuncB type="table" tableValues="0.675 0.682 0.647 0.608 0.608 0.659 0.714 0.706 0.635 0.549 0.553 0.663 0.765 0.776 0.698 0.529 0.396 0.541 0.729 0.820 0.816 0.706 0.463 0.224 0.533 0.725 0.808 0.824 0.784 0.663 0.380 0.122 0.443"/>
+        <feFuncA type="table" tableValues="0.000 0.094 0.186 0.257 0.329 0.400 0.471 0.506 0.517 0.528 0.539 0.549 0.560 0.571 0.581 0.592 0.603 0.614 0.615 0.603 0.590 0.578 0.565 0.552 0.540 0.527 0.515 0.502 0.417 0.312 0.208 0.104 0.000"/>
+      </feComponentTransfer>
+    </filter>
+  </svg>
   <div class="readout" aria-hidden="true">
     <span>wght <b id="r-wght">900</b></span>
     <span>GRAD <b id="r-grad">0</b></span>

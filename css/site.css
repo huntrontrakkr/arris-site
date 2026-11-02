@@ -774,20 +774,29 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .assay-sheet .a-cut { color: var(--cut); }
 .assay-sheet .a-leak { color: #0aa6c9; text-shadow: 0 0 6px rgba(63,214,255,.55); }
 .assay-stamp { position: absolute; right: 12%; bottom: 26px; font-family: var(--mono); background: rgba(246,248,242,.6); }
-.vial { justify-self: center; position: relative; width: 112px; height: 270px; display: grid; justify-items: center; }
-.vial-cap { width: 70px; height: 34px; background: #1b2024; border: 1px solid #2e353b; clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%, 0 8px); }
-.vial-glass { position: relative; width: 62px; height: 226px; margin-top: -2px; border: 2px solid rgba(216,246,255,.32); border-top: 0;
-  border-radius: 0 0 31px 31px; background: linear-gradient(90deg, rgba(255,255,255,.05), rgba(255,255,255,.12) 30%, rgba(255,255,255,.02) 60%); overflow: hidden; }
-.vial-glow { position: absolute; left: 0; right: 0; bottom: 0; height: 52%; background: radial-gradient(120% 90% at 50% 60%, #8ff0ff 0, #2bc4e8 30%, #0b4a5a 75%);
-  box-shadow: 0 0 34px 10px rgba(63,214,255,.35); animation: vial 5.5s ease-in-out infinite; }
-.vial-glow::before { content: ""; position: absolute; left: -2px; right: -2px; top: -5px; height: 10px; border-radius: 50%; background: rgba(160,240,255,.55); }
-.vial-label { position: absolute; left: 4px; right: 4px; top: 30px; padding: 7px 0; background: #f3eee3; color: #1d1b17; text-align: center;
-  font-family: var(--mono); font-size: 8.5px; line-height: 1.45; letter-spacing: .04em; }
-.vial::after { content: ""; position: absolute; left: 50%; bottom: -18px; width: 180px; height: 60px; translate: -50% 0; pointer-events: none;
-  background: radial-gradient(closest-side, rgba(63,214,255,.22), transparent); animation: vial 5.5s ease-in-out infinite; }
+/* the sample tube hovers at the printout's edge, over its feed holes, and its light falls on the paper
+   (tube.svg: 220 by 520, its axis 110 from the left, its goo from 222 down) */
+.assay-row { overflow-x: clip; view-timeline: --assay block; }
+.vial { justify-self: start; position: relative; width: 220px; margin-left: calc(-1 * clamp(24px, 4vw, 56px) - 124px); pointer-events: none; }
+.vial .tube { position: relative; display: block; width: 100%; height: auto; overflow: visible; }
+.vial-spill { position: absolute; left: -41%; top: 29%; width: 182%; height: 73%; mix-blend-mode: multiply;
+  background: radial-gradient(closest-side, rgba(40,190,240,.5), rgba(60,200,245,.24) 45%, rgba(60,200,245,.08) 75%, transparent);
+  animation: vial 5.5s ease-in-out infinite; }
+.vial-halo { position: absolute; left: -15%; top: 34%; width: 130%; height: 60%;
+  background: radial-gradient(closest-side, rgba(63,214,255,.2), rgba(63,214,255,.06) 60%, transparent); animation: vial 5.5s ease-in-out infinite; }
+/* it scrolls a little faster than the paper, so it seems to hover over it: driven by the scroll where the browser can
+   (true to the paper at the middle of the window), else belt.js sets --lift */
+@supports (animation-timeline: view()) {
+  .vial .tube { animation: lift linear both; animation-timeline: --assay; }
+  .vial-spill, .vial-halo { animation: vial 5.5s ease-in-out infinite, lift linear both; animation-timeline: auto, --assay; }
+}
+@supports not (animation-timeline: view()) { .vial .tube, .vial-spill, .vial-halo { translate: 0 var(--lift, 0px); } }
+@keyframes lift { from { translate: 0 180px; } to { translate: 0 -180px; } }
+/* one column: smaller, over the feed holes at the paper's foot, its own foot below the paper */
+@media (max-width: 860px) { .vial { justify-self: end; width: 143px; margin: -259px -64px 0 0; } }
 @keyframes vial { 0%, 100% { opacity: .78; } 50% { opacity: 1; } }
 @media (max-width: 520px) { .assay { padding: 18px 24px 26px; } .assay::before, .assay::after { width: 18px; background-size: 18px 20px; } }
-@media (prefers-reduced-motion: reduce) { .vial-glow, .vial::after { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .vial .tube, .vial-halo, .vial-spill { animation: none; translate: none; } }
 
 .survey { background: #06141a; color: #d8f6ff; padding: clamp(18px, 3vw, 28px); font-family: var(--mono); border: 1px solid #12303a;
   clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 0 100%); }

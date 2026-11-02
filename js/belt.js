@@ -254,3 +254,23 @@
     addEventListener('scroll', onScroll, { passive: true });
   });
 })();
+
+/* The sample tube by the assay hovers over the paper: it runs a little
+ * faster than the scroll, true to the paper when the row is in the middle
+ * of the window. The stylesheet does this from the scroll itself where the
+ * browser can (animation-timeline); elsewhere this sets its --lift. */
+(() => {
+  const v = document.querySelector('.vial');
+  if (!v || (window.CSS && CSS.supports('animation-timeline: view()'))) return;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const row = v.closest('.prop-row');
+  let near = false, queued = false;
+  function set() {
+    queued = false;
+    const r = row.getBoundingClientRect(), H = innerHeight;
+    const p = Math.min(1, Math.max(0, (H - r.top) / (H + r.height)));   // 0 as it comes in at the foot, 1 as it leaves at the top
+    v.style.setProperty('--lift', (180 - 360 * p).toFixed(1) + 'px');
+  }
+  new IntersectionObserver(es => { near = es[0].isIntersecting; if (near) set(); }, { rootMargin: '200px 0px' }).observe(row);
+  addEventListener('scroll', () => { if (near && !queued) { queued = true; requestAnimationFrame(set); } }, { passive: true });
+})();

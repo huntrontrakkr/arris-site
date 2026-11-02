@@ -135,6 +135,38 @@ def main(zip_path):
                      '  src: url("../fonts/arris-mono-%d-italic.woff2") format("woff2");\n}' % (weight, weight))
     (CSS / 'fonts.css').write_text('\n'.join(rules) + '\n')
     print(info['family'], info['version'], len(info['chars']), 'chars', info['features'])
+    released(info['version'], Path(zip_path).stat().st_size)
+
+
+def released(version, size):
+    """The site's word of the release, from the zip: the version wherever the
+    page shows it, the download's link and size, the structured data's
+    version, file and date, the sitemap's date and the README's command (so
+    none of them is left on the last release)."""
+    import datetime
+    import re
+    today = datetime.datetime.now(datetime.timezone.utc).date().isoformat()
+    mb = f'{size / 1e6:.1f} MB'
+    zip_url = f'https://github.com/huntrontrakkr/arris-type/releases/download/v{version}/Arris-{version}.zip'
+    edits = {
+        ROOT / 'index.html': [
+            (r'(data-font="version">)[0-9.]+', rf'\g<1>{version}'),
+            (r'https://github\.com/huntrontrakkr/arris-type/releases/download/v[0-9.]+/Arris-[0-9.]+\.zip', zip_url),
+            (r'<small>ZIP · [0-9.]+ MB</small>', f'<small>ZIP · {mb}</small>'),
+            (r'"version": "[0-9.]+"', f'"version": "{version}"'),
+            (r'"name": "Arris [0-9.]+ \(', f'"name": "Arris {version} ('),
+            (r'"contentSize": "[0-9.]+ MB"', f'"contentSize": "{mb}"'),
+            (r'"dateModified": "[0-9-]+"', f'"dateModified": "{today}"'),
+        ],
+        ROOT / 'sitemap.xml': [(r'<lastmod>[0-9-]+</lastmod>', f'<lastmod>{today}</lastmod>')],
+        ROOT / 'README.md': [(r'tools/fonts\.py Arris-[0-9.]+\.zip', f'tools/fonts.py Arris-{version}.zip')],
+    }
+    for path, subs in edits.items():
+        text = path.read_text()
+        for pat, rep in subs:
+            text = re.sub(pat, rep, text)
+        path.write_text(text)
+    print(f'site: {version}, {mb}, {today}')
 
 
 if __name__ == '__main__':

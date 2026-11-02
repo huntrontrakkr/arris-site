@@ -720,6 +720,36 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .bay b { font-weight: inherit; font-size: clamp(56px, 10vw, 104px); line-height: .9; font-variation-settings: "wght" 700, "GRAD" 0, "WTCH" 0; font-variant-numeric: tabular-nums; }
 .bay span { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; padding-bottom: 8px; }
 
+/* The assay printout: green-bar tractor-feed paper, 56 columns of Mono sized to the sheet (a phone's 343px too) */
+.assay { position: relative; container-type: inline-size; color: #1d2420; padding: 22px 38px 30px;
+  background: #f6f8f2; box-shadow: 0 1px 0 rgba(0,0,0,.25), 0 22px 44px -14px rgba(0,0,0,.75); transform: rotate(-1.2deg); }
+.assay::before, .assay::after { content: ""; position: absolute; top: 0; bottom: 0; width: 26px;
+  background: radial-gradient(circle at 50% 50%, #0c0e10 0 4.5px, transparent 5.5px) 0 6px / 26px 22px repeat-y; }
+.assay::before { left: 0; border-right: 1px dashed #c9d2c4; }
+.assay::after { right: 0; border-left: 1px dashed #c9d2c4; }
+.assay-sheet { margin: 0; font-family: var(--mono); font-size: min(13px, 100cqi / 32.6); line-height: 1.5; white-space: pre;
+  color: #26302a; font-variant-numeric: tabular-nums; overflow: hidden;
+  background: repeating-linear-gradient(to bottom, transparent 0 4.5em, #e3eedb 4.5em 9em); }
+.assay-sheet b { font-weight: 400; color: #151a17; text-shadow: .045em 0 0 currentColor; }   /* bold as a dot-matrix strikes it: twice (Mono Bold's cell is wider) */
+.assay-sheet i { font-style: normal; color: #6f7a70; letter-spacing: .02em; }
+.assay-sheet .a-cut { color: var(--cut); }
+.assay-sheet .a-leak { color: #0aa6c9; text-shadow: 0 0 6px rgba(63,214,255,.55); }
+.assay-stamp { position: absolute; right: 12%; bottom: 26px; font-family: var(--mono); background: rgba(246,248,242,.6); }
+.vial { justify-self: center; position: relative; width: 112px; height: 270px; display: grid; justify-items: center; }
+.vial-cap { width: 70px; height: 34px; background: #1b2024; border: 1px solid #2e353b; clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%, 0 8px); }
+.vial-glass { position: relative; width: 62px; height: 226px; margin-top: -2px; border: 2px solid rgba(216,246,255,.32); border-top: 0;
+  border-radius: 0 0 31px 31px; background: linear-gradient(90deg, rgba(255,255,255,.05), rgba(255,255,255,.12) 30%, rgba(255,255,255,.02) 60%); overflow: hidden; }
+.vial-glow { position: absolute; left: 0; right: 0; bottom: 0; height: 52%; background: radial-gradient(120% 90% at 50% 60%, #8ff0ff 0, #2bc4e8 30%, #0b4a5a 75%);
+  box-shadow: 0 0 34px 10px rgba(63,214,255,.35); animation: vial 5.5s ease-in-out infinite; }
+.vial-glow::before { content: ""; position: absolute; left: -2px; right: -2px; top: -5px; height: 10px; border-radius: 50%; background: rgba(160,240,255,.55); }
+.vial-label { position: absolute; left: 4px; right: 4px; top: 30px; padding: 7px 0; background: #f3eee3; color: #1d1b17; text-align: center;
+  font-family: var(--mono); font-size: 8.5px; line-height: 1.45; letter-spacing: .04em; }
+.vial::after { content: ""; position: absolute; left: 50%; bottom: -18px; width: 180px; height: 60px; translate: -50% 0; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(63,214,255,.22), transparent); animation: vial 5.5s ease-in-out infinite; }
+@keyframes vial { 0%, 100% { opacity: .78; } 50% { opacity: 1; } }
+@media (max-width: 520px) { .assay { padding: 18px 24px 26px; } .assay::before, .assay::after { width: 18px; background-size: 18px 20px; } }
+@media (prefers-reduced-motion: reduce) { .vial-glow, .vial::after { animation: none; } }
+
 .survey { background: #06141a; color: #d8f6ff; padding: clamp(18px, 3vw, 28px); font-family: var(--mono); border: 1px solid #12303a;
   clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 0 100%); }
 .survey-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-family: var(--sans); font-size: clamp(28px, 4vw, 44px);

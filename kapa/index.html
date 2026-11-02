@@ -12,8 +12,8 @@
   :root { --void: #04080b; --ink: #d8f6ff; --dim: #4f7480; --leak: #3fd6ff; --line: #12303a; --cut: #e0402a; color-scheme: dark; }
   * { box-sizing: border-box; }
   body { margin: 0; min-height: 100vh; min-height: 100svh; background: var(--void); color: var(--ink); font-family: "Arris Mono", ui-monospace, monospace;
-    display: grid; place-content: center; gap: 22px; padding: 32px max(20px, env(safe-area-inset-right, 0px)) 32px max(20px, env(safe-area-inset-left, 0px)); }
-  main { width: min(100%, 880px); display: grid; gap: 22px; }
+    display: grid; place-content: center; grid-template-columns: min(100%, 920px); gap: 22px; padding: 32px 0; }
+  main { display: grid; gap: 22px; padding: 0 max(20px, env(safe-area-inset-right, 0px)) 0 max(20px, env(safe-area-inset-left, 0px)); }
   h1 { margin: 0; font-family: "Arris", sans-serif; font-weight: 700; font-size: clamp(48px, 12vw, 120px); line-height: .9; font-variation-settings: "GRAD" -60; }
   img { display: block; width: 100%; height: auto; opacity: .5; filter: saturate(.4) hue-rotate(-10deg);
     clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 24px 100%, 0 calc(100% - 24px)); }
@@ -21,6 +21,7 @@
   dt { color: var(--dim); } dd { margin: 0; }
   .blink { color: var(--leak); animation: b 1.2s steps(1) infinite; }
   @keyframes b { 50% { opacity: 0; } }
+  form[hidden] { display: none; }
   form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; border-top: 1px solid var(--line); padding-top: 18px; }
   label { color: var(--dim); font-size: 13px; letter-spacing: .1em; }
   input { font: inherit; font-size: 18px; letter-spacing: .2em; text-transform: uppercase; background: #071218; color: var(--leak); border: 1px solid var(--line);
@@ -32,13 +33,21 @@
   .denied { color: var(--cut); }
   pre { margin: 0; white-space: pre-wrap; font: inherit; font-size: clamp(13px, 1.8vw, 16px); line-height: 1.7; color: var(--leak); min-height: 1em; }
   a { color: var(--dim); font-size: 13px; }
+  @media (max-width: 999px) { main { overflow-x: clip; } }   /* the tube's glow runs past the paper's edge on a phone: cut at the window's */
+  .read { display: grid; gap: 22px; }
+  .side { opacity: 0; transition: opacity 1.4s ease-out; }
+  .side.shown { opacity: 1; }
+  @media (min-width: 1000px) {
+    .read.wide { --w: min(calc(100vw - 48px), 1160px); width: var(--w); margin-left: calc((100% - var(--w)) / 2);
+      grid-template-columns: minmax(0, 1fr) minmax(0, 520px); column-gap: 72px; align-items: start; }
+  }
   .frames { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 14px; }
   .frames figure { margin: 0; animation: in .6s ease-out both; }
   .frames img { opacity: 1; filter: none; }
   .frames figcaption { font-size: 11px; color: var(--dim); margin-top: 6px; letter-spacing: .06em; }
   @keyframes in { from { opacity: 0; transform: translateY(8px); } }
   @media (prefers-reduced-motion: reduce) { .frames figure { animation: none; } }
-  @media (prefers-reduced-motion: reduce) { .blink { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .blink { animation: none; } .side { transition: none; } }
 </style>
 <!-- visits and tries at the code counted by GoatCounter (whether a try opened it, never what was typed) -->
 <script data-goatcounter="https://arristype.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
@@ -60,7 +69,7 @@
     <button type="submit">OPEN</button>
     <p class="hint">ASK AT THE GLASSHOUSE. READ IT BEFORE IT FILLS IN.</p>
   </form>
-  <pre id="out" aria-live="polite"></pre>
+  <div class="read" id="read"><pre id="out" aria-live="polite"></pre><div class="side" id="side" hidden></div></div>
   <div class="frames" id="frames"></div>
   <a href="../">← back to the dock</a>
   <p class="credit" id="credit" hidden>Saturn: NASA/JPL/Space Science Institute. Roses: Pierre-Joseph Redouté.</p>
@@ -69,6 +78,7 @@
 (() => {
   const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
   const state = document.getElementById('state'), out = document.getElementById('out'), form = document.getElementById('gate'), frames = document.getElementById('frames');
+  const read = document.getElementById('read'), side = document.getElementById('side');
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   // a moment worth counting, sent to GoatCounter as an event (once a visit
   // unless every time is asked); dropped quietly where the counter is blocked
@@ -92,10 +102,15 @@
       (function step() { out.textContent = text.slice(0, i); i += 2; if (i <= text.length + 1) setTimeout(step, 18); else done(); })();
     });
   }
+  const blob = async (key, f) => open(key, f.iv, b64((await (await fetch(f.file)).text()).trim()));
+  // a page sealed with it (HTML, its own styles inside) goes beside the transmission, and shows once it has been read
+  async function place(key, files) {
+    for (const f of files) side.insertAdjacentHTML('beforeend', new TextDecoder().decode(await blob(key, f)));
+    if (files.length) { side.hidden = false; read.classList.add('wide'); }
+  }
   async function show(key, files) {
     for (const f of files) {
-      const ct = b64((await (await fetch(f.file)).text()).trim());
-      const url = URL.createObjectURL(new Blob([await open(key, f.iv, ct)], { type: f.type }));
+      const url = URL.createObjectURL(new Blob([await blob(key, f)], { type: f.type }));
       const fig = document.createElement('figure'), a = document.createElement('a'), img = document.createElement('img'), cap = document.createElement('figcaption');
       a.href = url; a.target = '_blank'; a.rel = 'noopener';
       img.src = url; img.alt = f.caption; cap.textContent = f.caption;
@@ -114,8 +129,11 @@
       state.textContent = 'GRANTED'; state.className = '';
       track('kapa-granted', '0347 KAPA: opened');
       form.hidden = true;
+      const pages = msg.files.filter(f => f.type === 'text/html');
+      await place(key, pages);
       await type(msg.text);
-      await show(key, msg.files);
+      side.classList.add('shown');
+      await show(key, msg.files.filter(f => f.type !== 'text/html'));
       document.getElementById('credit').hidden = false;
     } catch (err) {
       state.textContent = 'DENIED'; state.className = 'denied';

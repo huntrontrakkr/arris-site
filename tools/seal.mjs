@@ -4,7 +4,9 @@
  * also carries the attachments' names, captions and IVs, so the repository
  * holds only ciphertext and numbered blobs (base64 text, which any host
  * serves), and reading the page's source gives nothing away.
- * kapa/index.html opens it with the same derivation.
+ * kapa/index.html opens it with the same derivation: an image is shown as a
+ * frame, an .html file (a fragment with its own styles) is set beside the message.
+ * tools/unseal.mjs opens it all back up, to change and seal again.
  * Keep the plaintexts and their codes out of the repository.
  *
  * usage: node tools/seal.mjs CODE OUTDIR MESSAGE.txt [FILE "CAPTION"] ...
@@ -33,7 +35,7 @@ async function seal(bytes) {
 const blobs = join(outDir, 'sealed');
 rmSync(blobs, { recursive: true, force: true });
 mkdirSync(blobs, { recursive: true });
-const TYPES = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp' };
+const TYPES = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.html': 'text/html' };
 const files = [];
 for (let i = 0; i < rest.length; i += 2) {
   const { iv, ct } = await seal(readFileSync(rest[i]));

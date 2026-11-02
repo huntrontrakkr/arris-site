@@ -117,7 +117,7 @@ seeks as the page scrolls. `www.arristype.com` is a second, tiny Worker
 | `data/font.json` | written by `tools/fonts.py` |
 | `data/transfer.json` | written by `tools/transfer.py` |
 | `media/` | written by `tools/media.sh` |
-| `kapa/` | not linked from the navigation; `sealed.json` is written by `tools/seal.mjs` |
+| `kapa/` | not linked from the navigation; `sealed.json` and `sealed/` are written by `tools/seal.mjs`, opened again by `tools/unseal.mjs` |
 | `404.html` | what a wrong address gets |
 | `wrangler.jsonc`, `.assetsignore`, `worker/` | the Worker: what it publishes, the byte ranges it answers for the films, and www |
 | `.github/workflows/deploy.yml` | deploys both Workers on every push to `main`, then checks the live site |
@@ -127,9 +127,13 @@ seeks as the page scrolls. `www.arristype.com` is a second, tiny Worker
 Some pages are not in the navigation, and some of what they say is sealed:
 `tools/seal.mjs` encrypts a transmission with a key derived from its
 access code, so the repository holds only ciphertext and the page's source
-gives nothing away. Keep the plaintexts and their codes out of the
-repository.
+gives nothing away. It carries attachments too: an image is shown as one of
+the frames, an `.html` fragment (with its own `<style>`) is set beside the
+message once it has been read. Keep the plaintexts and their codes out of
+the repository: to change what is sealed, open it into a folder outside it
+with `tools/unseal.mjs`, edit, and run the `reseal.sh` it writes there.
 
 ```
-node tools/seal.mjs CODE < transmission.txt > kapa/sealed.json
+node tools/unseal.mjs CODE kapa /tmp/kapa        # message.txt, 1.jpg … 6.html, reseal.sh
+bash /tmp/kapa/reseal.sh CODE                    # seal.mjs CODE kapa message.txt [FILE "CAPTION"] ...
 ```

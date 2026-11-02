@@ -33,15 +33,22 @@
 }
 @font-face {
   font-family: "Arris Mono";
-  font-weight: 400;
+  font-weight: 300;
   font-display: swap;
-  src: url("../fonts/arris-mono-400.woff2") format("woff2");
+  src: url("../fonts/arris-mono-300.woff2") format("woff2");
 }
 @font-face {
   font-family: "Arris Mono";
-  font-weight: 700;
+  font-weight: 300;
+  font-style: italic;
   font-display: swap;
-  src: url("../fonts/arris-mono-700.woff2") format("woff2");
+  src: url("../fonts/arris-mono-300-italic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Arris Mono";
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/arris-mono-400.woff2") format("woff2");
 }
 @font-face {
   font-family: "Arris Mono";
@@ -49,6 +56,51 @@
   font-style: italic;
   font-display: swap;
   src: url("../fonts/arris-mono-400-italic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Arris Mono";
+  font-weight: 450;
+  font-display: swap;
+  src: url("../fonts/arris-mono-450.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Arris Mono";
+  font-weight: 450;
+  font-style: italic;
+  font-display: swap;
+  src: url("../fonts/arris-mono-450-italic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Arris Mono";
+  font-weight: 500;
+  font-display: swap;
+  src: url("../fonts/arris-mono-500.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Arris Mono";
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+  src: url("../fonts/arris-mono-500-italic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Arris Mono";
+  font-weight: 600;
+  font-display: swap;
+  src: url("../fonts/arris-mono-600.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Arris Mono";
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+  src: url("../fonts/arris-mono-600-italic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Arris Mono";
+  font-weight: 700;
+  font-display: swap;
+  src: url("../fonts/arris-mono-700.woff2") format("woff2");
 }
 @font-face {
   font-family: "Arris Mono";

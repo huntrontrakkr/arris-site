@@ -247,12 +247,13 @@ main = print (tonnage ["3000", "470"])` },
   row('Left alone', NEVER.split(' '), true);
 
   /* ------------------------------------------------------------ the four styles */
-  // Mono is static: Regular and Bold, each upright and italic; one line each,
-  // with the characters a coding face must keep apart
+  // Mono is static: six weights, Light to Bold with Retina (450), each upright
+  // and italic; one line each, with the characters a coding face must keep apart
   const styles = $('#mono-weights');
   if (styles) {
     const LINE = 'Sphinx of black quartz, judge my vow: 0O 1lI| 5S 8B 2Z rn m {[()]} 3.14';
-    [[400, false, 'Regular'], [400, true, 'Italic'], [700, false, 'Bold'], [700, true, 'Bold Italic']].forEach(([w, it, name]) => {
+    [[300, 'Light'], [400, 'Regular'], [450, 'Retina'], [500, 'Medium'], [600, 'SemiBold'], [700, 'Bold']]
+      .flatMap(([w, n]) => [[w, false, n], [w, true, n === 'Regular' ? 'Italic' : `${n} Italic`]]).forEach(([w, it, name]) => {
       const r = document.createElement('div');
       r.className = 'it-wrow';
       r.innerHTML = '<span class="it-wlabel"><i></i></span><span class="it-wtext"></span>';

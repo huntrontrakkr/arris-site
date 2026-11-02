@@ -9,11 +9,14 @@ arrives only when a character from it is on the page.
            (CSS unicode-range), so Cyrillic, Greek, symbols and the terminal
            set load on demand
 
-Also copies Mono Regular, Bold, Italic and Bold Italic whole, writes data/font.json (version,
+Also copies every Mono weight the release carries (Light to Bold, with
+Retina, each upright and italic) whole, writes data/font.json (version,
 axes, features, code points with their Unicode names and blocks) and the
 @font-face rules to css/fonts.css.
 
 usage: python3 tools/fonts.py Arris-1.005.zip
+       python3 tools/fonts.py --mono DIR     (Mono alone, from built TTFs: ArrisMono-*.ttf in DIR,
+                                               ahead of a release; the variable fonts stay as they are)
 """
 from __future__ import annotations
 
@@ -83,6 +86,54 @@ def block(c):
     return 'Other'
 
 
+# Mono's weights, by the style names its files carry (the release's web/ and the build's TTFs)
+MONO = {'Thin': 100, 'ExtraLight': 200, 'Light': 300, 'Regular': 400, 'Retina': 450, 'Medium': 500,
+        'SemiBold': 600, 'Bold': 700, 'ExtraBold': 800, 'Black': 900}
+
+
+def mono_styles(names):
+    """[(weight, italic, file name)] for the Mono files among names (ArrisMono-<Style>.<ext>)."""
+    out = []
+    for n in names:
+        base = n.rsplit('/', 1)[-1]
+        if not base.startswith('ArrisMono-'):
+            continue
+        style = base[len('ArrisMono-'):].rsplit('.', 1)[0]
+        italic = style.endswith('Italic')
+        w = MONO.get(style.removesuffix('Italic') or 'Regular')
+        if w is not None:
+            out.append((w, italic, n))
+    return sorted(out)
+
+
+def mono_rules(styles):
+    return ['@font-face {\n  font-family: "Arris Mono";\n  font-weight: %d;\n%s  font-display: swap;\n'
+            '  src: url("../fonts/%s") format("woff2");\n}' % (w, '  font-style: italic;\n' if it else '', mono_file(w, it))
+            for w, it, _ in styles]
+
+
+def mono_file(w, italic):
+    return f'arris-mono-{w}{"-italic" if italic else ""}.woff2'
+
+
+def mono_only(src: Path):
+    """Mono's files and rules from built TTFs; the rest of css/fonts.css is kept."""
+    styles = mono_styles([str(p) for p in sorted(src.glob('ArrisMono-*.ttf'))])
+    if not styles:
+        sys.exit(f'{src}: no ArrisMono-*.ttf')
+    for old in FONTS.glob('arris-mono-*.woff2'):
+        old.unlink()
+    for w, it, path in styles:
+        f = TTFont(path)
+        f.flavor = 'woff2'
+        f.save(FONTS / mono_file(w, it))
+    css = (CSS / 'fonts.css').read_text()
+    kept = [r for r in css.strip().split('\n@font-face') if '"Arris Mono"' not in r]
+    rules = [kept[0]] + ['@font-face' + r for r in kept[1:]] + mono_rules(styles)
+    (CSS / 'fonts.css').write_text('\n'.join(rules) + '\n')
+    print('mono:', ', '.join(f'{w}{" italic" if it else ""}' for w, it, _ in styles))
+
+
 def main(zip_path):
     FONTS.mkdir(exist_ok=True); DATA.mkdir(exist_ok=True)
     for old in FONTS.glob('*.woff2'):
@@ -117,22 +168,16 @@ def main(zip_path):
                             'x': font['OS/2'].sxHeight},
                 'chars': [[c, unicodedata.name(chr(c), ''), block(c)] for c in sorted(cps)],
             }
-    for weight, name in ((400, 'Regular'), (700, 'Bold')):
-        (FONTS / f'arris-mono-{weight}.woff2').write_bytes(web(f'ArrisMono-{name}.woff2'))
-    (FONTS / 'arris-mono-400-italic.woff2').write_bytes(web('ArrisMono-Italic.woff2'))
-    (FONTS / 'arris-mono-700-italic.woff2').write_bytes(web('ArrisMono-BoldItalic.woff2'))
+    styles = mono_styles([n for n in z.namelist() if n.startswith(f'{top}/web/') and n.endswith('.woff2')])
+    for w, it, n in styles:
+        (FONTS / mono_file(w, it)).write_bytes(z.read(n))
     (DATA / 'font.json').write_text(json.dumps(info, separators=(',', ':'), ensure_ascii=False))
     rules = ['/* written by tools/fonts.py from the release zip; do not edit */']
     for style, file, rng in faces:
         rules.append('@font-face {\n  font-family: "Arris";\n  font-style: %s;\n  font-weight: 100 900;\n'
                      '  font-display: swap;\n  src: url("../fonts/%s") format("woff2");\n  unicode-range: %s;\n}'
                      % (style, file, rng))
-    for weight in (400, 700):
-        rules.append('@font-face {\n  font-family: "Arris Mono";\n  font-weight: %d;\n  font-display: swap;\n'
-                     '  src: url("../fonts/arris-mono-%d.woff2") format("woff2");\n}' % (weight, weight))
-    for weight in (400, 700):
-        rules.append('@font-face {\n  font-family: "Arris Mono";\n  font-weight: %d;\n  font-style: italic;\n  font-display: swap;\n'
-                     '  src: url("../fonts/arris-mono-%d-italic.woff2") format("woff2");\n}' % (weight, weight))
+    rules += mono_rules(styles)
     (CSS / 'fonts.css').write_text('\n'.join(rules) + '\n')
     print(info['family'], info['version'], len(info['chars']), 'chars', info['features'])
     released(info['version'], Path(zip_path).stat().st_size)
@@ -170,4 +215,7 @@ def released(version, size):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1])
+    if sys.argv[1:2] == ['--mono']:
+        mono_only(Path(sys.argv[2]))
+    else:
+        main(sys.argv[1])

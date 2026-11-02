@@ -749,9 +749,10 @@
   // set by the triangle under it
   const stage = $('#card-stage'), glyph = $('#card-glyph'), chEl = $('#card-ch'), linesEl = $('#card-lines');
   const CL = { wght: 400, GRAD: 0, WTCH: 0, ital: false, mono: false };
-  // Mono is static: Regular and Bold, upright and italic. On the card the
-  // weight snaps to the nearer of the two and the other axes rest at 0
-  const monoW = w => (w < 550 ? 400 : 700);
+  // Mono is static: six weights, Light to Bold with Retina (450), upright and
+  // italic. On the card the weight snaps to the nearest and the other axes rest at 0
+  const MONO_W = { 300: 'Light', 400: 'Regular', 450: 'Retina', 500: 'Medium', 600: 'SemiBold', 700: 'Bold' };
+  const monoW = w => +Object.keys(MONO_W).reduce((a, b) => (Math.abs(b - w) < Math.abs(a - w) ? b : a));
   const METRICS = [['ASCENDER', 'ascender'], ['CAP HEIGHT', 'cap'], ['X-HEIGHT', 'x'], ['BASELINE', null], ['DESCENDER', 'descender']];
   function layoutCard() {
     const M = FONT ? FONT.metrics : { upm: 1000, ascender: 975, descender: -250, cap: 720, x: 540 };
@@ -788,7 +789,7 @@
     grid.style.fontVariationSettings = glyph.style.fontVariationSettings; grid.style.fontStyle = glyph.style.fontStyle;
     const adv = Math.round(chEl.getBoundingClientRect().width / cardM.S * cardM.M.upm);
     $('#card-metrics').innerHTML = CL.mono
-      ? `<span>ADVANCE ${adv}</span><span class="ax-wght">wght ${CL.wght} ${CL.wght === 400 ? 'Regular' : 'Bold'}</span><span>Mono: Regular and Bold</span>`
+      ? `<span>ADVANCE ${adv}</span><span class="ax-wght">wght ${CL.wght} ${MONO_W[CL.wght]}</span><span>Mono: six weights, Light to Bold</span>`
       : `<span>ADVANCE ${adv}</span><span class="ax-wght">wght ${Math.round(CL.wght)}</span><span class="ax-GRAD">GRAD ${signed('GRAD', CL.GRAD)}</span><span class="ax-WTCH">WTCH ${Math.round(CL.WTCH)}</span>`;
     drawTri();
   }

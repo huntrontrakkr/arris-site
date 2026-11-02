@@ -10,6 +10,7 @@
   --amber: #ffb000; --cut: #e0402a; --leak: #3fd6ff;
   --t100: #a8804c; --t200: #804799; --t300: #4554cc; --t400: #4087e6; --t500: #a8cced;
   --t600: #f2cc61; --t700: #e67891; --t800: #9e66d1; --t900: #45c7a8;
+  --t450: color-mix(in oklab, var(--t400), var(--t500));
   --sans: "Arris", ui-sans-serif, system-ui, sans-serif;
   --mono: "Arris Mono", ui-monospace, Menlo, Consolas, monospace;
   --c: 14px;                       /* the chamfer on panels */
@@ -784,7 +785,7 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .survey tfoot td:first-child { color: #4f7480; }
 .survey.leaking tfoot td:last-child { color: var(--leak); }
 
-/* Arris Mono: one cell is 0.578 em wide (1ch) and box drawing spans
+/* Arris Mono: one cell is 0.6 em wide (1ch) at every weight and box drawing spans
    1.225 em, so a 1.225 line-height joins frames row to row */
 .mono-kicker { font-family: var(--mono); font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--cut); margin-bottom: 8px; }
 .mono-title { font-family: var(--mono); font-weight: 700; font-size: clamp(40px, 7.4vw, 104px); line-height: 1; letter-spacing: 0; max-width: 12ch; margin-bottom: 26px; }

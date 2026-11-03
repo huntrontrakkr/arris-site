@@ -92,11 +92,12 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .readout { display: flex; gap: 6px 24px; flex-wrap: wrap; margin: 18px 0 30px; font-family: var(--mono); font-size: 13px; color: var(--dim);
   position: relative; z-index: 1; }   /* over the name's box, which runs down past its letters */
 .readout b { font-weight: 400; color: var(--ink); display: inline-block; min-width: 3.5ch; font-variant-numeric: tabular-nums; }
-/* the axes the name follows, always two of the three, in black; the one at
-   rest grey. Picking it lets go of the one picked longest ago */
-.ax { font: inherit; color: var(--ink); background: none; border: 0; padding: 0; cursor: pointer; }
-.ax[aria-pressed="false"], .ax[aria-pressed="false"] b { color: color-mix(in srgb, var(--dim) 60%, transparent); }
-.ax[aria-pressed="false"]:hover, .ax[aria-pressed="false"]:hover b { color: var(--dim); }
+/* the axes: their names grey, as the readout always was; the numbers of the
+   two the name follows black, the one at rest grey. Picking it lets go of
+   the one picked longest ago */
+.ax { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+.ax[aria-pressed="false"] b { color: inherit; }
+.ax[aria-pressed="false"]:hover b { color: var(--ink); }
 .ax[aria-pressed="true"] { cursor: default; }
 .lede { font-size: clamp(21px, 2.4vw, 28px); line-height: 1.35; max-width: 30ch; font-variation-settings: "wght" 350, "GRAD" 0, "WTCH" 0; }
 

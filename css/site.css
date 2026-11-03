@@ -902,10 +902,14 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
   clip-path: polygon(0 0, calc(100% - var(--c)) 0, 100% var(--c), 100% 100%, 0 100%); }
 .checks b { font-weight: inherit; font-variation-settings: "wght" 650, "GRAD" -50, "WTCH" 0; color: var(--accent); display: block; }
 
-.dl-button { display: inline-flex; align-items: baseline; gap: 14px; background: var(--amber); color: var(--night); text-decoration: none; padding: 16px 28px 18px;
+/* the download, annealed: amber running into titanium's oxide colours (gold, rose, violet, blue), as the A
+   tab anneals; on hover the heat moves along it. Night ink holds over every stop (4.8:1 at the violet) */
+.dl-button { display: inline-flex; align-items: baseline; gap: 14px; color: var(--night); text-decoration: none; padding: 16px 28px 18px;
+  background: var(--amber) linear-gradient(100deg, var(--amber) 0%, var(--t600) 24%, var(--t700) 48%, var(--t800) 72%, var(--t400) 100%) 0 0 / 160% 100%;
   font-size: clamp(24px, 3vw, 34px); font-variation-settings: "wght" 750, "GRAD" 0, "WTCH" 0; clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%);
-  transition: font-variation-settings .2s; }
-@media (hover: hover) { .dl-button:hover { font-variation-settings: "wght" 750, "GRAD" 100, "WTCH" 0; } }
+  transition: font-variation-settings .2s, background-position .9s cubic-bezier(.2,.8,.2,1); }
+@media (hover: hover) { .dl-button:hover { font-variation-settings: "wght" 750, "GRAD" 100, "WTCH" 0; background-position: 100% 0; } }
+@media (prefers-reduced-motion: reduce) { .dl-button { transition: none; } }
 .dl-button small { font-family: var(--mono); font-size: 13px; font-variation-settings: normal; }
 .dl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px; margin: 40px 0 28px; }
 .dl-grid > div { min-width: 0; }

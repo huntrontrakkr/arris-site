@@ -180,7 +180,6 @@
     for (const b of heroBtns) {
       const a = b.dataset.ax, d = pickDir[a];
       b.setAttribute('aria-pressed', picked.includes(a));
-      b.dataset.dir = d || '';
       b.title = d ? `${a} ${HERO_TITLE[d]}` : `${a}: pick it to follow the pointer`;
     }
   }
@@ -192,7 +191,6 @@
       pickDir = { [keep]: pickDir[keep], [a]: pickDir[drop] };             // the new one takes the dropped one's direction
       picked = [keep, a];
       showHeroAxes();
-      b.classList.remove('swapped'); void b.offsetWidth; b.classList.add('swapped');
       sweep = false;
       pull(heroPoint ? heroAim(...heroPoint) : REST);             // the one let go rests; the new one takes the pointer
       track('/hero/axes/' + picked.slice().sort().join('-'), 'Hero axes: ' + picked.join(' and '));

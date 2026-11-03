@@ -902,12 +902,9 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
   clip-path: polygon(0 0, calc(100% - var(--c)) 0, 100% var(--c), 100% 100%, 0 100%); }
 .checks b { font-weight: inherit; font-variation-settings: "wght" 650, "GRAD" -50, "WTCH" 0; color: var(--accent); display: block; }
 
-/* the download, annealed (js/anneal-dl.js): amber metal that a touch of heat turns, in a second, to the next
-   of titanium's oxide colours, spreading from where it was touched; the night ink holds on every one */
 .dl-button { display: inline-flex; align-items: baseline; gap: 14px; background: var(--amber); color: var(--night); text-decoration: none; padding: 16px 28px 18px;
   font-size: clamp(24px, 3vw, 34px); font-variation-settings: "wght" 750, "GRAD" 0, "WTCH" 0; clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%);
-  position: relative; isolation: isolate; transition: font-variation-settings .2s; }
-.dl-metal { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+  transition: font-variation-settings .2s; }
 @media (hover: hover) { .dl-button:hover { font-variation-settings: "wght" 750, "GRAD" 100, "WTCH" 0; } }
 .dl-button small { font-family: var(--mono); font-size: 13px; font-variation-settings: normal; }
 .dl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px; margin: 40px 0 28px; }

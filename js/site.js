@@ -84,21 +84,32 @@
   // target, the name follows with a little overshoot, and when the pointer
   // leaves it springs back to rest in the middle of the weights; the ends of
   // the axes are hard stops, which the name lands on rather than sinks past
-  const mark = $('#mark'), rw = $('#r-wght'), rx = $('#r-wtch');
-  const REST = { w: 500, x: 0 }, K = 70, C = 2 * Math.sqrt(70) * 0.42, ENDS = { w: [100, 900], x: [0, 100] };
-  const cur = reduce ? { ...REST } : { w: 900, x: 0 }, vel = { w: 0, x: 0 }, aim = reduce ? { ...REST } : { ...cur };
-  let springing = false, last = 0, sweep = !reduce;
+  // Two of the three axes follow the pointer, one across and one down; the
+  // readout's buttons pick which (picking the third lets go of the one picked
+  // longest ago, and the new one takes its direction); the third rests.
+  const mark = $('#mark');
+  const HERO_AXES = ['wght', 'GRAD', 'WTCH'], HERO_VAR = { wght: '--w', GRAD: '--g', WTCH: '--x' };
+  const HERO_SHOWN = { wght: $('#r-wght'), GRAD: $('#r-grad'), WTCH: $('#r-wtch') };
+  const REST = { wght: 500, GRAD: 0, WTCH: 0 }, K = 70, C = 2 * Math.sqrt(70) * 0.42, ENDS = AX;
+  const HERO_STILL = { wght: 0.5, GRAD: 0.2, WTCH: 0.2 };
+  let picked = ['wght', 'WTCH'], pickDir = { wght: 'x', WTCH: 'y' };        // the oldest pick first
+  const cur = reduce ? { ...REST } : { ...REST, wght: 900 }, vel = { wght: 0, GRAD: 0, WTCH: 0 }, aim = { ...cur };
+  let springing = false, last = 0, sweep = !reduce, heroPoint = null;
   function draw() {
-    const w = Math.round(cur.w), x = Math.round(cur.x);
-    mark.style.setProperty('--w', w); mark.style.setProperty('--x', x);
-    rw.textContent = w; rx.textContent = x;
+    for (const a of HERO_AXES) {
+      const v = Math.round(cur[a]);
+      mark.style.setProperty(HERO_VAR[a], v);
+      HERO_SHOWN[a].textContent = v;
+    }
     wake();
   }
   // the film: its copy follows the name through something thick (a lag of
   // about a sixth of a second), shows as much as it lags and the name moves,
   // and fades over a few seconds once the name is still; then it is hidden
   const film = $('#mark-film'), fBlur = $('#film-blur'), fDisp = $('#film-disp');
-  let fw = 500, fx = 0, glow = 0, filmOn = false, filmT = 0;
+  const FILM_VAR = { wght: '--fw', GRAD: '--fg', WTCH: '--fx' }, FILM_SPAN = { wght: 110, GRAD: 55, WTCH: 25 };
+  const filmAt = { ...REST };
+  let glow = 0, filmOn = false, filmT = 0;
   function sizeFilm() {
     const fs = parseFloat(getComputedStyle(mark).fontSize);
     fBlur.setAttribute('stdDeviation', (fs * 0.05).toFixed(1)); fDisp.setAttribute('scale', (fs * 0.07).toFixed(1));
@@ -106,12 +117,16 @@
   function filmStep(t) {
     const dt = Math.min(0.25, (t - filmT) / 1000 || 0.016); filmT = t;   // real time, so a slow device fades as soon as a fast one
     const a = 1 - Math.exp(-dt / 0.16);
-    fw += (cur.w - fw) * a; fx += (cur.x - fx) * a;
-    const stir = Math.abs(cur.w - fw) / 110 + Math.abs(cur.x - fx) / 25 + Math.abs(vel.w) / 1400;
+    let stir = Math.abs(vel.wght) / 1400, settled = true;
+    for (const k of HERO_AXES) {
+      filmAt[k] += (cur[k] - filmAt[k]) * a;
+      film.style.setProperty(FILM_VAR[k], filmAt[k].toFixed(1));
+      stir += Math.abs(cur[k] - filmAt[k]) / FILM_SPAN[k];
+      if (Math.abs(cur[k] - filmAt[k]) >= HERO_STILL[k]) settled = false;
+    }
     glow = Math.max(glow * Math.exp(-dt / 0.7), Math.min(1, stir));
-    film.style.setProperty('--fw', fw.toFixed(1)); film.style.setProperty('--fx', fx.toFixed(1));
     film.style.opacity = (0.6 * glow).toFixed(3);
-    if (glow < 0.008 && Math.abs(cur.w - fw) < 0.5 && Math.abs(cur.x - fx) < 0.2) { filmOn = false; film.style.visibility = 'hidden'; film.style.opacity = 0; return; }
+    if (glow < 0.008 && settled) { filmOn = false; film.style.visibility = 'hidden'; film.style.opacity = 0; return; }
     requestAnimationFrame(filmStep);
   }
   function wake() {
@@ -121,38 +136,74 @@
   sizeFilm(); addEventListener('resize', sizeFilm);
   function spring(t) {
     const dt = Math.min(0.034, (t - last) / 1000 || 0.016); last = t;
-    for (const k of ['w', 'x']) {
+    let still = true;
+    for (const k of HERO_AXES) {
       vel[k] += (K * (aim[k] - cur[k]) - C * vel[k]) * dt;
       cur[k] += vel[k] * dt;
       if (cur[k] < ENDS[k][0] || cur[k] > ENDS[k][1]) { cur[k] = clamp(cur[k], ...ENDS[k]); vel[k] = 0; }
+      if (Math.abs(aim[k] - cur[k]) >= HERO_STILL[k] || Math.abs(vel[k]) >= HERO_STILL[k]) still = false;
     }
     draw();
-    if (sweep === true && aim.w === 100 && cur.w === 100) {
+    if (sweep === true && aim.wght === 100 && cur.wght === 100) {
       sweep = 'landed';
-      setTimeout(() => { if (sweep) { sweep = false; pull(REST.w, REST.x); } }, 160);
+      setTimeout(() => { if (sweep) { sweep = false; pull(REST); } }, 160);
     }
-    const still = Math.abs(aim.w - cur.w) < 0.5 && Math.abs(vel.w) < 0.5 && Math.abs(aim.x - cur.x) < 0.2 && Math.abs(vel.x) < 0.2;
-    if (still) { cur.w = aim.w; cur.x = aim.x; draw(); springing = false; return; }
+    if (still) { Object.assign(cur, aim); draw(); springing = false; return; }
     requestAnimationFrame(spring);
   }
-  function pull(w, x) {
-    aim.w = w; aim.x = x;
-    if (reduce) { cur.w = w; cur.x = x; draw(); return; }
+  function pull(target) {
+    Object.assign(aim, target);
+    if (reduce) { Object.assign(cur, aim); draw(); return; }
     if (!springing) { springing = true; last = performance.now(); requestAnimationFrame(spring); }
+  }
+  function heroAim(fx, fy) {
+    const t = { ...REST };
+    for (const a of picked) {
+      const [lo, hi] = ENDS[a];
+      t[a] = lo + (hi - lo) * (pickDir[a] === 'x' ? fx : fy);
+    }
+    return t;
   }
   function point(e) {
     sweep = false;
     const r = mark.getBoundingClientRect();
-    pull(100 + 800 * clamp((e.clientX - r.left) / r.width, 0, 1), 100 * clamp((e.clientY - r.top) / r.height, 0, 1));
+    heroPoint = [clamp((e.clientX - r.left) / r.width, 0, 1), clamp((e.clientY - r.top) / r.height, 0, 1)];
+    pull(heroAim(...heroPoint));
   }
   mark.addEventListener('pointermove', point);
   mark.addEventListener('pointerdown', point);
-  mark.addEventListener('pointerleave', () => { sweep = false; pull(REST.w, REST.x); });
+  mark.addEventListener('pointerleave', () => { sweep = false; heroPoint = null; pull(REST); });
+
+  const heroBtns = $$('.readout .ax');
+  const HERO_TITLE = { x: 'follows the pointer across the name', y: 'follows the pointer down the name' };
+  function showHeroAxes() {
+    for (const b of heroBtns) {
+      const a = b.dataset.ax, d = pickDir[a];
+      b.setAttribute('aria-pressed', picked.includes(a));
+      b.dataset.dir = d || '';
+      b.title = d ? `${a} ${HERO_TITLE[d]}` : `${a}: pick it to follow the pointer`;
+    }
+  }
+  for (const b of heroBtns) {
+    b.addEventListener('click', () => {
+      const a = b.dataset.ax;
+      if (picked.includes(a)) return;                              // always two: picking the third swaps one out
+      const [drop, keep] = picked;
+      pickDir = { [keep]: pickDir[keep], [a]: pickDir[drop] };             // the new one takes the dropped one's direction
+      picked = [keep, a];
+      showHeroAxes();
+      b.classList.remove('swapped'); void b.offsetWidth; b.classList.add('swapped');
+      sweep = false;
+      pull(heroPoint ? heroAim(...heroPoint) : REST);             // the one let go rests; the new one takes the pointer
+      track('/hero/axes/' + picked.slice().sort().join('-'), 'Hero axes: ' + picked.join(' and '));
+    });
+  }
+  showHeroAxes();
   draw();
   if (sweep) {
     // the opening, once the face is in: Black, dropped to Thin, and let go
     // to rest in the middle
-    document.fonts.load('1em Arris').catch(() => {}).then(() => setTimeout(() => { if (sweep) pull(100, 0); }, 450));
+    document.fonts.load('1em Arris').catch(() => {}).then(() => setTimeout(() => { if (sweep) pull({ wght: 100 }); }, 450));
   }
 
   /* ------------------------------------------------------------ the watch */

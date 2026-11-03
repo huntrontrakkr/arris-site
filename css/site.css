@@ -80,17 +80,35 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 
 .hero { padding-top: clamp(40px, 7vw, 96px); }
 .mark { font-size: clamp(88px, 24vw, 330px); line-height: .86; letter-spacing: -.012em; margin-left: -.04em; user-select: none;
-  touch-action: pan-y; cursor: crosshair; font-variation-settings: "wght" var(--w, 900), "GRAD" 0, "WTCH" var(--x, 0); }
+  touch-action: pan-y; cursor: crosshair; font-variation-settings: "wght" var(--w, 900), "GRAD" var(--g, 0), "WTCH" var(--x, 0); }
 /* the film: a copy of the name under it, drawn only by its filter, that follows
    the name's weight more slowly (thick, like oil) and shows only while the
    name moves; at rest it is hidden and costs nothing */
 .mark-wrap { position: relative; }
 .mark-wrap .mark:not(.mark-film) { position: relative; }
 .mark-film { position: absolute; left: 0; top: 0; right: 0; margin-top: 0; pointer-events: none; color: #000; filter: url(#film); mix-blend-mode: multiply;
-  visibility: hidden; opacity: 0; font-variation-settings: "wght" var(--fw, 500), "GRAD" 0, "WTCH" var(--fx, 0); }
+  visibility: hidden; opacity: 0; font-variation-settings: "wght" var(--fw, 500), "GRAD" var(--fg, 0), "WTCH" var(--fx, 0); }
 .defs { position: absolute; width: 0; height: 0; overflow: hidden; }
-.readout { display: flex; gap: 6px 24px; flex-wrap: wrap; margin: 18px 0 30px; font-family: var(--mono); font-size: 13px; color: var(--dim); }
+.readout { display: flex; gap: 6px 10px; flex-wrap: wrap; margin: 18px 0 30px; font-family: var(--mono); font-size: 13px; color: var(--dim);
+  position: relative; z-index: 1; }   /* over the name's box, which runs down past its letters */
 .readout b { font-weight: 400; color: var(--ink); display: inline-block; min-width: 3.5ch; font-variant-numeric: tabular-nums; }
+/* the axes the name follows: always two of the three; picking the third lets
+   go of the one picked longest ago, and the new one takes its direction */
+.ax { font: inherit; color: inherit; background: none; border: 1px solid transparent; padding: 5px 9px 5px 7px; margin: 0 0 0 -8px;
+  display: inline-flex; align-items: center; gap: 7px; cursor: pointer; transition: border-color .15s, color .15s; }
+.ax:hover { border-color: var(--line); }
+.ax-box { width: 9px; height: 9px; border: 1px solid currentColor; flex: none; transition: background .15s;
+  clip-path: polygon(0 0, 70% 0, 100% 30%, 100% 100%, 0 100%); }          /* its corner cut, as every corner here */
+.ax[aria-pressed="true"] .ax-box { background: var(--accent); border-color: var(--accent); }
+.ax[aria-pressed="false"] { color: color-mix(in srgb, var(--dim) 70%, transparent); }
+.ax[aria-pressed="false"] b { color: inherit; }
+.ax[aria-pressed="true"] { cursor: default; }
+.ax-dir { font-style: normal; width: 1.2ch; color: var(--accent); }
+.ax[data-dir="x"] .ax-dir::after { content: "↔"; }
+.ax[data-dir="y"] .ax-dir::after { content: "↕"; }
+.ax.swapped { animation: ax-in .45s ease-out; }
+@keyframes ax-in { from { border-color: var(--accent); } to { border-color: transparent; } }
+@media (prefers-reduced-motion: reduce) { .ax.swapped { animation: none; } }
 .lede { font-size: clamp(21px, 2.4vw, 28px); line-height: 1.35; max-width: 30ch; font-variation-settings: "wght" 350, "GRAD" 0, "WTCH" 0; }
 
 .placard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-top: 40px; border: 1px solid var(--ink); }

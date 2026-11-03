@@ -244,11 +244,17 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .it-wave { font-kerning: none; font-feature-settings: "kern" 0; font-style: italic; font-size: clamp(28px, 5.2vw, 72px); line-height: 1.15; margin: 56px 0 14px; cursor: crosshair; user-select: none; }
 .it-line { display: block; white-space: pre; }
 .it-weights { display: grid; margin: 56px 0 0; border-top: 1px solid var(--line); }
-.it-wrow { display: grid; grid-template-columns: 15ch minmax(0, 1fr); align-items: baseline; gap: 16px; border-bottom: 1px solid var(--line); padding: 4px 0; }
+.it-wrow { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; border-bottom: 1px solid var(--line); padding: 8px 0 6px; }
 .it-wlabel { font-family: var(--mono); font-size: 12px; color: var(--dim); display: flex; align-items: center; gap: 8px; }
 .it-wlabel i { width: 10px; height: 10px; clip-path: polygon(0 0, 65% 0, 100% 35%, 100% 100%, 0 100%); }
-.it-wtext { font-style: italic; font-size: clamp(24px, 4vw, 48px); line-height: 1.2; white-space: nowrap; overflow: hidden;
+.it-wtext { font-style: italic; font-size: clamp(24px, 4vw, 48px); line-height: 1.2; white-space: nowrap;
+  overflow-x: auto; overflow-y: hidden; scrollbar-width: none; overscroll-behavior-x: contain; cursor: grab;
   -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 60px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 60px), transparent); }
+.it-wtext::-webkit-scrollbar { display: none; }
+.it-wtext.dragging { cursor: grabbing; user-select: none; }
+.it-wtext.moved { -webkit-mask-image: linear-gradient(to right, transparent, #000 40px, #000 calc(100% - 60px), transparent); mask-image: linear-gradient(to right, transparent, #000 40px, #000 calc(100% - 60px), transparent); }
+.it-wtext.end { -webkit-mask-image: none; mask-image: none; }
+.it-wtext.moved.end { -webkit-mask-image: linear-gradient(to right, transparent, #000 40px); mask-image: linear-gradient(to right, transparent, #000 40px); }
 .it-locl { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 14px; margin: 56px 0 14px; }
 .it-locl-row { background: var(--panel); padding: 14px 18px 18px; display: grid; gap: 4px; clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%); }
 .it-lang { font-family: var(--mono); font-size: 12px; color: var(--dim); }
@@ -352,21 +358,16 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .grid button[aria-selected="true"] { background: var(--cut); color: var(--paper); }
 .grid button { scroll-margin-top: calc(var(--bar-h, 49px) + 16px); scroll-margin-bottom: 16px; }
 
-/* ---- phones: the weight rows ---------------------------------------------
-   the label over its line, the line the full width; on touch a line can be
-   pushed along to read all of it, its fades marking where there is more */
+/* ---- the weight rows ---------------------------------------------------------
+   on every screen the label over its line, the line the full width, pushed
+   along to read all of it (a finger, a trackpad, or a mouse dragging it:
+   js/site.js), its fades marking where there is more */
 @media (max-width: 640px) {
-  .it-wrow { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 7px 0 5px; }
+  .it-wrow { padding: 7px 0 5px; }
   .it-wlabel { font-size: 11px; }
   .it-wtext { font-size: clamp(28px, 8.4vw, 40px); }
 }
-@media (hover: none) {
-  .it-wtext { overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; }
-  .it-wtext::-webkit-scrollbar { display: none; }
-  .it-wtext.moved { -webkit-mask-image: linear-gradient(to right, transparent, #000 40px, #000 calc(100% - 60px), transparent); mask-image: linear-gradient(to right, transparent, #000 40px, #000 calc(100% - 60px), transparent); }
-  .it-wtext.end { -webkit-mask-image: none; mask-image: none; }
-  .it-wtext.moved.end { -webkit-mask-image: linear-gradient(to right, transparent, #000 40px); mask-image: linear-gradient(to right, transparent, #000 40px); }
-}
+@media (hover: none) { .it-wtext { cursor: auto; } }
 
 /* ---- phones and narrow windows: the character set -------------------------
    two panes, as on a desk: on the left the examiner, pinned and as tall as

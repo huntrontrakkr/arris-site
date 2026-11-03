@@ -357,13 +357,34 @@
       const t = row.querySelector('.it-wtext');
       t.textContent = text;
       t.style.fontVariationSettings = fvs(w, 0, 0);
-      t.addEventListener('scroll', () => {
-        t.classList.toggle('moved', t.scrollLeft > 2);
-        t.classList.toggle('end', t.scrollLeft + t.clientWidth >= t.scrollWidth - 2);
-      }, { passive: true });
       el.appendChild(row);
     }
   }
+  // every weight row (these, the italic's and Mono's): its fades follow where
+  // it is pushed to; a mouse drags it along, as a finger does
+  document.addEventListener('scroll', e => {
+    const t = e.target;
+    if (!(t instanceof Element) || !t.classList.contains('it-wtext')) return;
+    t.classList.toggle('moved', t.scrollLeft > 2);
+    t.classList.toggle('end', t.scrollLeft + t.clientWidth >= t.scrollWidth - 2);
+  }, { capture: true, passive: true });
+  document.addEventListener('pointerdown', e => {
+    const t = e.target instanceof Element && e.target.closest('.it-wtext');
+    if (!t || e.pointerType !== 'mouse' || e.button !== 0) return;
+    const x0 = e.clientX, s0 = t.scrollLeft;
+    let moved = false;
+    const move = ev => {
+      const dx = ev.clientX - x0;
+      if (!moved && Math.abs(dx) < 3) return;
+      if (!moved) { moved = true; t.classList.add('dragging'); t.setPointerCapture(e.pointerId); }
+      t.scrollLeft = s0 - dx;
+    };
+    const up = () => {
+      t.classList.remove('dragging');
+      t.removeEventListener('pointermove', move); t.removeEventListener('pointerup', up); t.removeEventListener('pointercancel', up);
+    };
+    t.addEventListener('pointermove', move); t.addEventListener('pointerup', up); t.addEventListener('pointercancel', up);
+  });
   // the nine weights, upright
   weightRows($('#up-weights'), pangram('up'));
 

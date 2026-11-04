@@ -685,7 +685,7 @@
     for (const a of AX3) lag[a] += (LOC[a] - lag[a]) * (1 - Math.exp(-dt / (LAG[a] * (cooling ? 3 : 1))));
     oxide = cooling ? oxide * Math.exp(-dt / 0.3) : Math.min(1, oxide + dt / 0.06);
     // (only the fade ends it: a band too thin to see can still carry colour)
-    if (cooling && oxide < 0.01) {
+    if (cooling && oxide < 0.04) {                 // (its eased opacity is then under 0.005)
       frOn = false; frSeen = null; oxide = 0; Object.assign(lag, { wght: LOC.wght, GRAD: LOC.GRAD, WTCH: LOC.WTCH }); heatEl.style.visibility = 'hidden'; heatEl.style.opacity = 0;
       return;
     }

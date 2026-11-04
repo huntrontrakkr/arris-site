@@ -100,7 +100,7 @@
     for (const a of HERO_AXES) {
       const v = Math.round(cur[a]);
       mark.style.setProperty(HERO_VAR[a], v);
-      HERO_SHOWN[a].textContent = v;
+      HERO_SHOWN[a].textContent = a === 'GRAD' && v ? (v > 0 ? '+' : '−') + Math.abs(v) : v;   // grade signed
     }
     wake();
   }
@@ -184,10 +184,9 @@
       const a = b.dataset.ax, d = picked.includes(a) ? pickDir[a] : null;
       b.setAttribute('aria-pressed', !!d);
       const dir = b.querySelector('.ax-dir');
-      dir.innerHTML = d ? HERO_ARROW : '';
+      dir.innerHTML = d ? HERO_ARROW + `<span class="vh">, ${d === 'x' ? 'across' : 'down'}</span>` : '';
       dir.className = 'ax-dir' + (d ? ' ' + d : '');
       b.title = d ? `${a} ${HERO_TITLE[d]}; press again to swap across and down` : `${a}: pick it to follow the pointer`;
-      b.setAttribute('aria-label', d ? `${a}, ${d === 'x' ? 'across' : 'down'}` : a);
     }
   }
   for (const b of heroBtns) {

@@ -609,8 +609,8 @@
   // band between the two copies, the faster edge's the wider, blurs it into the
   // letter and colours it by how much heat that is, titanium's heat tint from the
   // edge inward: as hot as the edge ran at the edge itself, cooling through the
-  // sequence to straw and the ink. When the line stops the copy catches up in
-  // about half a second and the colour goes with it; at rest none of it is drawn.
+  // sequence to straw and the ink. When the line stops the oxide stays where it
+  // is and fades over about a second; at rest none of it is drawn.
   // A colon between figures is the font's raised one: its copies carry their
   // neighbouring figures (so they take that form) and show only the colon
   const heatEl = $('#ds-heat'), dsLine = $('#ds-line'), dsNow = $('#ds-now'), dsWas = $('#ds-was'), heatBlur = $('#ds-heat-blur'), heatGain = $('#ds-heat-gain');
@@ -618,6 +618,9 @@
   // watch moves whole strokes, not just their edges, so its copy keeps closer
   const LAG = { wght: 0.16, GRAD: 0.16, WTCH: 0.07 };
   let lag = null, lagIt = false, frOn = false, frT = 0, frGlyphs = [];
+  // the oxide's glow: while the line moves it is full; once it has been still a moment the
+  // oxide holds where it is and fades (the copy settling three times slower under it)
+  let oxide = 0, frStill = 0, frSeen = null;
   const frRange = document.createRange();
   function rebuildFriction() {
     dsNow.textContent = ''; dsWas.textContent = ''; frGlyphs = [];
@@ -645,7 +648,7 @@
     // stroke carries less of it: a hairline warms at its edge, it does not glow through
     const u = norm('wght', LOC.wght), fs = parseFloat(getComputedStyle(dsText).fontSize);
     heatBlur.setAttribute('stdDeviation', (fs * (0.011 + 0.017 * u)).toFixed(2));
-    heatGain.setAttribute('slope', ((0.5 + 2.5 * u) * (0.35 + 0.65 * clamp((u - 0.1) / 0.45, 0, 1))).toFixed(2));
+    heatGain.setAttribute('slope', ((0.5 + 2.5 * u - 0.9 * Math.max(0, u - 0.5)) * (0.35 + 0.65 * clamp((u - 0.1) / 0.45, 0, 1))).toFixed(2));
     dsWas.style.fontVariationSettings = fvs(lag.wght, lag.GRAD, lag.WTCH);
     dsWas.style.fontStyle = dsNow.style.fontStyle = dsLine.style.fontStyle;
     // every reading first, then every placing: one layout a frame
@@ -675,9 +678,18 @@
   }
   function frStep(t) {
     const dt = Math.min(0.05, (t - frT) / 1000 || 0.016); frT = t;
-    let off = 0;
-    for (const a of AX3) { lag[a] += (LOC[a] - lag[a]) * (1 - Math.exp(-dt / LAG[a])); off = Math.max(off, Math.abs(LOC[a] - lag[a]) / (AX[a][1] - AX[a][0])); }
-    if (off < 0.003) { frOn = false; heatEl.style.visibility = 'hidden'; return; }
+    const moved = !frSeen || AX3.some(a => LOC[a] !== frSeen[a]);
+    frSeen = { wght: LOC.wght, GRAD: LOC.GRAD, WTCH: LOC.WTCH };
+    frStill = moved ? 0 : frStill + dt;
+    const cooling = frStill > 0.08;
+    for (const a of AX3) lag[a] += (LOC[a] - lag[a]) * (1 - Math.exp(-dt / (LAG[a] * (cooling ? 3 : 1))));
+    oxide = cooling ? oxide * Math.exp(-dt / 0.3) : Math.min(1, oxide + dt / 0.06);
+    // (only the fade ends it: a band too thin to see can still carry colour)
+    if (cooling && oxide < 0.01) {
+      frOn = false; frSeen = null; oxide = 0; Object.assign(lag, { wght: LOC.wght, GRAD: LOC.GRAD, WTCH: LOC.WTCH }); heatEl.style.visibility = 'hidden'; heatEl.style.opacity = 0;
+      return;
+    }
+    heatEl.style.opacity = (oxide * oxide * (3 - 2 * oxide)).toFixed(3);   // eased, so the last of it goes softly
     placeFriction();
     requestAnimationFrame(frStep);
   }
@@ -687,7 +699,7 @@
     if (!lag || LOC.ital !== lagIt) { lag = { wght: LOC.wght, GRAD: LOC.GRAD, WTCH: LOC.WTCH }; lagIt = LOC.ital; return; }
     if (frOn) { placeFriction(); return; }       // (placed again after the line changes, so no frame shows them a step apart)
     if (AX3.every(a => LOC[a] === lag[a])) return;
-    frOn = true; heatEl.style.visibility = 'visible'; frT = performance.now();
+    frOn = true; frStill = 0; heatEl.style.opacity = 0; heatEl.style.visibility = 'visible'; frT = performance.now();
     placeFriction(); requestAnimationFrame(frStep);
   }
   function renderDS() {

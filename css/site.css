@@ -161,55 +161,103 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .tf-also-g { font-size: clamp(34px, 5vw, 60px); line-height: 1.1; word-spacing: .25em; font-variation-settings: "wght" 500, "GRAD" 0, "WTCH" 0; }
 .up-weights .it-wtext { font-style: normal; }
 
-/* the designspace: a dark instrument on the paper, so grade reads as it is
-   meant to (light on dark) and the titanium colours keep their contrast */
-.ds { display: grid; gap: 14px; margin-top: 8px; }
-.ds-stage { position: relative; background: var(--night); padding: clamp(24px, 4vw, 52px) clamp(20px, 4vw, 48px); overflow: hidden;
+/* the designspace: an instrument on the paper, in the dimensions film's terms:
+   black glass with a fine grain, hairline corner marks, the readouts in Mono,
+   one accent (amber) for what is moving, and the space itself as a cube in
+   the corner, its faces ruled, its 27 glyphs each set at their own place */
+.dsx { --dsx-pad: clamp(18px, 3.2vw, 44px); --gr: rgba(214, 224, 226, .5);
+  position: relative; margin-top: 8px; background: var(--night); color: var(--night-ink);
+  padding: var(--dsx-pad); display: grid; gap: clamp(18px, 2.6vw, 34px); isolation: isolate;
   clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px)); }
-.ds-text, .ds-ghost { font-size: clamp(34px, 6.4vw, 92px); line-height: 1.1; margin: 0; max-width: none; outline: none; }
-.ds-text .ln, .ds-ghost .ln { display: block; white-space: pre; }   /* lines held where the widest instance breaks (site.js holdLines): no axis rewraps them */
-.ds-ghost { position: absolute; left: clamp(20px, 4vw, 48px); right: clamp(20px, 4vw, 48px); top: clamp(24px, 4vw, 52px); pointer-events: none;
-  color: transparent; -webkit-text-stroke: 1px var(--cut); opacity: 0; transition: opacity .2s; }
-.ds-stage.graded .ds-ghost { opacity: 1; }
-.ds-panel { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: 14px; }
-@media (max-width: 860px) { .ds-panel { grid-template-columns: 1fr; } }
-.ds-mapbox { background: var(--night); color: var(--night-ink); padding: 14px 16px 12px; display: grid; gap: 10px; min-width: 0; }
-.ds-pairs { display: flex; flex-wrap: wrap; gap: 6px; }
-.ds-pairs button, .ds-presets button, .ds-css button, .ds-fly { font: inherit; font-family: var(--mono); font-size: 12px; padding: 5px 10px; cursor: pointer;
-  background: none; color: var(--night-dim); border: 1px solid var(--night-line); }
-.ds-pairs button[aria-pressed="true"] { color: var(--night); background: var(--amber); border-color: var(--amber); }
-.ds-mapwrap { display: grid; grid-template-columns: 1fr 26px; gap: 10px; }
-.ds-map { position: relative; aspect-ratio: 7 / 5; touch-action: none; cursor: crosshair; outline-offset: 4px; }
-.ds-map:focus-visible { outline: 2px solid var(--amber); }
-.ds-cells { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(7, 1fr); grid-template-rows: repeat(5, 1fr); place-items: center;
-  font-size: clamp(22px, 3.2vw, 44px); line-height: 1; user-select: none; }
-.ds-cells span { opacity: .82; }
-.ds-trail { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.ds-cross { position: absolute; inset: 0; pointer-events: none; --px: calc(var(--x) * (100% - 100% / 7) + 50% / 7); --py: calc(var(--y) * (100% - 100% / 5) + 50% / 5); }
-.ds-cross .h, .ds-cross .v { position: absolute; background: rgba(241,235,221,.35); }
-.ds-cross .h { left: 0; right: 0; height: 1px; top: var(--py); }
-.ds-cross .v { top: 0; bottom: 0; width: 1px; left: var(--px); }
-.ds-cross b { position: absolute; left: var(--px); top: var(--py); width: 26px; height: 26px; translate: -50% -50%; border: 2px solid var(--amber);
-  clip-path: polygon(29.3% 0, 70.7% 0, 100% 29.3%, 100% 70.7%, 70.7% 100%, 29.3% 100%, 0 70.7%, 0 29.3%); background: rgba(255,176,0,.18); }
-.ds-third { position: relative; border: 1px solid var(--night-line); --u: .5; }
-.ds-third i { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--u) * 100%); background: rgba(255,176,0,.3); border-top: 2px solid var(--amber); }
-.ds-third span { position: absolute; left: 50%; top: 50%; translate: -50% -50%; rotate: -90deg; white-space: nowrap; font-family: var(--mono); font-size: 11px; color: var(--night-ink); }
-.ds-axislabels { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; color: var(--night-dim); padding-right: 36px; }
-.ds-controls { display: grid; gap: 14px; align-content: start; min-width: 0; }
-.ds-slider { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: center; }
-.ds-slider label { font-variation-settings: "wght" 600, "GRAD" 0, "WTCH" 0; font-size: 15px; }
-.ds-slider label code { color: var(--dim); margin-left: 4px; }
-.ds-slider input { grid-column: 1 / -1; grid-row: 2; width: 100%; accent-color: var(--ink); }
-.ds-slider output { font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; }
-.ds-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.ds-fly { color: var(--ink); border-color: var(--ink); padding: 7px 14px; font-size: 13px; }
-.ds-fly[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
-.ds-presets { display: flex; flex-wrap: wrap; gap: 6px; }
-.ds-presets button { color: var(--ink); border-color: var(--line); }
-.ds-presets button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-.ds-css { display: flex; gap: 8px; align-items: center; background: var(--panel); padding: 8px 10px; min-width: 0; }
-.ds-css code { flex: 1; min-width: 0; font-size: 12px; overflow-x: auto; white-space: nowrap; }
-.ds-css button { color: var(--ink); border-color: var(--ink); }
+.dsx::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: .5;   /* the grain, and light falling off to the edges */
+  background: radial-gradient(120% 90% at 30% 20%, rgba(120, 150, 160, .07), transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .8 0 0 0 0 .85 0 0 0 0 .86 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"); }
+.dsx-c { position: absolute; width: 16px; height: 16px; border: 0 solid var(--gr); pointer-events: none; }
+.dsx-c.tl { left: 12px; top: 12px; border-width: 1px 0 0 1px; }
+.dsx-c.tr { right: 30px; top: 12px; border-width: 1px 1px 0 0; }
+.dsx-c.bl { left: 30px; bottom: 12px; border-width: 0 0 1px 1px; }
+.dsx-c.br { right: 12px; bottom: 12px; border-width: 0 1px 1px 0; }
+.dsx-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px 24px; flex-wrap: wrap; font-family: var(--mono); font-size: 12px; letter-spacing: .08em; color: var(--night-dim); }
+.dsx-axes { display: inline-flex; align-items: baseline; gap: 12px; }
+.dsx-n { font-family: var(--sans); font-size: 30px; line-height: 1; color: var(--amber); font-variation-settings: "wght" 900, "GRAD" 0, "WTCH" 0; letter-spacing: 0; }
+.dsx-axes [data-ax] { transition: color .2s; }
+.dsx-axes [data-ax].hot { color: var(--amber); }
+.dsx-css { font: inherit; font-family: var(--mono); font-size: 12px; letter-spacing: .02em; background: none; border: 0; padding: 0; color: var(--night-dim); cursor: copy;
+  min-width: 0; max-width: 100%; display: inline-flex; gap: 10px; align-items: baseline; text-align: right; }
+.dsx-css code { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dsx-copied { color: var(--amber); }
+@media (hover: hover) { .dsx-css:hover code { color: var(--night-ink); } }
+/* the line itself, in the titanium the weight would anodize to, the film
+   thickening along it; its lines held where the widest instance breaks */
+.dsx-stage { position: relative; min-height: 1.2em; font-size: clamp(40px, 5.7vw, 92px); }
+.dsx-text { font-size: 1em; line-height: 1.08; margin: 0; max-width: none; outline: none; color: var(--night-ink);
+  background-image: var(--film, linear-gradient(var(--night-ink), var(--night-ink))); -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; caret-color: var(--amber); }
+.dsx-text .ln { display: block; width: fit-content; white-space: pre; }
+.dsx-text:focus-visible { outline: 1px dotted var(--night-dim); outline-offset: 8px; }
+/* a dimension line under it, as a drawing has: the measure of the line, which grade never changes */
+.dsx-measure { position: relative; height: 18px; margin-top: 10px; width: var(--mw, 0px); font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: var(--night-dim); }
+.dsx-measure i { position: absolute; left: 0; right: 0; top: 8px; height: 1px; background: currentColor; opacity: .7; }
+.dsx-measure i::before, .dsx-measure i::after { content: ""; position: absolute; top: -5px; width: 1px; height: 11px; background: currentColor; }
+.dsx-measure i::before { left: 0; } .dsx-measure i::after { right: 0; }
+.dsx-measure span { position: absolute; left: 50%; top: 0; translate: -50% 0; padding: 0 10px; background: var(--night); white-space: nowrap; transition: color .2s; }
+.dsx-measure.held { color: var(--amber); }
+.dsx-main { display: grid; grid-template-columns: minmax(0, 1fr) clamp(300px, 37%, 480px); gap: clamp(20px, 3vw, 48px); align-items: end; }
+.dsx-left { display: flex; flex-direction: column; justify-content: space-between; gap: clamp(28px, 4vw, 64px); min-width: 0; align-self: stretch; }
+/* the readouts, as the film's: a small key, a large figure, and under it a hairline gauge */
+.dsx-read { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px clamp(16px, 3vw, 40px); }
+.dsx-g { display: grid; align-items: baseline; gap: 4px; min-width: 0; }
+.dsx-g label { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; color: var(--night-dim); transition: color .2s; }
+.dsx-g.hot label { color: var(--amber); }
+.dsx-g output { font-family: var(--mono); font-size: clamp(30px, 3.4vw, 46px); line-height: 1; font-variant-numeric: tabular-nums; color: var(--night-ink); }
+.dsx-g small { font-family: var(--mono); font-size: 11px; color: var(--night-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dsx-g input { margin: 8px 0 0; width: 100%; height: 22px; background: none; cursor: ew-resize; -webkit-appearance: none; appearance: none; --u: .5; --o: 0; }
+.dsx-g input::-webkit-slider-runnable-track { height: 22px; background: var(--fill), linear-gradient(var(--night-line), var(--night-line)) center / 100% 1px no-repeat; }
+.dsx-g input::-moz-range-track { height: 22px; background: var(--fill), linear-gradient(var(--night-line), var(--night-line)) center / 100% 1px no-repeat; }
+.dsx-g input::-webkit-slider-thumb { -webkit-appearance: none; width: 3px; height: 22px; background: var(--night-ink); border: 0; border-radius: 0; }
+.dsx-g input::-moz-range-thumb { width: 3px; height: 22px; background: var(--night-ink); border: 0; border-radius: 0; }
+.dsx-g input:focus-visible { outline: 1px dotted var(--night-dim); outline-offset: 4px; }
+/* the gauges' fills: weight in its nine titanium colours (fixed, so nothing
+   changes colour under the thumb but the thumb's place), grade from its zero */
+.dsx-g[data-ax="wght"] input { --fill: linear-gradient(90deg, var(--t100), var(--t200), var(--t300), var(--t400), var(--t500), var(--t600), var(--t700), var(--t800), var(--t900)) left center / 100% 3px no-repeat;
+  -webkit-mask: linear-gradient(90deg, #000 calc(var(--u) * 100%), rgba(0,0,0,.28) calc(var(--u) * 100%)); mask: linear-gradient(90deg, #000 calc(var(--u) * 100%), rgba(0,0,0,.28) calc(var(--u) * 100%)); }
+.dsx-g[data-ax="GRAD"] input { --fill: linear-gradient(90deg, transparent calc(min(var(--u), .5) * 100%), var(--night-ink) calc(min(var(--u), .5) * 100%), var(--night-ink) calc(max(var(--u), .5) * 100%), transparent calc(max(var(--u), .5) * 100%)) left center / 100% 3px no-repeat; }
+.dsx-g[data-ax="WTCH"] input { --fill: linear-gradient(90deg, var(--amber) calc(var(--u) * 100%), transparent calc(var(--u) * 100%)) left center / 100% 3px no-repeat; }
+/* the cube */
+.dsx-cube { position: relative; aspect-ratio: 1 / .92; touch-action: none; cursor: grab; outline: none; user-select: none; -webkit-user-select: none; }
+.dsx-cube.turning { cursor: grabbing; }
+.dsx-cube.on-point { cursor: move; }
+.dsx-cube:focus-visible { outline: 1px dotted var(--night-dim); outline-offset: 6px; }
+.dsx-cube canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.dsx-lattice { position: absolute; inset: 0; pointer-events: none; }
+.dsx-lattice span { position: absolute; left: 0; top: 0; font-size: 30px; line-height: 1; will-change: transform, opacity; transform-origin: 0 0; }
+.dsx-hint { position: absolute; right: 0; top: 0; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: var(--night-dim); transition: opacity .6s; pointer-events: none; }
+.dsx-cube.used .dsx-hint { opacity: 0; }
+.dsx-foot { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 12px 28px; padding-top: 14px; border-top: 1px solid var(--night-line); }
+.dsx-presets { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+.dsx-presets button, .dsx-fly, .dsx-style button { font: inherit; font-family: var(--mono); font-size: 12px; letter-spacing: .04em; background: none; border: 0; padding: 4px 0; color: var(--night-dim); cursor: pointer; transition: color .2s; }
+.dsx-presets button[aria-pressed="true"], .dsx-style button[aria-pressed="true"] { color: var(--night-ink); }
+.dsx-presets button[aria-pressed="true"] { box-shadow: inset 0 -1px 0 var(--amber); }
+@media (hover: hover) { .dsx-presets button:hover, .dsx-fly:hover, .dsx-style button:hover { color: var(--night-ink); } }
+.dsx-acts { display: flex; gap: 18px; align-items: baseline; }
+.dsx-fly::before { content: "▶ "; color: var(--amber); }
+.dsx-fly[aria-pressed="true"] { color: var(--night-ink); }
+.dsx-fly[aria-pressed="true"]::before { content: "■ "; }
+.dsx-style { display: inline-flex; gap: 0; }
+.dsx-style { gap: 10px; }
+.dsx-style button + button::before { content: "/"; color: var(--night-dim); opacity: .5; margin-right: 10px; }
+@media (max-width: 860px) {
+  .dsx-main { grid-template-columns: 1fr; }
+  .dsx-left { display: contents; }
+  .dsx-cube { width: min(100%, 480px); justify-self: center; }
+  .dsx-read { order: 2; }
+}
+@media (max-width: 520px) {
+  .dsx-read { gap: 14px 12px; }
+  .dsx-g output { font-size: 26px; }
+  .dsx-top { font-size: 11px; }
+  .dsx-css { display: none; }
+}
 .switch.small button { padding: 5px 12px; font-size: 12px; }
 .switch.dark { border-color: var(--night-dim); }
 .switch.dark button { color: var(--night-dim); }

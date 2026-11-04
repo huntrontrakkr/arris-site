@@ -213,45 +213,38 @@
 
 <section class="space" id="axes">
   <h2>The designspace</h2>
-  <p class="sub">Weight, grade and watch. Drag around the map.</p>
+  <p class="sub">Weight, grade and watch: three axes, one cube. Every place in it is a font.</p>
 
-  <div class="ds" id="ds">
-    <div class="ds-stage" id="ds-stage">
-      <p class="ds-text" id="ds-text" contenteditable="plaintext-only" spellcheck="false">Gate 8 closes at 21:47</p>
-      <p class="ds-ghost" id="ds-ghost" aria-hidden="true">Gate 8 closes at 21:47</p>
+  <div class="dsx" id="ds">
+    <i class="dsx-c tl" aria-hidden="true"></i><i class="dsx-c tr" aria-hidden="true"></i><i class="dsx-c bl" aria-hidden="true"></i><i class="dsx-c br" aria-hidden="true"></i>
+    <div class="dsx-top">
+      <span class="dsx-axes"><b class="dsx-n">3</b><span><span data-ax="wght">wght</span> × <span data-ax="GRAD">GRAD</span> × <span data-ax="WTCH">WTCH</span></span></span>
+      <button type="button" class="dsx-css" id="ds-copy" title="Copy the CSS"><code id="ds-css"></code><span class="dsx-copied" aria-live="polite"></span></button>
     </div>
-
-    <div class="ds-panel">
-      <div class="ds-mapbox">
-        <div class="ds-pairs" role="group" aria-label="Axes on the map">
-          <button type="button" data-pair="wght,WTCH" aria-pressed="true">wght × WTCH</button>
-          <button type="button" data-pair="wght,GRAD" aria-pressed="false">wght × GRAD</button>
-          <button type="button" data-pair="GRAD,WTCH" aria-pressed="false">GRAD × WTCH</button>
-        </div>
-        <div class="ds-mapwrap">
-          <div class="ds-map" id="ds-map" tabindex="0" role="slider" aria-label="Designspace map: arrow keys move, Page Up and Page Down change the third axis" aria-valuetext="">
-            <div class="ds-cells" id="ds-cells" aria-hidden="true"></div>
-            <canvas class="ds-trail" id="ds-trail" aria-hidden="true"></canvas>
-            <div class="ds-cross" id="ds-cross" aria-hidden="true"><i class="h"></i><i class="v"></i><b></b></div>
-          </div>
-          <div class="ds-third" id="ds-third" aria-hidden="true"><i></i><span></span></div>
-        </div>
-        <div class="ds-axislabels"><span id="ds-xlabel">wght →</span><span id="ds-ylabel">WTCH ↓</span></div>
+    <div class="dsx-main">
+    <div class="dsx-left">
+    <div class="dsx-stage" id="ds-stage">
+      <p class="dsx-text" id="ds-text" contenteditable="plaintext-only" spellcheck="false">Gate 8 closes at 21:47</p>
+      <div class="dsx-measure" id="ds-measure" aria-hidden="true"><i></i><span></span></div>
+    </div>
+      <div class="dsx-read">
+        <div class="dsx-g" data-ax="wght"><label for="s-wght">wght</label><output id="o-wght">400</output><small id="n-wght">Regular</small><input id="s-wght" type="range" min="100" max="900" step="1" aria-label="Weight"></div>
+        <div class="dsx-g" data-ax="GRAD"><label for="s-GRAD">GRAD</label><output id="o-GRAD">0</output><small>grade</small><input id="s-GRAD" type="range" min="-100" max="100" step="1" aria-label="Grade"></div>
+        <div class="dsx-g" data-ax="WTCH"><label for="s-WTCH">WTCH</label><output id="o-WTCH">0</output><small>watch</small><input id="s-WTCH" type="range" min="0" max="100" step="1" aria-label="Watch"></div>
       </div>
-
-      <div class="ds-controls">
-        <div class="ds-slider"><label for="s-wght">Weight <code>wght</code></label><input id="s-wght" type="range" min="100" max="900" step="1"><output id="o-wght"></output></div>
-        <div class="ds-slider"><label for="s-GRAD">Grade <code>GRAD</code></label><input id="s-GRAD" type="range" min="-100" max="100" step="1"><output id="o-GRAD"></output></div>
-        <div class="ds-slider"><label for="s-WTCH">Watch <code>WTCH</code></label><input id="s-WTCH" type="range" min="0" max="100" step="1"><output id="o-WTCH"></output></div>
-        <div class="ds-row">
-          <div class="switch small" role="group" aria-label="Style">
-            <button type="button" id="ds-up" aria-pressed="true">Upright</button>
-            <button type="button" id="ds-it" aria-pressed="false">Italic</button>
-          </div>
-          <button type="button" class="ds-fly" id="ds-fly" aria-pressed="false">▶ Fly through</button>
-        </div>
-        <div class="ds-presets" id="ds-presets" aria-label="Named places"></div>
-        <div class="ds-css"><code id="ds-css"></code><button type="button" id="ds-copy">Copy</button></div>
+    </div>
+      <div class="dsx-cube" id="ds-cube" tabindex="0" role="group" aria-label="The designspace as a cube: drag the point to move it, drag elsewhere to turn the cube; arrow keys move weight and grade, Page Up and Page Down the watch">
+        <canvas class="dsx-back" id="ds-back" aria-hidden="true"></canvas>
+        <div class="dsx-lattice" id="ds-lattice" aria-hidden="true"></div>
+        <canvas class="dsx-front" id="ds-front" aria-hidden="true"></canvas>
+        <span class="dsx-hint" id="ds-hint" aria-hidden="true">drag the point · turn the cube</span>
+      </div>
+    </div>
+    <div class="dsx-foot">
+      <div class="dsx-presets" id="ds-presets" aria-label="Named places"></div>
+      <div class="dsx-acts">
+        <button type="button" class="dsx-fly" id="ds-fly" aria-pressed="false">Fly through</button>
+        <span class="dsx-style" role="group" aria-label="Style"><button type="button" id="ds-up" aria-pressed="true">Upright</button><button type="button" id="ds-it" aria-pressed="false">Italic</button></span>
       </div>
     </div>
   </div>

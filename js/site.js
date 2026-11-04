@@ -438,101 +438,274 @@
   weightRows($('#up-weights'), pangram('up'));
 
   /* ------------------------------------------------------------ the designspace */
-  const map = $('#ds-map'), cells = $('#ds-cells'), cross = $('#ds-cross'), third = $('#ds-third');
-  const dsText = $('#ds-text'), dsGhost = $('#ds-ghost'), dsStage = $('#ds-stage');
-  const NX = 7, NY = 5;
-  let pair = ['wght', 'WTCH'];
-  const thirdAxis = () => Object.keys(AX).find(a => !pair.includes(a));
+  // The space as the dimensions film drew it: a cube with ruled faces, the
+  // place a point inside it. x is weight (Thin to Black, left to right), y
+  // grade (down to up), z the watch (front to back). Dragging the cube turns
+  // it (it also drifts a little by itself); dragging the point moves it in
+  // the two axes that face the eye most; 27 glyphs stand each at its own
+  // place, the corners the space's extremes (a tap on one goes there).
+  const dsText = $('#ds-text'), dsStage = $('#ds-stage'), cubeEl = $('#ds-cube'), measure = $('#ds-measure');
+  const backC = $('#ds-back'), frontC = $('#ds-front'), latEl = $('#ds-lattice');
+  const bctx = backC.getContext('2d'), fctx = frontC.getContext('2d');
   const norm = (a, v) => (v - AX[a][0]) / (AX[a][1] - AX[a][0]);
   const denorm = (a, u) => AX[a][0] + clamp(u, 0, 1) * (AX[a][1] - AX[a][0]);
   const signed = (a, v) => (a === 'GRAD' && v > 0 ? '+' : '') + Math.round(v);
+  const AX3 = ['wght', 'GRAD', 'WTCH'];
+  // (the watch runs back from the front face: the plain font is nearest the eye)
+  const SIDE = [1, 1, -1];
+  const toP = l => AX3.map((a, k) => SIDE[k] * (norm(a, l[a]) * 2 - 1));
+  const fromP = p => Object.fromEntries(AX3.map((a, k) => [a, denorm(a, (SIDE[k] * p[k] + 1) / 2)]));
 
-  for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) {
-    const c = document.createElement('span');
-    c.textContent = 'a'; c.dataset.i = i; c.dataset.j = j;
-    cells.appendChild(c);
+  // the view: turned to show three faces, the eye a little above
+  const dsView = { yaw: -0.6, pitch: 0.36 }, dsSpin = { yaw: 0, pitch: 0 };
+  const EYE = 4.4;                                             // the eye's distance, in half-cubes
+  let dsSway = 0, cW = 0, cH = 0, cS = 0, cCX = 0, cCY = 0, dsDirty = true, idleSince = 0, used = false;
+  function rot([x, y, z]) {
+    const yw = dsView.yaw + dsSway, cy = Math.cos(yw), sy = Math.sin(yw), cp = Math.cos(dsView.pitch), sp = Math.sin(dsView.pitch);
+    const x1 = cy * x + sy * z, z1 = -sy * x + cy * z;
+    return [x1, cp * y - sp * z1, sp * y + cp * z1];
   }
-  let cellKey = '';
-  function drawCells() {
-    const t = thirdAxis(), key = pair.join() + Math.round(LOC[t]) + LOC.ital;
-    if (key === cellKey) return;
-    cellKey = key;
-    for (const c of cells.children) {
-      const l = { [pair[0]]: denorm(pair[0], c.dataset.i / (NX - 1)), [pair[1]]: denorm(pair[1], c.dataset.j / (NY - 1)), [t]: LOC[t] };
-      c.style.fontVariationSettings = fvs(l.wght, l.GRAD, l.WTCH);
-      c.style.color = titanium(l.wght);
-      c.style.fontStyle = LOC.ital ? 'italic' : 'normal';
+  function proj(p) { const [x, y, z] = rot(p), k = EYE / (EYE - z); return [cCX + cS * x * k, cCY - cS * y * k, z, k]; }
+  const CORNERS = [...Array(8)].map((_, i) => [i & 1 ? 1 : -1, i & 2 ? 1 : -1, i & 4 ? 1 : -1]);
+  const EDGES = [];
+  for (let i = 0; i < 8; i++) for (let b = 0; b < 3; b++) if (!(i & (1 << b))) EDGES.push([i, i | (1 << b), b]);
+  // a face is (axis, side); it faces away when its outward normal does
+  const facesAway = (k, s) => rot(k === 0 ? [s, 0, 0] : k === 1 ? [0, s, 0] : [0, 0, s])[2] < 0;
+
+  // the 27 glyphs: the corners, the edges' and faces' middles, the centre
+  const LAT = [];
+  for (const i of [-1, 0, 1]) for (const j of [-1, 0, 1]) for (const k of [-1, 0, 1]) {
+    const s = document.createElement('span');
+    s.textContent = 'A';
+    const l = fromP([i, j, k]);
+    s.style.fontVariationSettings = fvs(l.wght, l.GRAD, l.WTCH);
+    s.style.color = titanium(l.wght);
+    latEl.appendChild(s);
+    LAT.push({ p: [i, j, k], l, el: s });
+  }
+
+  function dsSize() {
+    const dpr = devicePixelRatio || 1, r = cubeEl.getBoundingClientRect();
+    cW = r.width; cH = r.height; cCX = cW / 2; cCY = cH * 0.47; cS = Math.min(cW, cH * 1.08) * 0.228;
+    for (const c of [backC, frontC]) { c.width = Math.round(cW * dpr); c.height = Math.round(cH * dpr); c.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0); }
+    if (cW) drawCube();                                       // at once: a resized canvas is blank until drawn
+  }
+  const seg = (ctx, a, b) => { ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); };
+  const atAx = (p, k, v) => { const q = p.slice(); q[k] = v; return q; };
+  let dsHot = [];                                                // the axes the last move moved
+  let dsTrail = [];
+  function drawCube() {
+    const b = bctx, f = fctx;
+    b.clearRect(0, 0, cW, cH); f.clearRect(0, 0, cW, cH);
+    // the faces turned away: ruled finely, as the film's walls
+    const N = 8;
+    b.lineWidth = 1;
+    for (let k = 0; k < 3; k++) for (const s of [-1, 1]) {
+      if (!facesAway(k, s)) continue;
+      const [u, v] = [0, 1, 2].filter(a => a !== k);
+      b.strokeStyle = 'rgba(190, 206, 212, 0.075)';
+      for (let i = 1; i < N; i++) {
+        const t = -1 + 2 * i / N;
+        let p0 = [0, 0, 0], p1 = [0, 0, 0];
+        p0[k] = p1[k] = s; p0[u] = p1[u] = t; p0[v] = -1; p1[v] = 1; seg(b, proj(p0), proj(p1));
+        p0 = [0, 0, 0]; p1 = [0, 0, 0];
+        p0[k] = p1[k] = s; p0[v] = p1[v] = t; p0[u] = -1; p1[u] = 1; seg(b, proj(p0), proj(p1));
+      }
     }
+    // the edges: those between two faces turned away behind the glyphs, faint; the rest in front
+    for (const [i, j, ax] of EDGES) {
+      const c = CORNERS[i], others = [0, 1, 2].filter(a => a !== ax);
+      const away = others.every(k => facesAway(k, c[k]));
+      const ctx = away ? b : f;
+      ctx.strokeStyle = away ? 'rgba(190, 206, 212, 0.22)' : 'rgba(214, 224, 226, 0.5)';
+      ctx.lineWidth = 1;
+      seg(ctx, proj(c), proj(CORNERS[j]));
+    }
+    // each axis named along the edge nearest the reader's eye for it, its ends marked
+    const P = toP(LOC), far = ['900', '+100', '100'];
+    f.font = '10px "Arris Mono", ui-monospace, monospace'; f.textBaseline = 'middle';
+    for (let ax = 0; ax < 3; ax++) {
+      let best = null;
+      for (const [i, j, e] of EDGES) {
+        if (e !== ax) continue;
+        const a = proj(CORNERS[i]), c = proj(CORNERS[j]), m = [(a[0] + c[0]) / 2, (a[1] + c[1]) / 2];
+        const score = ax === 0 ? m[1] : ax === 1 ? -m[0] : m[1] + m[0] * 0.6;     // wght below, GRAD to the left, WTCH below to the right
+        if (!best || score > best.score) best = { a, c, m, score };
+      }
+      const out = [best.m[0] - cCX, best.m[1] - cCY], ol = Math.hypot(...out) || 1, o = [out[0] / ol, out[1] / ol];
+      const isHot = dsHot.includes(AX3[ax]);
+      f.fillStyle = isHot ? '#ffb000' : 'rgba(170, 180, 182, 0.75)';
+      f.textAlign = 'center';
+      f.fillText(AX3[ax], best.m[0] + o[0] * 18, best.m[1] + o[1] * 18);
+      f.fillStyle = 'rgba(150, 160, 162, 0.6)';
+      // only each axis's far end is numbered (its near end is where the others' near ends are)
+      const hi = SIDE[ax] > 0 ? best.c : best.a, lo = SIDE[ax] > 0 ? best.a : best.c;
+      f.fillText(far[ax], hi[0] + (hi[0] - lo[0]) * 0.06 + o[0] * 12, hi[1] + (hi[1] - lo[1]) * 0.06 + o[1] * 12);
+      // the place's tick on that edge
+      const tp = best.a.map((v, n) => n < 2 ? v + (best.c[n] - v) * (P[ax] + 1) / 2 : 0);   // (a, c run -1 to 1 in the cube)
+      f.strokeStyle = isHot ? '#ffb000' : 'rgba(214, 224, 226, 0.6)';
+      seg(f, [tp[0] - o[0] * 4, tp[1] - o[1] * 4], [tp[0] + o[0] * 4, tp[1] + o[1] * 4]);
+    }
+    // the trail of a flight
+    if (dsTrail.length > 1) {
+      const n = dsTrail.length;
+      f.lineWidth = 1.4; f.lineJoin = 'round';
+      for (let i = 1; i < n; i++) {
+        const a = proj(dsTrail[i - 1]), c = proj(dsTrail[i]);
+        f.strokeStyle = `rgba(255, 176, 0, ${(0.08 + 0.7 * i / n).toFixed(3)})`;
+        seg(f, a, c);
+      }
+    }
+    // the place: lines from it to the three walls behind, and the point
+    const pp = proj(P);
+    f.lineWidth = 1;
+    for (let k = 0; k < 3; k++) {
+      const s = facesAway(k, 1) ? 1 : -1, w = proj(atAx(P, k, s));
+      f.strokeStyle = dsHot.includes(AX3[k]) ? 'rgba(255, 176, 0, 0.8)' : 'rgba(255, 176, 0, 0.42)';
+      seg(f, pp, w);
+      f.fillStyle = 'rgba(255, 176, 0, 0.7)';
+      f.fillRect(w[0] - 1.5, w[1] - 1.5, 3, 3);
+    }
+    const g = f.createRadialGradient(pp[0], pp[1], 0, pp[0], pp[1], 26);
+    g.addColorStop(0, 'rgba(255, 236, 200, 0.55)'); g.addColorStop(1, 'rgba(255, 176, 0, 0)');
+    f.fillStyle = g; f.beginPath(); f.arc(pp[0], pp[1], 26, 0, 7); f.fill();
+    f.fillStyle = '#fff6e6'; f.beginPath(); f.arc(pp[0], pp[1], 3.6, 0, 7); f.fill();
+    // the glyphs, nearer ones clearer, the nearest to the place brighter
+    const scale = cS / 150;
+    for (const n of LAT) {
+      const q = proj(n.p), d = Math.hypot(n.p[0] - P[0], n.p[1] - P[1], n.p[2] - P[2]);
+      const a = clamp(0.2 + 0.5 * (q[2] + 1.2) / 2.4, 0.16, 0.72) + Math.max(0, 0.9 - d) * 0.4;
+      n.el.style.transform = `translate(${q[0].toFixed(1)}px, ${q[1].toFixed(1)}px) scale(${(q[3] * scale).toFixed(3)}) translate(-50%, -54%)`;
+      n.el.style.opacity = a.toFixed(3);
+      n.el.style.zIndex = Math.round((q[2] + 2) * 100);
+      n.q = q;
+    }
+  }
+
+  // the line: its titanium (three colours along it, the weight's in the middle) and its measure
+  function measureLine() {
+    const lines = dsText.querySelectorAll('.ln');
+    let w = 0;
+    lines.forEach(l => { w = Math.max(w, l.getBoundingClientRect().width); });
+    if (!lines.length) w = dsText.getBoundingClientRect().width;
+    const em = w / parseFloat(getComputedStyle(dsText).fontSize);
+    measure.style.setProperty('--mw', w.toFixed(1) + 'px');
+    const graded = Math.round(LOC.GRAD) !== 0;
+    measure.classList.toggle('held', graded);
+    measure.querySelector('span').textContent = `${em.toFixed(2)} em${graded ? ' · grade keeps the width' : ''}`;
   }
   function renderDS() {
-    const t = thirdAxis();
-    drawCells();
-    cross.style.setProperty('--x', norm(pair[0], LOC[pair[0]]));
-    cross.style.setProperty('--y', norm(pair[1], LOC[pair[1]]));
-    third.style.setProperty('--u', norm(t, LOC[t]));
-    third.querySelector('span').textContent = `${t} ${signed(t, LOC[t])}`;
-    map.setAttribute('aria-valuetext', `weight ${Math.round(LOC.wght)}, grade ${Math.round(LOC.GRAD)}, watch ${Math.round(LOC.WTCH)}`);
-    const v = fvs(LOC.wght, LOC.GRAD, LOC.WTCH);
+    const v = fvs(LOC.wght, LOC.GRAD, LOC.WTCH), w = LOC.wght;
     dsText.style.fontVariationSettings = v;
-    dsText.style.color = titanium(LOC.wght);
-    dsText.style.fontStyle = dsGhost.style.fontStyle = LOC.ital ? 'italic' : 'normal';
-    dsGhost.style.fontVariationSettings = fvs(LOC.wght, 0, LOC.WTCH);
-    dsStage.classList.toggle('graded', Math.round(LOC.GRAD) !== 0);
-    for (const a in AX) {
-      const s = $('#s-' + a);
+    dsText.style.fontStyle = LOC.ital ? 'italic' : 'normal';
+    dsText.style.setProperty('--film', `linear-gradient(100deg, ${titanium(w - 170)}, ${titanium(w)} 46%, ${titanium(w + 170)})`);
+    for (const a of AX3) {
+      const s = $('#s-' + a), u = norm(a, LOC[a]);
       if (+s.value !== Math.round(LOC[a])) s.value = Math.round(LOC[a]);
-      $('#o-' + a).textContent = a === 'wght' && NAMES[Math.round(LOC.wght)] ? `${Math.round(LOC.wght)} ${NAMES[Math.round(LOC.wght)]}` : signed(a, LOC[a]);
+      s.style.setProperty('--u', u.toFixed(4));
+      $('#o-' + a).textContent = signed(a, LOC[a]);
+      document.querySelector(`.dsx-g[data-ax="${a}"]`).classList.toggle('hot', dsHot.includes(a));
+      document.querySelector(`.dsx-axes [data-ax="${a}"]`).classList.toggle('hot', dsHot.includes(a));
     }
-    $('#s-wght').style.accentColor = titanium(LOC.wght);
+    const near = Math.round(w / 100) * 100;
+    $('#n-wght').textContent = Math.abs(w - near) < 0.5 ? NAMES[near] : `near ${NAMES[near]}`;
+    LAT.forEach(n => { n.el.style.fontStyle = LOC.ital ? 'italic' : 'normal'; });
     pressSwitch($('#ds-it'), $('#ds-up'), LOC.ital);
     $('#ds-css').textContent = `font-variation-settings: ${v};${LOC.ital ? ' font-style: italic;' : ''}`;
+    cubeEl.setAttribute('aria-valuetext', `weight ${Math.round(LOC.wght)}, grade ${Math.round(LOC.GRAD)}, watch ${Math.round(LOC.WTCH)}`);
     $$('#ds-presets button').forEach(b => {
       const p = PRESETS[b.dataset.i][1];
       b.setAttribute('aria-pressed', Object.keys(p).every(k => Math.round(LOC[k]) === p[k]));
     });
+    measureLine();
+    dsDirty = true;
   }
   subs.push(renderDS);
 
-  // moving: the map, the keyboard, the wheel, the sliders, the presets, the fly-through
-  let flying = false, tween = null;
-  const stop = () => { flying = false; tween = null; $('#ds-fly').setAttribute('aria-pressed', false); $('#ds-fly').textContent = '▶ Fly through'; };
-  function fromPointer(e) {
-    const r = map.getBoundingClientRect();
-    setLoc({ [pair[0]]: denorm(pair[0], (e.clientX - r.left) / r.width), [pair[1]]: denorm(pair[1], (e.clientY - r.top) / r.height) });
-  }
-  map.addEventListener('pointerdown', e => { stop(); map.setPointerCapture(e.pointerId); fromPointer(e); });
-  map.addEventListener('pointermove', e => { if (map.hasPointerCapture(e.pointerId)) fromPointer(e); });
-  map.addEventListener('wheel', e => {
-    e.preventDefault(); stop();
-    const t = thirdAxis(), span = AX[t][1] - AX[t][0];
-    setLoc({ [t]: LOC[t] - Math.sign(e.deltaY) * Math.min(Math.abs(e.deltaY), 60) / 600 * span });
-  }, { passive: false });
-  map.addEventListener('keydown', e => {
-    const step = e.shiftKey ? 0.1 : 0.02, t = thirdAxis();
-    const mv = { ArrowLeft: [pair[0], -step], ArrowRight: [pair[0], step], ArrowUp: [pair[1], -step], ArrowDown: [pair[1], step], PageUp: [t, 0.05], PageDown: [t, -0.05] }[e.key];
+  // moving: the point, the cube, the keyboard, the gauges, the named places, the flight
+  let dsFlying = false, dsTween = null, hotTimer = 0;
+  const dsStop = () => { dsFlying = false; dsTween = null; $('#ds-fly').setAttribute('aria-pressed', false); $('#ds-fly').textContent = 'Fly through'; };
+  const heat = axes => { dsHot = axes; clearTimeout(hotTimer); hotTimer = setTimeout(() => { dsHot = []; renderDS(); }, 900); };
+  const local = e => { const r = cubeEl.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  let dsDrag = null;
+  cubeEl.addEventListener('pointerdown', e => {
+    const [x, y] = local(e), pp = proj(toP(LOC));
+    const onPoint = Math.hypot(x - pp[0], y - pp[1]) < 24;
+    dsDrag = { mode: onPoint ? 'move' : 'turn', x, y, x0: x, y0: y, t: performance.now() };
+    cubeEl.setPointerCapture(e.pointerId);
+    dsSpin.yaw = dsSpin.pitch = 0;
+    if (onPoint) dsStop();
+    used = true; cubeEl.classList.add('used');
+    cubeEl.classList.toggle('turning', !onPoint);
+    e.preventDefault();
+  });
+  cubeEl.addEventListener('pointermove', e => {
+    const [x, y] = local(e);
+    if (!dsDrag) {
+      const pp = proj(toP(LOC));
+      cubeEl.classList.toggle('on-point', Math.hypot(x - pp[0], y - pp[1]) < 24);
+      return;
+    }
+    const dx = x - dsDrag.x, dy = y - dsDrag.y, now = performance.now(), dt = Math.max(1, now - dsDrag.t);
+    dsDrag.x = x; dsDrag.y = y; dsDrag.t = now;
+    idleSince = now;
+    if (dsDrag.mode === 'turn') {
+      dsView.yaw += dx * 0.009; dsView.pitch = clamp(dsView.pitch + dy * 0.007, -0.25, 1.1);
+      dsSpin.yaw = dx * 0.009 / dt * 16; dsSpin.pitch = dy * 0.007 / dt * 16;
+      dsDirty = true;
+      return;
+    }
+    // the point, moved in the two axes whose lines run most across the screen here
+    const P = toP(LOC), p0 = proj(P), J = [0, 1, 2].map(k => { const q = proj(atAx(P, k, P[k] + 0.01)); return [(q[0] - p0[0]) / 0.01, (q[1] - p0[1]) / 0.01]; });
+    if (!dsDrag.pair) dsDrag.pair = [0, 1, 2].sort((m, n) => Math.hypot(...J[n]) - Math.hypot(...J[m])).slice(0, 2);   // chosen once, for the whole drag
+    const [a, c] = dsDrag.pair;
+    const det = J[a][0] * J[c][1] - J[c][0] * J[a][1];
+    if (Math.abs(det) < 1e-6) return;
+    const da = (dx * J[c][1] - dy * J[c][0]) / det, dc = (J[a][0] * dy - J[a][1] * dx) / det;
+    P[a] = clamp(P[a] + da, -1, 1); P[c] = clamp(P[c] + dc, -1, 1);
+    heat([AX3[a], AX3[c]]);
+    setLoc(fromP(P));
+  });
+  const endDrag = e => {
+    if (!dsDrag) return;
+    const [x, y] = local(e);
+    if (dsDrag.mode === 'turn' && Math.hypot(x - dsDrag.x0, y - dsDrag.y0) < 4) {
+      // a tap on a glyph goes to its place
+      let best = null;
+      for (const n of LAT) if (n.q) { const d = Math.hypot(x - n.q[0], y - n.q[1]); if (d < 22 * Math.max(0.8, n.q[3]) && (!best || d < best.d)) best = { d, n }; }
+      if (best) glide(Object.fromEntries(AX3.map(a => [a, Math.round(best.n.l[a])])));
+    }
+    if (performance.now() - dsDrag.t > 60) dsSpin.yaw = dsSpin.pitch = 0;    // let go still: no throw
+    dsDrag = null; cubeEl.classList.remove('turning');
+  };
+  cubeEl.addEventListener('pointerup', endDrag);
+  cubeEl.addEventListener('pointercancel', endDrag);
+  cubeEl.addEventListener('pointerleave', () => { if (!dsDrag) cubeEl.classList.remove('on-point'); });
+  cubeEl.addEventListener('dblclick', () => { dsView.yaw = -0.6; dsView.pitch = 0.36; dsSpin.yaw = dsSpin.pitch = 0; dsDirty = true; });
+  cubeEl.addEventListener('keydown', e => {
+    const step = e.shiftKey ? 0.1 : 0.02;
+    const mv = { ArrowLeft: ['wght', -step], ArrowRight: ['wght', step], ArrowUp: ['GRAD', step], ArrowDown: ['GRAD', -step], PageUp: ['WTCH', 0.05], PageDown: ['WTCH', -0.05] }[e.key];
     if (!mv) return;
-    e.preventDefault(); stop();
+    e.preventDefault(); dsStop(); heat([mv[0]]);
     setLoc({ [mv[0]]: LOC[mv[0]] + mv[1] * (AX[mv[0]][1] - AX[mv[0]][0]) });
   });
-  for (const a in AX) $('#s-' + a).addEventListener('input', e => { stop(); setLoc({ [a]: +e.target.value }); });
-  $$('.ds-pairs button').forEach(b => b.addEventListener('click', () => {
-    pair = b.dataset.pair.split(',');
-    $$('.ds-pairs button').forEach(o => o.setAttribute('aria-pressed', o === b));
-    $('#ds-xlabel').textContent = `${pair[0]} →`; $('#ds-ylabel').textContent = `${pair[1]} ↓`;
-    cellKey = ''; renderDS();
-  }));
+  for (const a of AX3) $('#s-' + a).addEventListener('input', e => { dsStop(); heat([a]); setLoc({ [a]: +e.target.value }); });
   $('#ds-up').addEventListener('click', () => setLoc({ ital: false }));
   $('#ds-it').addEventListener('click', () => setLoc({ ital: true }));
-  // the ghost follows the text line for line; the breaks are made again once the editing stops
-  dsText.addEventListener('input', () => {
-    dsGhost.textContent = '';
-    [...dsText.childNodes].forEach(n => { const s = document.createElement('span'); s.className = 'ln'; s.textContent = n.textContent; dsGhost.appendChild(s); });
-  });
-  const holdDS = () => holdLines(dsText.innerText, dsText, dsGhost);
+  const holdDS = () => { holdLines(dsText.innerText, dsText); measureLine(); };
   dsText.addEventListener('blur', holdDS);
-  document.fonts.ready.then(holdDS);
+  dsText.addEventListener('input', measureLine);
+  document.fonts.ready.then(() => { holdDS(); dsDirty = true; });
   let dsW = 0;
-  new ResizeObserver(() => { if (dsText.clientWidth !== dsW && document.activeElement !== dsText) { dsW = dsText.clientWidth; holdDS(); } }).observe(dsStage);
+  new ResizeObserver(() => {
+    dsSize();
+    if (dsText.clientWidth !== dsW && document.activeElement !== dsText) { dsW = dsText.clientWidth; holdDS(); }
+  }).observe(cubeEl);
+  $('#ds-copy').addEventListener('click', () => {
+    const note = $('#ds-copy .dsx-copied');
+    navigator.clipboard.writeText($('#ds-css').textContent).then(() => { note.textContent = 'copied'; }, () => { note.textContent = 'select to copy'; });
+    setTimeout(() => { note.textContent = ''; }, 1800);
+  });
 
   const PRESETS = [
     ['Thin', { wght: 100, GRAD: 0, WTCH: 0 }], ['Regular', { wght: 400, GRAD: 0, WTCH: 0 }], ['Bold', { wght: 700, GRAD: 0, WTCH: 0 }],
@@ -547,75 +720,69 @@
     $('#ds-presets').appendChild(b);
   });
   function glide(to) {
-    stop();
+    dsStop();
+    heat(Object.keys(to).filter(k => Math.round(LOC[k]) !== to[k]));
     if (reduce) { setLoc(to); return; }
-    const from = { wght: LOC.wght, GRAD: LOC.GRAD, WTCH: LOC.WTCH }, t0 = performance.now(), me = tween = {};
+    const from = { wght: LOC.wght, GRAD: LOC.GRAD, WTCH: LOC.WTCH }, t0 = performance.now(), me = dsTween = {};
     (function step(t) {
-      if (tween !== me) return;
-      const u = clamp((t - t0) / 700, 0, 1), e = u < 0.5 ? 4 * u * u * u : 1 - (-2 * u + 2) ** 3 / 2;
+      if (dsTween !== me) return;
+      const u = clamp((t - t0) / 800, 0, 1), e = u < 0.5 ? 4 * u * u * u : 1 - (-2 * u + 2) ** 3 / 2;
       setLoc(Object.fromEntries(Object.keys(to).map(k => [k, from[k] + (to[k] - from[k]) * e])));
       if (u < 1) requestAnimationFrame(step);
     })(t0);
   }
   // the fly-through follows the Lorenz attractor (sigma 10, rho 28, beta 8/3):
-  // x is weight, y grade, z the watch (upward on the map, so the butterfly
-  // stands the right way up), drawing its trail on the map.
-  const trailEl = $('#ds-trail'), tctx = trailEl.getContext('2d');
-  let trail = [];
-  const L = { x: 19.5, y: 27, z: 48 };
-  const toLoc = ([x, y, z]) => ({ wght: 500 + 400 * clamp(x / L.x, -1, 1), GRAD: 100 * clamp(y / L.y, -1, 1), WTCH: 100 * clamp(1 - z / L.z, 0, 1) });
+  // x is weight, y grade, z the watch; its trail is drawn in the cube
+  const LZ = { x: 19.5, y: 27, z: 48 };
+  const toLoc = ([x, y, z]) => ({ wght: 500 + 400 * clamp(x / LZ.x, -1, 1), GRAD: 100 * clamp(y / LZ.y, -1, 1), WTCH: 100 * clamp(1 - z / LZ.z, 0, 1) });
   const lorenz = ([x, y, z]) => [10 * (y - x), x * (28 - z) - y, x * y - (8 / 3) * z];
   function rk4(p, h) {
     const add = (a, b, k) => a.map((v, i) => v + b[i] * k);
     const k1 = lorenz(p), k2 = lorenz(add(p, k1, h / 2)), k3 = lorenz(add(p, k2, h / 2)), k4 = lorenz(add(p, k3, h));
     return p.map((v, i) => v + h / 6 * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]));
   }
-  function drawTrail() {
-    const dpr = devicePixelRatio || 1, W = trailEl.clientWidth, H = trailEl.clientHeight;
-    if (trailEl.width !== Math.round(W * dpr)) { trailEl.width = Math.round(W * dpr); trailEl.height = Math.round(H * dpr); }
-    tctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    tctx.clearRect(0, 0, W, H);
-    if (trail.length < 2) return;
-    const px = l => (norm(pair[0], l[pair[0]]) * (NX - 1) + 0.5) / NX * W, py = l => (norm(pair[1], l[pair[1]]) * (NY - 1) + 0.5) / NY * H;
-    tctx.lineWidth = 1.8; tctx.lineJoin = 'round';
-    const bands = 24, n = trail.length;
-    for (let b = 0; b < bands; b++) {
-      const i0 = Math.floor(b * n / bands), i1 = Math.min(n - 1, Math.floor((b + 1) * n / bands) + 1);
-      tctx.strokeStyle = `rgba(255,176,0,${(0.14 + 0.8 * (b + 1) / bands).toFixed(3)})`;
-      tctx.beginPath(); tctx.moveTo(px(trail[i0]), py(trail[i0]));
-      for (let i = i0 + 1; i <= i1; i++) tctx.lineTo(px(trail[i]), py(trail[i]));
-      tctx.stroke();
-    }
-  }
-  subs.push(drawTrail);
-  addEventListener('resize', drawTrail);
-  map.addEventListener('pointerdown', () => { if (!flying) { trail = []; drawTrail(); } });
-  // a point already on the attractor (from (1, 1, 1) after 25 units of
-  // time); a flight glides there first, then picks up where the last left off
   let onAttractor = [1, 1, 1];
   for (let i = 0; i < 6250; i++) onAttractor = rk4(onAttractor, 0.004);
   $('#ds-fly').addEventListener('click', e => {
-    if (flying) { stop(); return; }
+    if (dsFlying) { dsStop(); return; }
     const btn = e.currentTarget;
-    trail = []; drawTrail();
+    dsTrail = [];
     glide(toLoc(onAttractor));
     setTimeout(() => {
-      tween = null; flying = true;
-      btn.setAttribute('aria-pressed', true); btn.textContent = '■ Stop';
+      dsTween = null; dsFlying = true;
+      btn.setAttribute('aria-pressed', true); btn.textContent = 'Stop';
       let last = performance.now();
-      const H = 0.004, RATE = 0.42;           // attractor time per second
+      const STEP = 0.004, RATE = 0.42;          // attractor time per second
       (function fly(t) {
-        if (!flying) return;
-        const steps = Math.max(1, Math.round(RATE * Math.min(0.05, (t - last) / 1000) / H)); last = t;
-        for (let i = 0; i < steps; i++) onAttractor = rk4(onAttractor, H);
+        if (!dsFlying) return;
+        const steps = Math.max(1, Math.round(RATE * Math.min(0.05, (t - last) / 1000) / STEP)); last = t;
+        for (let i = 0; i < steps; i++) onAttractor = rk4(onAttractor, STEP);
         const l = toLoc(onAttractor);
-        trail.push(l); if (trail.length > 1500) trail.shift();
+        dsTrail.push(toP(l)); if (dsTrail.length > 900) dsTrail.shift();
         setLoc(l);
         requestAnimationFrame(fly);
       })(last);
-    }, reduce ? 0 : 720);
+    }, reduce ? 0 : 820);
   });
-  $('#ds-copy').addEventListener('click', e => copy($('#ds-css').textContent, e.currentTarget, 'Copy'));
+
+  // one loop while the cube is on screen: its drift, a throw's glide to rest, and the drawing
+  let dsVisible = false, dsLooping = false;
+  new IntersectionObserver(es => { dsVisible = es[0].isIntersecting; if (dsVisible && !dsLooping) { dsLooping = true; dsDirty = true; requestAnimationFrame(dsTick); } }).observe(cubeEl);
+  function dsTick(t) {
+    if (!dsVisible) { dsLooping = false; return; }
+    if (!dsDrag && (Math.abs(dsSpin.yaw) > 1e-4 || Math.abs(dsSpin.pitch) > 1e-4)) {
+      dsView.yaw += dsSpin.yaw; dsView.pitch = clamp(dsView.pitch + dsSpin.pitch, -0.25, 1.1);
+      dsSpin.yaw *= 0.94; dsSpin.pitch *= 0.94; dsDirty = true;
+    }
+    if (!reduce && !dsDrag && t - idleSince > 1500) {
+      const target = 0.16 * Math.sin(t / 1000 * Math.PI * 2 / 26);
+      dsSway += (target - dsSway) * 0.02; dsDirty = true;
+    }
+    if (dsFlying && dsTrail.length) dsDirty = true;
+    if (dsDirty && cW) { drawCube(); dsDirty = false; }
+    requestAnimationFrame(dsTick);
+  }
+  dsSize();
 
   /* ------------------------------------------------------------ the italic */
   const PAIRS = 'aefgksy';

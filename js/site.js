@@ -607,13 +607,16 @@
   // line, so the line's widening does not count, only the letter's own growth;
   // the line itself (blue) is the metal. The filter (#ds-friction) takes the
   // band between the two copies, the faster edge's the wider, blurs it into the
-  // letter and colours it by how much heat that is: straw, then bronze, and at
-  // the fastest a violet dusk. When the line stops the copy catches up in a
-  // fraction of a second and the colour goes with it; at rest none of it is drawn
+  // letter and colours it by how much heat that is, titanium's heat tint from the
+  // edge inward: as hot as the edge ran at the edge itself, cooling through the
+  // sequence to straw and the ink. When the line stops the copy catches up in
+  // about half a second and the colour goes with it; at rest none of it is drawn.
+  // A colon between figures is the font's raised one: its copies carry their
+  // neighbouring figures (so they take that form) and show only the colon
   const heatEl = $('#ds-heat'), dsLine = $('#ds-line'), dsNow = $('#ds-now'), dsWas = $('#ds-was'), heatBlur = $('#ds-heat-blur'), heatGain = $('#ds-heat-gain');
   // seconds the trailing copy takes to follow each axis (it is gone in about three): the
   // watch moves whole strokes, not just their edges, so its copy keeps closer
-  const LAG = { wght: 0.13, GRAD: 0.13, WTCH: 0.06 };
+  const LAG = { wght: 0.16, GRAD: 0.16, WTCH: 0.07 };
   let lag = null, lagIt = false, frOn = false, frT = 0, frGlyphs = [];
   const frRange = document.createRange();
   function rebuildFriction() {
@@ -622,15 +625,17 @@
     dsLine.querySelectorAll('.ln').forEach(ln => {
       const node = ln.firstChild;
       if (!node) return;
-      let i = 0;
-      for (const ch of node.textContent) {
-        const j = i + ch.length;
-        if (ch.trim()) {
-          const now = document.createElement('span'), was = document.createElement('span');
-          now.textContent = was.textContent = ch; dsNow.appendChild(now); dsWas.appendChild(was);
-          frGlyphs.push({ node, i, j, ln, now, was });
-        }
-        i = j;
+      const t = node.textContent, fig = c => c >= '0' && c <= '9';
+      for (let i = 0; i < t.length; i++) {
+        const ch = t[i];
+        if (!ch.trim()) continue;
+        const j = ch >= '\ud800' && ch < '\udc00' ? i + 2 : i + 1;
+        // the font's one contextual form (calt): a colon between figures
+        const ctx = ch === ':' && fig(t[i - 1] || '') && fig(t[j] || '') ? t[i - 1] + ':' + t[j] : '';
+        const now = document.createElement('span'), was = document.createElement('span');
+        now.textContent = was.textContent = ctx || t.slice(i, j); dsNow.appendChild(now); dsWas.appendChild(was);
+        frGlyphs.push({ node, i, j, ln, now, was, ctx: !!ctx });
+        i = j - 1;
       }
     });
     if (frOn) placeFriction();
@@ -639,20 +644,33 @@
     // the heat spreads about as far into the letter as its stroke is thick, and a thin
     // stroke carries less of it: a hairline warms at its edge, it does not glow through
     const u = norm('wght', LOC.wght), fs = parseFloat(getComputedStyle(dsText).fontSize);
-    heatBlur.setAttribute('stdDeviation', (fs * (0.009 + 0.014 * u)).toFixed(2));
-    heatGain.setAttribute('slope', (0.45 + 1.25 * u).toFixed(2));
+    heatBlur.setAttribute('stdDeviation', (fs * (0.011 + 0.017 * u)).toFixed(2));
+    heatGain.setAttribute('slope', ((0.5 + 2.5 * u) * (0.35 + 0.65 * clamp((u - 0.1) / 0.45, 0, 1))).toFixed(2));
     dsWas.style.fontVariationSettings = fvs(lag.wght, lag.GRAD, lag.WTCH);
     dsWas.style.fontStyle = dsNow.style.fontStyle = dsLine.style.fontStyle;
     // every reading first, then every placing: one layout a frame
     const o = dsLine.getBoundingClientRect();
+    // a copy's glyph: where it starts in its span, how wide it is, how wide the span is
+    const part = s => {
+      const r = s.getBoundingClientRect();
+      if (!s.ctxNode) return [0, r.width, r.width];
+      frRange.setStart(s.firstChild, 1); frRange.setEnd(s.firstChild, 2);
+      const c = frRange.getBoundingClientRect();
+      return [c.left - r.left, c.width, r.width];
+    };
     const at = frGlyphs.map(g => {
       frRange.setStart(g.node, g.i); frRange.setEnd(g.node, g.j);
-      return [frRange.getBoundingClientRect().left - o.left, g.ln.offsetTop, g.now.getBoundingClientRect().width, g.was.getBoundingClientRect().width];
+      g.now.ctxNode = g.was.ctxNode = g.ctx;
+      return [frRange.getBoundingClientRect().left - o.left, g.ln.offsetTop, part(g.now), part(g.was)];
     });
+    const put = (s, x, y, [l, w, sw]) => {
+      s.style.transform = `translate(${(x - l).toFixed(2)}px, ${y}px)`;
+      if (s.ctxNode) s.style.clipPath = `inset(0 ${(sw - l - w).toFixed(2)}px 0 ${l.toFixed(2)}px)`;
+    };
     frGlyphs.forEach((g, n) => {
-      const [x, y, wn, ww] = at[n];
-      g.now.style.transform = `translate(${x.toFixed(2)}px, ${y}px)`;
-      g.was.style.transform = `translate(${(x + (wn - ww) / 2).toFixed(2)}px, ${y}px)`;
+      const [x, y, pn, pw] = at[n];
+      put(g.now, x, y, pn);
+      put(g.was, x + (pn[1] - pw[1]) / 2, y, pw);
     });
   }
   function frStep(t) {

@@ -175,7 +175,7 @@ main = print (tonnage ["3000", "470"])` },
   // which undo them) are off.
   const SETS = [
     ['ss07', '=~ !~ as ≈ ≉'], ['ss08', '== === != !== gapped'], ['ss09', '>>= <<= ||= |= as arrows'],
-    ['ss10', 'Fl Tl fi fj fl ft joined'], ['cv20', '<= as an arrow'], ['cv21', '=< as ≤'], ['cv25', '.- joined'],
+    ['ss10', 'Fl Tl fi fj fl ft joined'], ['cv20', '<= as an arrow'], ['cv21', '=< as ⩽'], ['cv22', '=< as ≤'], ['cv25', '.- joined'],
     ['cv26', ':- joined'], ['cv27', '[] as a box'], ['cv28', '{. .} with a raised dot'], ['cv32', '.= joined'],
   ];
   const feats = { calt: 1, ss03: 0, ss04: 0, ss05: 0 };
@@ -217,7 +217,7 @@ main = print (tonnage ["3000", "470"])` },
     ['Dashes', '-- ++ +++'],
   ];
   const OPTIONAL = [['=~', 'ss07'], ['!~', 'ss07'], ['==', 'ss08'], ['!=', 'ss08'], ['>>=', 'ss09'], ['|=', 'ss09'],
-    ['fi', 'ss10'], ['ft', 'ss10'], ['<=', 'cv20'], ['=<', 'cv21'], ['.-', 'cv25'], [':-', 'cv26'], ['[]', 'cv27'],
+    ['fi', 'ss10'], ['ft', 'ss10'], ['<=', 'cv20'], ['=<', 'cv21'], ['=<', 'cv22'], ['.-', 'cv25'], [':-', 'cv26'], ['[]', 'cv27'],
     ['{.', 'cv28'], ['.=', 'cv32']];
   const NEVER = '>>= <<= //= ||= |- x>-1 <<<-- wwww';
   // a row a kind: its name and count, then its signs in a strip that scrolls

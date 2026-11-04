@@ -285,7 +285,7 @@
 <section class="mono" id="mono">
   <p class="mono-kicker">Arris Mono</p>
   <h2 class="mono-title">Ten modules to a cell</h2>
-  <p class="mono-lede">Arris Mono, the coding font, uses the figures' 10-module pitch in six weights, Light to Bold, every one on the same grid. Its 45 programming ligatures stay inside their cells.</p>
+  <p class="mono-lede">Arris Mono, the coding font, uses the figures' 10-module pitch in six weights, Light to Bold, every one on the same grid. Its 105 programming ligatures, and arrows and rules of any length, stay inside their cells.</p>
 
   <div class="editor" id="editor">
     <div class="ed-bar">
@@ -293,11 +293,14 @@
       <div class="ed-tools" role="group" aria-label="Display">
         <button type="button" id="t-calt" aria-pressed="true">Ligatures</button>
         <button type="button" id="t-ss03" aria-pressed="false" title="ss03: &lt;= and &gt;= as their characters, for languages where they are arrows"><code>ss03</code></button>
+        <button type="button" id="t-cursive" aria-pressed="true" title="The italic's cursive f, k and y (off: ss04, the slanted upright's)">Cursive</button>
+        <button type="button" id="t-join" aria-pressed="true" title="The underscore runs into the italic f (off: ss05)">Join _f</button>
         <button type="button" id="t-cells" aria-pressed="false">Cells</button>
         <button type="button" id="t-bold" aria-pressed="false">Bold</button>
         <button type="button" id="t-ital" aria-pressed="false">Italic</button>
       </div>
     </div>
+    <div class="ed-sets" role="group" aria-label="Optional sets, Fira Code's tags" id="ed-sets"></div>
     <div class="ed-body">
       <pre class="ed-nums" id="ed-nums" aria-hidden="true"></pre>
       <pre class="ed-code" id="ed-code" contenteditable="plaintext-only" spellcheck="false" aria-label="Editable code, set in Arris Mono"></pre>

@@ -829,10 +829,11 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .ed-body { display: grid; grid-template-columns: auto minmax(0, 1fr); font-family: var(--mono); font-size: clamp(13px, 1.45vw, 17px); line-height: 1.6; }
 .ed-nums { margin: 0; padding: 18px 14px 22px 18px; color: #3a4148; text-align: right; user-select: none; }
 .ed-code { margin: 0; padding: 18px 20px 22px 4px; overflow-x: auto; outline: none; color: var(--night-ink); tab-size: 4; min-height: 12em;
-  font-variant-ligatures: contextual; font-feature-settings: "calt" 1; }
-.editor.no-calt .ed-code { font-feature-settings: "calt" 0; }
-.editor.ss03 .ed-code { font-feature-settings: "calt" 1, "ss03" 1; }
-.editor.no-calt.ss03 .ed-code { font-feature-settings: "calt" 0, "ss03" 1; }
+  font-variant-ligatures: contextual; font-feature-settings: "calt" 1; }   /* the toggles set the rest (mono.js) */
+.ed-sets { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--line); padding: 0 18px 0 4px; }
+.ed-sets button { font: inherit; font-family: var(--mono); font-size: 12px; background: none; color: var(--dim); border: 0; padding: 8px 10px; cursor: pointer; white-space: nowrap; }
+.ed-sets button[aria-pressed="true"] { color: var(--ink); }
+.ed-sets code { font-size: inherit; }
 .editor.bold .ed-code { font-weight: 700; }
 .editor.ital .ed-code { font-style: italic; }
 .editor.cells .ed-code { background-image: repeating-linear-gradient(90deg, rgba(255,176,0,.13) 0 1px, transparent 1px 1ch),

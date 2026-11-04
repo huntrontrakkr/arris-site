@@ -1,7 +1,8 @@
 /* Arris Mono on the page: an editable code window in five languages, the
  * ligature board, and a live terminal. The ligatures listed here are the
- * ones the 1.002 Mono forms (each checked with HarfBuzz against the release:
- * calt on and off shape differently); "never" are sequences it leaves alone. */
+ * ones the Mono forms (each checked with HarfBuzz against the fonts: calt on
+ * and off shape differently; an optional set's, with its tag on and off);
+ * "never" are sequences it leaves alone. */
 (() => {
   const $ = (s, el = document) => el.querySelector(s);
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -159,27 +160,65 @@ main = print (tonnage ["3000", "470"])` },
     if (e.key === 'Tab' && !e.shiftKey) { e.preventDefault(); document.execCommand('insertText', false, '    '); }
   });
 
-  const toggles = { 't-calt': ['no-calt', true], 't-ss03': ['ss03', false], 't-cells': ['cells', false], 't-bold': ['bold', false], 't-ital': ['ital', false] };
-  Object.entries(toggles).forEach(([id, [cls, inverse]]) => {
+  const toggles = { 't-cells': 'cells', 't-bold': 'bold', 't-ital': 'ital' };
+  Object.entries(toggles).forEach(([id, cls]) => {
     const b = $('#' + id);
     b.addEventListener('click', () => {
       const on = b.getAttribute('aria-pressed') !== 'true';
       b.setAttribute('aria-pressed', on);
-      editor.classList.toggle(cls, inverse ? !on : on);
+      editor.classList.toggle(cls, on);
     });
   });
+  // the features, as the font's tags: ligatures, the cursive set and the
+  // underscore's join on (as the fonts have them), Fira Code's optional sets
+  // off until pressed. Cursive and Join are on when their tags (ss04 ss05,
+  // which undo them) are off.
+  const SETS = [
+    ['ss07', '=~ !~ as ≈ ≉'], ['ss08', '== === != !== gapped'], ['ss09', '>>= <<= ||= |= as arrows'],
+    ['ss10', 'Fl Tl fi fj fl ft joined'], ['cv20', '<= as an arrow'], ['cv21', '=< as ≤'], ['cv25', '.- joined'],
+    ['cv26', ':- joined'], ['cv27', '[] as a box'], ['cv28', '{. .} with a raised dot'], ['cv32', '.= joined'],
+  ];
+  const feats = { calt: 1, ss03: 0, ss04: 0, ss05: 0 };
+  const apply = () => { codeEl.style.fontFeatureSettings = Object.entries(feats).map(([t, v]) => `"${t}" ${v}`).join(', '); };
+  const flip = (b, tag, inverse) => b.addEventListener('click', () => {
+    const on = b.getAttribute('aria-pressed') !== 'true';
+    b.setAttribute('aria-pressed', on);
+    feats[tag] = (inverse ? !on : on) ? 1 : 0;
+    apply();
+  });
+  flip($('#t-calt'), 'calt', false);
+  flip($('#t-ss03'), 'ss03', false);
+  flip($('#t-cursive'), 'ss04', true);
+  flip($('#t-join'), 'ss05', true);
+  const sets = $('#ed-sets');
+  SETS.forEach(([tag, what]) => {
+    feats[tag] = 0;
+    const b = document.createElement('button');
+    b.type = 'button'; b.setAttribute('aria-pressed', 'false'); b.title = `${tag}: ${what}`;
+    b.innerHTML = `<code>${tag}</code>`;
+    flip(b, tag, false);
+    sets.appendChild(b);
+  });
+  apply();
 
   /* ------------------------------------------------------------ the ligature board */
   const LIGS = [
-    ['Arrows', '-> --> <- <-> => ==> <=> |-> <-| |=> ->> <<- ~> ~~> <~ <!--'],
-    ['Equality', '== === != !== /= =/= := =: ::='],
+    ['Arrows', '-> --> <- <-> => ==> <=> |-> <-| |=> ->> <<- <!--'],
+    ['Any length', '----> <====> |---| >=> <=< <<-- -->> ||-- --|-- ==>== =!== /=== #### ____ _|_'],
+    ['Equality', '== === != !== /= =/= := =: ::= ^='],
     ['Comparison', '<= >='],
-    ['Tags and pipes', '</ /> </> <> |> <| <|> ||> <||'],
-    ['Functional', '<$> <$ $>'],
-    ['Hash', '#{ #[ #( #_'],
-    ['Dashes', '-- ++'],
+    ['Tags and pipes', '</ /> </> <> |> <| <|> ||> <|| |||> <||| /\\ \\/'],
+    ['Brackets', '[| |] {| |}'],
+    ['Functional', '<$> <$ $> <*> <* *> <+> <+ +>'],
+    ['Hash', '#{ #[ #( ]# #_ #_( #? #= #: #!'],
+    ['Tilde', '~~ -~ ~- ~@ ~> ~~> <~ <~~ <~>'],
+    ['Together', '!! !!. ?? ?. .? ?= .. ... ..< ..= :: ::: ;; // /// /* */ || ||| << <<< >> >>> ** *** %% && www'],
+    ['Dashes', '-- ++ +++'],
   ];
-  const NEVER = '<=< >>= //= ||= ----> :: // ||';
+  const OPTIONAL = [['=~', 'ss07'], ['!~', 'ss07'], ['==', 'ss08'], ['!=', 'ss08'], ['>>=', 'ss09'], ['|=', 'ss09'],
+    ['fi', 'ss10'], ['ft', 'ss10'], ['<=', 'cv20'], ['=<', 'cv21'], ['.-', 'cv25'], [':-', 'cv26'], ['[]', 'cv27'],
+    ['{.', 'cv28'], ['.=', 'cv32']];
+  const NEVER = '>>= <<= //= ||= |- x>-1 <<<-- wwww';
   // a row a kind: its name and count, then its signs in a strip that scrolls
   // sideways where it runs on (a mouse can drag it; its ends fade while
   // there is more past them)
@@ -193,7 +232,8 @@ main = print (tonnage ["3000", "470"])` },
     if (!never) { const n = document.createElement('small'); n.textContent = `${list.length}`; head.appendChild(n); }
     const strip = document.createElement('div');
     strip.className = 'lig-strip';
-    list.forEach(seq => {
+    list.forEach(item => {
+      const [seq, tag] = Array.isArray(item) ? item : [item, null];
       const b = document.createElement(never ? 'span' : 'button');
       b.className = 'lig';
       if (never) b.setAttribute('aria-label', `${seq}: left as it is`);
@@ -204,7 +244,8 @@ main = print (tonnage ["3000", "470"])` },
         b.querySelector('.lig-raw').textContent = seq;
         b.addEventListener('click', () => { if (!strip._dragged) b.classList.toggle('show'); });
       }
-      b.querySelector('.lig-chars').textContent = seq.split('').join(' ');
+      b.querySelector('.lig-chars').textContent = seq.split('').join(' ') + (tag ? `  ${tag}` : '');
+      if (tag) b.querySelector('.lig-sign').style.fontFeatureSettings = `"calt" 1, "${tag}" 1`;
       strip.appendChild(b);
     });
     r.append(head, strip);
@@ -244,6 +285,7 @@ main = print (tonnage ["3000", "470"])` },
     });
   }
   LIGS.forEach(([name, list]) => row(name, list.split(' ')));
+  row('Optional sets', OPTIONAL);
   row('Left alone', NEVER.split(' '), true);
 
   /* ------------------------------------------------------------ the four styles */

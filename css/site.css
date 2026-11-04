@@ -187,13 +187,22 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .dsx-css code { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dsx-copied { color: var(--amber); }
 @media (hover: hover) { .dsx-css:hover code { color: var(--night-ink); } }
-/* the line itself, in the titanium the weight would anodize to, the film
-   thickening along it; its lines held where the widest instance breaks */
+/* the line itself, in the ink of the glass, its lines held where the widest
+   instance breaks. Under it, drawn only while it moves, the friction: the
+   letters taken as titanium, whose edges heat where they run through the air
+   as the letter grows or shrinks (js/site.js, the filter in index.html), the
+   oxide's colour on the letters only, gone within half a second of stopping */
 .dsx-stage { position: relative; min-height: 1.2em; font-size: clamp(40px, 5.7vw, 92px); }
-.dsx-text { font-size: 1em; line-height: 1.08; margin: 0; max-width: none; outline: none; color: var(--night-ink);
-  background-image: var(--film, linear-gradient(var(--night-ink), var(--night-ink))); -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent; caret-color: var(--amber); }
-.dsx-text .ln { display: block; width: fit-content; white-space: pre; }
+.dsx-text, .dsx-heat p { font-size: 1em; line-height: 1.08; margin: 0; max-width: none; }
+.dsx-text { position: relative; outline: none; color: var(--night-ink); caret-color: var(--amber); }
+.dsx-text .ln, .dsx-line .ln { display: block; width: fit-content; white-space: pre; }
+/* (its three layers are signals for the filter, never seen: the filter draws all that shows) */
+.dsx-heat { position: absolute; inset: 0; z-index: 1; pointer-events: none; visibility: hidden; background: #000; filter: url(#ds-friction); }
+.dsx-heat p { position: absolute; left: 0; top: 0; }
+.dsx-line { color: #00f; }
+.dsx-now { color: #0f0; mix-blend-mode: screen; }
+.dsx-was { color: #f00; mix-blend-mode: screen; }
+.dsx-now span, .dsx-was span { position: absolute; left: 0; top: 0; white-space: pre; }
 .dsx-text:focus-visible { outline: 1px dotted var(--night-dim); outline-offset: 8px; }
 /* a dimension line under it, as a drawing has: the measure of the line, which grade never changes */
 .dsx-measure { position: relative; height: 18px; margin-top: 10px; width: var(--mw, 0px); font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: var(--night-dim); }
@@ -247,14 +256,20 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .dsx-style { gap: 10px; }
 .dsx-style button + button::before { content: "/"; color: var(--night-dim); opacity: .5; margin-right: 10px; }
 @media (max-width: 860px) {
-  .dsx-main { grid-template-columns: 1fr; }
+  /* the line on top; under it the gauges, and beside them the cube, small, off to the side */
+  .dsx-main { grid-template-columns: minmax(0, 1fr) clamp(118px, 36%, 230px); grid-template-areas: "stage stage" "read cube"; gap: 22px 18px; align-items: center; }
   .dsx-left { display: contents; }
-  .dsx-cube { width: min(100%, 480px); justify-self: center; }
-  .dsx-read { order: 2; }
+  .dsx-stage { grid-area: stage; }
+  .dsx-read { grid-area: read; grid-template-columns: 1fr; gap: 12px; }
+  .dsx-cube { grid-area: cube; width: 100%; }
+  .dsx-hint { display: none; }
+  .dsx-g { grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 10px; }
+  .dsx-g label { grid-column: 1; }
+  .dsx-g output { grid-column: 3; grid-row: 1; font-size: 20px; text-align: right; min-width: 4ch; }
+  .dsx-g small { grid-column: 2; grid-row: 1; }
+  .dsx-g input { grid-column: 1 / -1; margin-top: 2px; }
 }
 @media (max-width: 520px) {
-  .dsx-read { gap: 14px 12px; }
-  .dsx-g output { font-size: 26px; }
   .dsx-top { font-size: 11px; }
   .dsx-css { display: none; }
 }

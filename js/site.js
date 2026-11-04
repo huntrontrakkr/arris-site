@@ -441,9 +441,10 @@
   // The space as the dimensions film drew it: a cube with ruled faces, the
   // place a point inside it. x is weight (Thin to Black, left to right), y
   // grade (down to up), z the watch (front to back). Dragging the cube turns
-  // it (it also drifts a little by itself); dragging the point moves it in
+  // it; dragging the point moves it in
   // the two axes that face the eye most; 27 glyphs stand each at its own
   // place, the corners the space's extremes (a tap on one goes there).
+  // It stays as it is set until someone turns it.
   const dsText = $('#ds-text'), dsStage = $('#ds-stage'), cubeEl = $('#ds-cube'), measure = $('#ds-measure');
   const backC = $('#ds-back'), frontC = $('#ds-front'), latEl = $('#ds-lattice');
   const bctx = backC.getContext('2d'), fctx = frontC.getContext('2d');
@@ -459,9 +460,9 @@
   // the view: turned to show three faces, the eye a little above
   const dsView = { yaw: -0.6, pitch: 0.36 }, dsSpin = { yaw: 0, pitch: 0 };
   const EYE = 4.4;                                             // the eye's distance, in half-cubes
-  let dsSway = 0, cW = 0, cH = 0, cS = 0, cCX = 0, cCY = 0, dsDirty = true, idleSince = 0, used = false;
+  let cW = 0, cH = 0, cS = 0, cCX = 0, cCY = 0, dsDirty = true, used = false;
   function rot([x, y, z]) {
-    const yw = dsView.yaw + dsSway, cy = Math.cos(yw), sy = Math.sin(yw), cp = Math.cos(dsView.pitch), sp = Math.sin(dsView.pitch);
+    const yw = dsView.yaw, cy = Math.cos(yw), sy = Math.sin(yw), cp = Math.cos(dsView.pitch), sp = Math.sin(dsView.pitch);
     const x1 = cy * x + sy * z, z1 = -sy * x + cy * z;
     return [x1, cp * y - sp * z1, sp * y + cp * z1];
   }
@@ -523,7 +524,8 @@
     }
     // each axis named along the edge nearest the reader's eye for it, its ends marked
     const P = toP(LOC), far = ['900', '+100', '100'];
-    f.font = '10px "Arris Mono", ui-monospace, monospace'; f.textBaseline = 'middle';
+    const small = cW < 240;                                    // on a phone: the names only
+    f.font = `${small ? 9 : 10}px "Arris Mono", ui-monospace, monospace`; f.textBaseline = 'middle';
     for (let ax = 0; ax < 3; ax++) {
       let best = null;
       for (const [i, j, e] of EDGES) {
@@ -536,11 +538,14 @@
       const isHot = dsHot.includes(AX3[ax]);
       f.fillStyle = isHot ? '#ffb000' : 'rgba(170, 180, 182, 0.75)';
       f.textAlign = 'center';
-      f.fillText(AX3[ax], best.m[0] + o[0] * 18, best.m[1] + o[1] * 18);
+      // kept inside the canvas: a name half off its edge reads as another word
+      const half = f.measureText(AX3[ax]).width / 2 + 3;
+      const lx = clamp(best.m[0] + o[0] * (small ? 12 : 18), half, cW - half), ly = clamp(best.m[1] + o[1] * (small ? 12 : 18), 8, cH - 8);
+      f.fillText(AX3[ax], lx, ly);
       f.fillStyle = 'rgba(150, 160, 162, 0.6)';
       // only each axis's far end is numbered (its near end is where the others' near ends are)
       const hi = SIDE[ax] > 0 ? best.c : best.a, lo = SIDE[ax] > 0 ? best.a : best.c;
-      f.fillText(far[ax], hi[0] + (hi[0] - lo[0]) * 0.06 + o[0] * 12, hi[1] + (hi[1] - lo[1]) * 0.06 + o[1] * 12);
+      if (!small) f.fillText(far[ax], hi[0] + (hi[0] - lo[0]) * 0.06 + o[0] * 12, hi[1] + (hi[1] - lo[1]) * 0.06 + o[1] * 12);
       // the place's tick on that edge
       const tp = best.a.map((v, n) => n < 2 ? v + (best.c[n] - v) * (P[ax] + 1) / 2 : 0);   // (a, c run -1 to 1 in the cube)
       f.strokeStyle = isHot ? '#ffb000' : 'rgba(214, 224, 226, 0.6)';
@@ -594,11 +599,86 @@
     measure.classList.toggle('held', graded);
     measure.querySelector('span').textContent = `${em.toFixed(2)} em${graded ? ' · grade keeps the width' : ''}`;
   }
+  // the friction: the letters as titanium moving through air. As a letter
+  // grows its edges run out into the air, as it shrinks they draw back, and an
+  // edge that moves is heated by it and oxidises. A copy of each letter trails
+  // it by a moment (red, the was layer) beside the letter as it is (green, the
+  // now layer), each set on its own and centred on the letter's place in the
+  // line, so the line's widening does not count, only the letter's own growth;
+  // the line itself (blue) is the metal. The filter (#ds-friction) takes the
+  // band between the two copies, the faster edge's the wider, blurs it into the
+  // letter and colours it by how much heat that is: straw, then bronze, and at
+  // the fastest a violet dusk. When the line stops the copy catches up in a
+  // fraction of a second and the colour goes with it; at rest none of it is drawn
+  const heatEl = $('#ds-heat'), dsLine = $('#ds-line'), dsNow = $('#ds-now'), dsWas = $('#ds-was'), heatBlur = $('#ds-heat-blur'), heatGain = $('#ds-heat-gain');
+  // seconds the trailing copy takes to follow each axis (it is gone in about three): the
+  // watch moves whole strokes, not just their edges, so its copy keeps closer
+  const LAG = { wght: 0.13, GRAD: 0.13, WTCH: 0.06 };
+  let lag = null, lagIt = false, frOn = false, frT = 0, frGlyphs = [];
+  const frRange = document.createRange();
+  function rebuildFriction() {
+    dsNow.textContent = ''; dsWas.textContent = ''; frGlyphs = [];
+    for (const t of [dsNow, dsWas]) t.style.fontSize = dsText.style.fontSize;
+    dsLine.querySelectorAll('.ln').forEach(ln => {
+      const node = ln.firstChild;
+      if (!node) return;
+      let i = 0;
+      for (const ch of node.textContent) {
+        const j = i + ch.length;
+        if (ch.trim()) {
+          const now = document.createElement('span'), was = document.createElement('span');
+          now.textContent = was.textContent = ch; dsNow.appendChild(now); dsWas.appendChild(was);
+          frGlyphs.push({ node, i, j, ln, now, was });
+        }
+        i = j;
+      }
+    });
+    if (frOn) placeFriction();
+  }
+  function placeFriction() {
+    // the heat spreads about as far into the letter as its stroke is thick, and a thin
+    // stroke carries less of it: a hairline warms at its edge, it does not glow through
+    const u = norm('wght', LOC.wght), fs = parseFloat(getComputedStyle(dsText).fontSize);
+    heatBlur.setAttribute('stdDeviation', (fs * (0.009 + 0.014 * u)).toFixed(2));
+    heatGain.setAttribute('slope', (0.45 + 1.25 * u).toFixed(2));
+    dsWas.style.fontVariationSettings = fvs(lag.wght, lag.GRAD, lag.WTCH);
+    dsWas.style.fontStyle = dsNow.style.fontStyle = dsLine.style.fontStyle;
+    // every reading first, then every placing: one layout a frame
+    const o = dsLine.getBoundingClientRect();
+    const at = frGlyphs.map(g => {
+      frRange.setStart(g.node, g.i); frRange.setEnd(g.node, g.j);
+      return [frRange.getBoundingClientRect().left - o.left, g.ln.offsetTop, g.now.getBoundingClientRect().width, g.was.getBoundingClientRect().width];
+    });
+    frGlyphs.forEach((g, n) => {
+      const [x, y, wn, ww] = at[n];
+      g.now.style.transform = `translate(${x.toFixed(2)}px, ${y}px)`;
+      g.was.style.transform = `translate(${(x + (wn - ww) / 2).toFixed(2)}px, ${y}px)`;
+    });
+  }
+  function frStep(t) {
+    const dt = Math.min(0.05, (t - frT) / 1000 || 0.016); frT = t;
+    let off = 0;
+    for (const a of AX3) { lag[a] += (LOC[a] - lag[a]) * (1 - Math.exp(-dt / LAG[a])); off = Math.max(off, Math.abs(LOC[a] - lag[a]) / (AX[a][1] - AX[a][0])); }
+    if (off < 0.003) { frOn = false; heatEl.style.visibility = 'hidden'; return; }
+    placeFriction();
+    requestAnimationFrame(frStep);
+  }
+  function touch() {
+    if (reduce || !frGlyphs.length) return;
+    // first sight, or a change of style, is no motion and no heat
+    if (!lag || LOC.ital !== lagIt) { lag = { wght: LOC.wght, GRAD: LOC.GRAD, WTCH: LOC.WTCH }; lagIt = LOC.ital; return; }
+    if (frOn) { placeFriction(); return; }       // (placed again after the line changes, so no frame shows them a step apart)
+    if (AX3.every(a => LOC[a] === lag[a])) return;
+    frOn = true; heatEl.style.visibility = 'visible'; frT = performance.now();
+    placeFriction(); requestAnimationFrame(frStep);
+  }
   function renderDS() {
     const v = fvs(LOC.wght, LOC.GRAD, LOC.WTCH), w = LOC.wght;
     dsText.style.fontVariationSettings = v;
     dsText.style.fontStyle = LOC.ital ? 'italic' : 'normal';
-    dsText.style.setProperty('--film', `linear-gradient(100deg, ${titanium(w - 170)}, ${titanium(w)} 46%, ${titanium(w + 170)})`);
+    dsLine.style.fontVariationSettings = dsNow.style.fontVariationSettings = v;
+    dsLine.style.fontStyle = dsText.style.fontStyle;
+    touch();
     for (const a of AX3) {
       const s = $('#s-' + a), u = norm(a, LOC[a]);
       if (+s.value !== Math.round(LOC[a])) s.value = Math.round(LOC[a]);
@@ -624,7 +704,7 @@
 
   // moving: the point, the cube, the keyboard, the gauges, the named places, the flight
   let dsFlying = false, dsTween = null, hotTimer = 0;
-  const dsStop = () => { dsFlying = false; dsTween = null; $('#ds-fly').setAttribute('aria-pressed', false); $('#ds-fly').textContent = 'Fly through'; };
+  const dsStop = () => { dsFlying = false; dsTween = null; $('#ds-fly').setAttribute('aria-pressed', false); };
   const heat = axes => { dsHot = axes; clearTimeout(hotTimer); hotTimer = setTimeout(() => { dsHot = []; renderDS(); }, 900); };
   const local = e => { const r = cubeEl.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
   let dsDrag = null;
@@ -648,7 +728,6 @@
     }
     const dx = x - dsDrag.x, dy = y - dsDrag.y, now = performance.now(), dt = Math.max(1, now - dsDrag.t);
     dsDrag.x = x; dsDrag.y = y; dsDrag.t = now;
-    idleSince = now;
     if (dsDrag.mode === 'turn') {
       dsView.yaw += dx * 0.009; dsView.pitch = clamp(dsView.pitch + dy * 0.007, -0.25, 1.1);
       dsSpin.yaw = dx * 0.009 / dt * 16; dsSpin.pitch = dy * 0.007 / dt * 16;
@@ -692,9 +771,13 @@
   for (const a of AX3) $('#s-' + a).addEventListener('input', e => { dsStop(); heat([a]); setLoc({ [a]: +e.target.value }); });
   $('#ds-up').addEventListener('click', () => setLoc({ ital: false }));
   $('#ds-it').addEventListener('click', () => setLoc({ ital: true }));
-  const holdDS = () => { holdLines(dsText.innerText, dsText); measureLine(); };
+  const holdDS = () => { holdLines(dsText.innerText, dsText, dsLine); rebuildFriction(); measureLine(); };
   dsText.addEventListener('blur', holdDS);
-  dsText.addEventListener('input', measureLine);
+  dsText.addEventListener('input', () => {
+    dsLine.textContent = '';
+    [...dsText.childNodes].forEach(n => { const l = document.createElement('span'); l.className = 'ln'; l.textContent = n.textContent; dsLine.appendChild(l); });
+    rebuildFriction(); measureLine();
+  });
   document.fonts.ready.then(() => { holdDS(); dsDirty = true; });
   let dsW = 0;
   new ResizeObserver(() => {
@@ -750,7 +833,7 @@
     glide(toLoc(onAttractor));
     setTimeout(() => {
       dsTween = null; dsFlying = true;
-      btn.setAttribute('aria-pressed', true); btn.textContent = 'Stop';
+      btn.setAttribute('aria-pressed', true);
       let last = performance.now();
       const STEP = 0.004, RATE = 0.42;          // attractor time per second
       (function fly(t) {
@@ -765,7 +848,7 @@
     }, reduce ? 0 : 820);
   });
 
-  // one loop while the cube is on screen: its drift, a throw's glide to rest, and the drawing
+  // one loop while the cube is on screen: a throw's glide to rest, and the drawing
   let dsVisible = false, dsLooping = false;
   new IntersectionObserver(es => { dsVisible = es[0].isIntersecting; if (dsVisible && !dsLooping) { dsLooping = true; dsDirty = true; requestAnimationFrame(dsTick); } }).observe(cubeEl);
   function dsTick(t) {
@@ -773,10 +856,6 @@
     if (!dsDrag && (Math.abs(dsSpin.yaw) > 1e-4 || Math.abs(dsSpin.pitch) > 1e-4)) {
       dsView.yaw += dsSpin.yaw; dsView.pitch = clamp(dsView.pitch + dsSpin.pitch, -0.25, 1.1);
       dsSpin.yaw *= 0.94; dsSpin.pitch *= 0.94; dsDirty = true;
-    }
-    if (!reduce && !dsDrag && t - idleSince > 1500) {
-      const target = 0.16 * Math.sin(t / 1000 * Math.PI * 2 / 26);
-      dsSway += (target - dsSway) * 0.02; dsDirty = true;
     }
     if (dsFlying && dsTrail.length) dsDirty = true;
     if (dsDirty && cW) { drawCube(); dsDirty = false; }

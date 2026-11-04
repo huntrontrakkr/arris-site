@@ -144,10 +144,10 @@
       </feComponentTransfer>
     </filter>
   </svg>
-  <div class="readout" role="group" aria-label="The two axes the name follows: pick any two">
-    <button type="button" class="ax" data-ax="wght" aria-pressed="true">wght <b id="r-wght">900</b></button>
-    <button type="button" class="ax" data-ax="GRAD" aria-pressed="false">GRAD <b id="r-grad">0</b></button>
-    <button type="button" class="ax" data-ax="WTCH" aria-pressed="true">WTCH <b id="r-wtch">0</b></button>
+  <div class="readout" role="group" aria-label="The two axes the name follows: pick any two; press one of them again to swap across and down">
+    <button type="button" class="ax" data-ax="wght" aria-pressed="true">wght <b id="r-wght">900</b><span class="ax-dir" aria-hidden="true"></span></button>
+    <button type="button" class="ax" data-ax="GRAD" aria-pressed="false">GRAD <b id="r-grad">0</b><span class="ax-dir" aria-hidden="true"></span></button>
+    <button type="button" class="ax" data-ax="WTCH" aria-pressed="true">WTCH <b id="r-wtch">0</b><span class="ax-dir" aria-hidden="true"></span></button>
   </div>
   <p class="lede">A chamfered geometric sans family with an industrial character, a cursive italic, and a monospaced companion. Nine weights, and a variable font with three axes.</p>
 
@@ -338,11 +338,20 @@ bladder lift, ring 4    06:00  06:05   0.340  <= 340 L left
     <figcaption>Columns stay in line: every character is one cell wide, and a ligature takes the cells of the characters it joins.</figcaption>
   </figure>
 
-  <div class="it-weights mono-weights" id="mono-weights" aria-label="Arris Mono in its six weights, upright and italic"></div>
+  <div class="mw-head">
+    <span class="mw-title">Six weights</span>
+    <div class="m-tabs" role="tablist" aria-label="The six weights: upright, italic, or both" id="mw-tabs">
+      <button type="button" role="tab" aria-selected="true" data-show="up" aria-controls="mono-weights">Upright</button>
+      <button type="button" role="tab" aria-selected="false" data-show="it" aria-controls="mono-weights" tabindex="-1">Italic</button>
+      <button type="button" role="tab" aria-selected="false" data-show="both" aria-controls="mono-weights" tabindex="-1">Both</button>
+    </div>
+  </div>
+  <div class="it-weights mono-weights" id="mono-weights" data-show="up" role="tabpanel" aria-label="Arris Mono in its six weights"></div>
 
   <h3 class="lig-title">The ligatures</h3>
-  <p class="lig-note">Hover or tap one to see the characters it joins, in their cells. A row scrolls sideways where it runs on.</p>
-  <div class="ligs" id="ligs"></div>
+  <p class="lig-note">The first four sets are on by default; the optional ones take Fira Code's tags. Hover or tap one to see the characters it joins, in their cells.</p>
+  <div class="m-tabs lig-tabs" role="tablist" aria-label="The ligatures, by kind" id="lig-tabs"></div>
+  <div class="ligs" id="ligs" role="tabpanel"></div>
 </section>
 
 <section class="specimen" id="specimen">

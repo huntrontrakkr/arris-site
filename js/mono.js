@@ -265,6 +265,34 @@ main = print (tonnage ["3000", "470"])` },
     document.fonts.ready.then(set);
     set();
   }
+  // a row of tabs: one shown at a time, the arrow keys moving along them; a
+  // null name is a rule between two groups of tabs
+  function tabRow(bar, names, show) {
+    const btns = [];
+    names.forEach(n => {
+      if (!n) {
+        const sep = document.createElement('span');
+        sep.className = 'm-sep'; sep.setAttribute('aria-hidden', 'true'); bar.appendChild(sep);
+        return;
+      }
+      let b = [...bar.querySelectorAll('button')].find(x => x.textContent === n);
+      if (!b) { b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'tab'); b.textContent = n; bar.appendChild(b); }
+      btns.push(b);
+    });
+    const pick = (i, focus) => {
+      btns.forEach((b, k) => { b.setAttribute('aria-selected', k === i); b.tabIndex = k === i ? 0 : -1; });
+      if (focus) btns[i].focus();
+      show(i);
+    };
+    btns.forEach((b, i) => {
+      b.addEventListener('click', () => pick(i));
+      b.addEventListener('keydown', e => {
+        const d = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+        if (d) { e.preventDefault(); pick((i + d + btns.length) % btns.length, true); }
+      });
+    });
+    pick(Math.max(0, btns.findIndex(b => b.getAttribute('aria-selected') === 'true')));
+  }
   // a mouse drags a strip sideways (touch and trackpads scroll it themselves);
   // a drag of more than a few pixels is not a click on the sign under it
   function drag(strip) {
@@ -288,6 +316,19 @@ main = print (tonnage ["3000", "470"])` },
   LIGS.forEach(([name, list]) => row(name, list.split(' ')));
   row('Optional sets', OPTIONAL);
   row('Left alone', NEVER.split(' '), true);
+  // the board in tabs, a few kinds to a tab: the four on by default, then the
+  // optional sets and what is left alone
+  const LIG_TABS = [
+    ['Arrows', ['Arrows', 'Any length', 'Tilde']], ['Operators', ['Equality', 'Comparison', 'Functional']],
+    ['Code', ['Tags and pipes', 'Brackets', 'Hash']], ['Together', ['Together', 'Joined', 'Dashes']],
+    null, ['Optional', ['Optional sets']], ['Left alone', ['Left alone']],
+  ];
+  const ligRows = [...ligs.children];
+  const ligName = r => r.querySelector('.lig-group').firstChild.textContent;
+  tabRow($('#lig-tabs'), LIG_TABS.map(t => t && t[0]), i => {
+    const keep = LIG_TABS.filter(Boolean)[i][1];
+    ligRows.forEach(r => { r.hidden = !keep.includes(ligName(r)); });
+  });
 
   /* ------------------------------------------------------------ the four styles */
   // Mono is static: six weights, Light to Bold with Retina (450), each upright
@@ -298,7 +339,7 @@ main = print (tonnage ["3000", "470"])` },
     [[300, 'Light'], [400, 'Regular'], [450, 'Retina'], [500, 'Medium'], [600, 'SemiBold'], [700, 'Bold']]
       .flatMap(([w, n]) => [[w, false, n], [w, true, n === 'Regular' ? 'Italic' : `${n} Italic`]]).forEach(([w, it, name]) => {
       const r = document.createElement('div');
-      r.className = 'it-wrow';
+      r.className = 'it-wrow ' + (it ? 'mw-it' : 'mw-up');
       r.innerHTML = '<span class="it-wlabel"><i></i></span><span class="it-wtext"></span>';
       r.querySelector('i').style.background = `var(--t${w})`;
       r.querySelector('.it-wlabel').append(`${w} ${name}`);
@@ -307,6 +348,9 @@ main = print (tonnage ["3000", "470"])` },
       t.style.fontWeight = w; t.style.fontStyle = it ? 'italic' : 'normal';
       styles.appendChild(r);
     });
+    // upright, italic, or both (each italic under its upright), as the tabs choose
+    const SHOW = ['up', 'it', 'both'];
+    tabRow($('#mw-tabs'), ['Upright', 'Italic', 'Both'], i => { styles.dataset.show = SHOW[i]; });
   }
 
   /* ------------------------------------------------------------ the terminal: the Glasshouse's console */

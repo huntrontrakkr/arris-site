@@ -86,7 +86,8 @@
   // the axes are hard stops, which the name lands on rather than sinks past
   // Two of the three axes follow the pointer, one across and one down; the
   // readout's buttons pick which (picking the third lets go of the one picked
-  // longest ago, and the new one takes its direction); the third rests.
+  // longest ago, and the new one takes its direction; pressing one of the two
+  // again swaps across and down); the third rests.
   const mark = $('#mark');
   const HERO_AXES = ['wght', 'GRAD', 'WTCH'], HERO_VAR = { wght: '--w', GRAD: '--g', WTCH: '--x' };
   const HERO_SHOWN = { wght: $('#r-wght'), GRAD: $('#r-grad'), WTCH: $('#r-wtch') };
@@ -176,24 +177,35 @@
 
   const heroBtns = $$('.readout .ax');
   const HERO_TITLE = { x: 'follows the pointer across the name', y: 'follows the pointer down the name' };
+  // across or down: one double-headed arrow, turned for down
+  const HERO_ARROW = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M1.2 6h9.6M3.8 3.4 1.2 6l2.6 2.6M8.2 3.4 10.8 6 8.2 8.6" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/></svg>';
   function showHeroAxes() {
     for (const b of heroBtns) {
-      const a = b.dataset.ax, d = pickDir[a];
-      b.setAttribute('aria-pressed', picked.includes(a));
-      b.title = d ? `${a} ${HERO_TITLE[d]}` : `${a}: pick it to follow the pointer`;
+      const a = b.dataset.ax, d = picked.includes(a) ? pickDir[a] : null;
+      b.setAttribute('aria-pressed', !!d);
+      const dir = b.querySelector('.ax-dir');
+      dir.innerHTML = d ? HERO_ARROW : '';
+      dir.className = 'ax-dir' + (d ? ' ' + d : '');
+      b.title = d ? `${a} ${HERO_TITLE[d]}; press again to swap across and down` : `${a}: pick it to follow the pointer`;
+      b.setAttribute('aria-label', d ? `${a}, ${d === 'x' ? 'across' : 'down'}` : a);
     }
   }
   for (const b of heroBtns) {
     b.addEventListener('click', () => {
       const a = b.dataset.ax;
-      if (picked.includes(a)) return;                              // always two: picking the third swaps one out
-      const [drop, keep] = picked;
-      pickDir = { [keep]: pickDir[keep], [a]: pickDir[drop] };             // the new one takes the dropped one's direction
-      picked = [keep, a];
+      if (picked.includes(a)) {                                    // one of the two: across and down change places
+        const [p, q] = picked;
+        pickDir = { [p]: pickDir[q], [q]: pickDir[p] };
+      } else {                                                     // always two: picking the third swaps one out
+        const [drop, keep] = picked;
+        pickDir = { [keep]: pickDir[keep], [a]: pickDir[drop] };           // the new one takes the dropped one's direction
+        picked = [keep, a];
+      }
       showHeroAxes();
       sweep = false;
       pull(heroPoint ? heroAim(...heroPoint) : REST);             // the one let go rests; the new one takes the pointer
-      track('/hero/axes/' + picked.slice().sort().join('-'), 'Hero axes: ' + picked.join(' and '));
+      track('/hero/axes/' + picked.map(k => k + '-' + pickDir[k]).sort().join('-'),
+        'Hero axes: ' + picked.map(k => `${k} ${pickDir[k] === 'x' ? 'across' : 'down'}`).join(', '));
     });
   }
   showHeroAxes();

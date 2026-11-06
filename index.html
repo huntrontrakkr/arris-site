@@ -305,10 +305,17 @@
   <p class="mono-kicker">Arris Mono</p>
   <h2 class="mono-title">Ten modules to a cell</h2>
   <p class="mono-lede">Arris Mono, the coding font, uses the figures' 10-module pitch in six weights, Light to Bold, every one on the same grid. Its 105 programming ligatures, and arrows and rules of any length, stay inside their cells.</p>
-  <p class="mono-sub">Arris Mono Narrow sets the same cells with narrower letters, so a fifth of every cell is white, and each weight from Regular up a little lighter: for a terminal, light on dark.</p>
-  <div class="m-tabs fam-tabs" role="tablist" aria-label="The family this section is set in" id="fam-tabs">
-    <button type="button" role="tab" aria-selected="true">Arris Mono</button>
-    <button type="button" role="tab" aria-selected="false" tabindex="-1">Arris Mono Narrow</button>
+  <div class="fam-pick fam-tabs" role="tablist" aria-label="The family the samples below are set in" id="fam-tabs">
+    <button type="button" role="tab" aria-selected="true" class="fam-opt">
+      <span class="fam-name">Arris Mono</span>
+      <span class="fam-line" aria-hidden="true">fn mw(w: u8) -&gt; Cell {</span>
+      <span class="fam-desc">Letters nine modules wide in the ten-module cell, a tenth of it white at Regular: for code.</span>
+    </button>
+    <button type="button" role="tab" aria-selected="false" tabindex="-1" class="fam-opt narrow">
+      <span class="fam-name">Arris Mono Narrow</span>
+      <span class="fam-line" aria-hidden="true">fn mw(w: u8) -&gt; Cell {</span>
+      <span class="fam-desc">The same cells with narrower letters, a fifth of each one white, and from Regular up a little lighter: for a terminal, light on dark.</span>
+    </button>
   </div>
 
   <div class="editor" id="editor">

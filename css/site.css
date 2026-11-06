@@ -430,6 +430,8 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .toggle i { position: relative; width: 32px; height: 18px; border: 1px solid var(--night-dim); clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%); transition: border-color .15s; }
 .toggle i::after { content: ""; position: absolute; top: 3px; left: 3px; width: 10px; height: 10px; background: var(--night-dim); transition: transform .15s, background .15s; }
 .toggle[aria-checked="true"] { color: var(--night-ink); }
+.toggle[hidden] { display: none; }
+#card-narrow { margin-left: 14px; }   /* Mono's option: shown only while Mono is on (site.js) */
 .toggle[aria-checked="true"] i { border-color: var(--amber); }
 .toggle[aria-checked="true"] i::after { transform: translateX(14px); background: var(--amber); }
 .tri-reset { font: inherit; font-family: var(--mono); font-size: 11px; padding: 4px 10px; background: none; color: var(--night-dim); border: 1px solid var(--night-line); cursor: pointer; }
@@ -883,8 +885,20 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .mono-kicker { font-family: var(--mono); font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--cut); margin-bottom: 8px; }
 .mono-title { font-family: var(--mono); font-weight: 700; font-size: clamp(40px, 7.4vw, 104px); line-height: 1; letter-spacing: 0; max-width: 12ch; margin-bottom: 26px; }
 .mono-lede { font-size: clamp(19px, 2vw, 23px); line-height: 1.45; max-width: 46ch; }
-.mono-sub { font-size: clamp(16px, 1.5vw, 18px); line-height: 1.5; max-width: 52ch; color: var(--dim); margin-top: 12px; }
 .fam-tabs { margin-top: 18px; }
+/* the family the Mono samples are set in, chosen from two cards: each the same line on its
+   ten-module cells (a rule at every cell's edge), so the narrower letters and the white they
+   leave show before the editor does */
+.fam-pick { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 14px; margin-top: 32px; max-width: 1000px; }
+.fam-opt { display: grid; align-content: start; gap: 12px; min-width: 0; text-align: left; font: inherit; color: var(--dim); background: none; border: 1px solid var(--line); padding: 16px 18px 18px; cursor: pointer; transition: border-color .15s, color .15s, box-shadow .15s; }
+.fam-opt[aria-selected="true"] { color: var(--ink); border-color: var(--ink); box-shadow: inset 0 -3px 0 var(--accent); }
+@media (hover: hover) { .fam-opt:hover { border-color: var(--ink); } }
+.fam-name { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+.fam-line { justify-self: start; max-width: 100%; overflow: hidden; white-space: pre; font-family: "Arris Mono", ui-monospace, Menlo, Consolas, monospace; font-size: 20px; line-height: 1.6; color: var(--ink); border: 1px solid var(--line); border-width: 1px 1px 1px 0; background: repeating-linear-gradient(to right, var(--line) 0 1px, transparent 1px 1ch); }
+.fam-opt.narrow .fam-line { font-family: "Arris Mono Narrow", "Arris Mono", ui-monospace, Menlo, Consolas, monospace; }
+.fam-opt:not([aria-selected="true"]) .fam-line { color: var(--dim); }
+.fam-desc { font-size: 15px; line-height: 1.45; max-width: 46ch; }
+@media (min-width: 900px) { .fam-line { font-size: 25px; } }   /* a cell a whole number of pixels (12, 15), so its rules fall evenly */
 /* the Mono samples in Arris Mono Narrow, the same cells with narrower letters: one choice for the Mono
    section and the terminal, from either's family tabs (mono.js); the section's title stays in Arris
    Mono, whose ten modules it names */

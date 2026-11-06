@@ -1141,6 +1141,7 @@
     pressSwitch($('#card-it'), $('#card-up'), CL.ital);
     $('#card-mono').setAttribute('aria-checked', CL.mono);
     $('#card-narrow').setAttribute('aria-checked', CL.narrow);
+    $('#card-narrow').hidden = !CL.mono;                       // Mono's option: there only while Mono is on
     // the sheet of characters follows the card: style, family and place
     const grid = $('#grid');
     grid.style.fontFamily = glyph.style.fontFamily; grid.style.fontWeight = glyph.style.fontWeight;

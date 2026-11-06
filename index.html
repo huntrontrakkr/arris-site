@@ -378,6 +378,7 @@ bladder lift, ring 4    06:00  06:05   0.340  <= 340 L left
             <button type="button" id="card-it" aria-pressed="false">Italic</button>
           </div>
           <button type="button" class="toggle" id="card-mono" role="switch" aria-checked="false"><i aria-hidden="true"></i>Mono</button>
+          <button type="button" class="toggle" id="card-narrow" role="switch" aria-checked="false"><i aria-hidden="true"></i>Narrow</button>
           <button type="button" class="tri-reset" id="tri-reset">Regular</button>
         </div>
       </div>
@@ -674,7 +675,13 @@ bladder lift, ring 4    06:00  06:05   0.340  <= 340 L left
 
 <section class="terminal" id="terminal" aria-label="A terminal in Arris Mono">
   <pre class="tui" id="tui" aria-label="The Glasshouse's night-shift console, a terminal drawn in Arris Mono's box drawing, blocks, Braille and Powerline glyphs"></pre>
-  <p class="note">The Glasshouse's console, in Mono.</p>
+  <div class="term-foot">
+    <p class="note" id="tui-note">The Glasshouse's console, in Arris Mono.</p>
+    <div class="m-tabs fam-tabs" role="tablist" aria-label="The family the console is set in">
+      <button type="button" role="tab" aria-selected="true">Arris Mono</button>
+      <button type="button" role="tab" aria-selected="false" tabindex="-1">Arris Mono Narrow</button>
+    </div>
+  </div>
 </section>
 
 </div>

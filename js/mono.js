@@ -353,16 +353,32 @@ main = print (tonnage ["3000", "470"])` },
     tabRow($('#mw-tabs'), ['Upright', 'Italic', 'Both'], i => { styles.dataset.show = SHOW[i]; });
   }
 
-  // the family the section is set in: Arris Mono, or Arris Mono Narrow (the same
-  // cells, narrower letters); the editor, ledger, weights and ligatures all follow
-  const fam = $('#fam-tabs');
-  if (fam) tabRow(fam, ['Arris Mono', 'Arris Mono Narrow'], i => {
-    $('#mono').classList.toggle('narrow', i === 1);
+  // the family the Mono samples are set in: Arris Mono, or Arris Mono Narrow
+  // (the same cells, narrower letters). One choice for the section (its editor,
+  // ledger, weights and ligatures) and the terminal, made from either's tabs
+  const famRows = [...document.querySelectorAll('.fam-tabs')];
+  function setFamily(narrow) {
+    document.documentElement.classList.toggle('mono-narrow', narrow);
+    famRows.forEach(row => [...row.querySelectorAll('button')].forEach((b, k) => {
+      b.setAttribute('aria-selected', k === +narrow); b.tabIndex = k === +narrow ? 0 : -1;
+    }));
+    const fam = `Arris Mono${narrow ? ' Narrow' : ''}`;
+    const note = $('#tui-note');
+    if (note) note.textContent = `The Glasshouse's console, in ${fam}.`;
     // the relay sample's first line names the family it is set in
-    const name = (t) => t.replace(/set in Arris Mono( Narrow)?$/m, `set in Arris Mono${i === 1 ? ' Narrow' : ''}`);
     edited[current] = codeEl.textContent || edited[current];
-    edited.forEach((t, k) => { edited[k] = name(t); });
+    edited.forEach((t, k) => { edited[k] = t.replace(/set in Arris Mono( Narrow)?$/m, `set in ${fam}`); });
     if (codeEl.textContent !== edited[current]) { codeEl.textContent = edited[current]; render(false); }
+  }
+  famRows.forEach(row => {
+    const bs = [...row.querySelectorAll('button')];
+    bs.forEach((b, k) => {
+      b.addEventListener('click', () => setFamily(k === 1));
+      b.addEventListener('keydown', e => {
+        const d = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+        if (d) { e.preventDefault(); const n = (k + d + bs.length) % bs.length; setFamily(n === 1); bs[n].focus(); }
+      });
+    });
   });
 
   /* ------------------------------------------------------------ the terminal: the Glasshouse's console */

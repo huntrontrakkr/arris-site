@@ -401,6 +401,7 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .card-side { display: grid; gap: 10px; justify-items: start; }
 @media (max-width: 560px) { .card-ctl { grid-template-columns: 1fr; } .tri { max-width: 300px; margin: 6px auto 0; } .card-side { grid-template-columns: 1fr auto; align-items: center; column-gap: 18px; } }
 .card-metrics { display: grid; gap: 2px; }
+.card-metrics .fam { contain: inline-size; }   /* the family's note wraps in the column, never widens it: the card holds still as Mono and Narrow come and go */
 .tri { display: block; width: 100%; max-width: 268px; height: auto; touch-action: none; overflow: visible; }
 .tri-edge { fill: rgba(241,235,221,.03); stroke: rgba(241,235,221,.2); stroke-width: 1; }
 .ax-wght { --ax: var(--amber); } .ax-GRAD { --ax: var(--t500); } .ax-WTCH { --ax: var(--t900); }
@@ -884,9 +885,10 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .mono-lede { font-size: clamp(19px, 2vw, 23px); line-height: 1.45; max-width: 46ch; }
 .mono-sub { font-size: clamp(16px, 1.5vw, 18px); line-height: 1.5; max-width: 52ch; color: var(--dim); margin-top: 12px; }
 .fam-tabs { margin-top: 18px; }
-/* the section's samples in Arris Mono Narrow: the same cells, narrower letters (the family tabs, mono.js);
-   the title stays in Arris Mono, whose ten modules it names */
-.mono.narrow :is(.editor, .ledger-fig, .mono-weights, .ligs) { --mono: "Arris Mono Narrow", "Arris Mono", ui-monospace, Menlo, Consolas, monospace; }
+/* the Mono samples in Arris Mono Narrow, the same cells with narrower letters: one choice for the Mono
+   section and the terminal, from either's family tabs (mono.js); the section's title stays in Arris
+   Mono, whose ten modules it names */
+.mono-narrow :is(#mono .editor, #mono .ledger-fig, #mono .mono-weights, #mono .ligs, .tui) { --mono: "Arris Mono Narrow", "Arris Mono", ui-monospace, Menlo, Consolas, monospace; }
 .mono h3.lig-title { margin: 56px 0 6px; }
 .lig-note { font-family: var(--mono); font-size: 12px; color: var(--dim); margin: 0 0 14px; max-width: none; }
 
@@ -921,6 +923,8 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 }
 .lig-row[hidden] { display: none; }
 .terminal .note { margin-top: 14px; }
+.term-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 18px; margin-top: 10px; }
+.term-foot .note { margin: 0; }
 .editor { --code-bg: #0a0b0c; --ink: var(--night-ink); --dim: var(--night-dim); --line: var(--night-line);   /* a dark window on either face */
   background: var(--code-bg); border: 1px solid var(--line); margin-top: 28px;
   clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 0 100%); }

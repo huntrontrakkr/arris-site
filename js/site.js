@@ -1105,7 +1105,7 @@
   // the card: live text on the font's metrics, at a place of its own (CL),
   // set by the triangle under it
   const stage = $('#card-stage'), glyph = $('#card-glyph'), chEl = $('#card-ch'), linesEl = $('#card-lines');
-  const CL = { wght: 400, GRAD: 0, WTCH: 0, ital: false, mono: false };
+  const CL = { wght: 400, GRAD: 0, WTCH: 0, ital: false, mono: false, narrow: false };   // narrow: Mono Narrow, with mono
   // Mono is static: six weights, Light to Bold with Retina (450), upright and
   // italic. On the card the weight snaps to the nearest and the other axes rest at 0
   const MONO_W = { 300: 'Light', 400: 'Regular', 450: 'Retina', 500: 'Medium', 600: 'SemiBold', 700: 'Bold' };
@@ -1134,24 +1134,25 @@
   function drawCard() {
     if (!cardM) cardM = layoutCard();
     if (CL.mono) { CL.wght = monoW(CL.wght); CL.GRAD = CL.WTCH = 0; }
-    glyph.style.fontFamily = CL.mono ? '"Arris Mono", monospace' : '';
+    glyph.style.fontFamily = CL.mono ? (CL.narrow ? '"Arris Mono Narrow", "Arris Mono", monospace' : '"Arris Mono", monospace') : '';
     glyph.style.fontWeight = CL.mono ? CL.wght : '';
     glyph.style.fontVariationSettings = CL.mono ? 'normal' : fvs(CL.wght, CL.GRAD, CL.WTCH);
     glyph.style.fontStyle = CL.ital ? 'italic' : 'normal';
     pressSwitch($('#card-it'), $('#card-up'), CL.ital);
     $('#card-mono').setAttribute('aria-checked', CL.mono);
+    $('#card-narrow').setAttribute('aria-checked', CL.narrow);
     // the sheet of characters follows the card: style, family and place
     const grid = $('#grid');
     grid.style.fontFamily = glyph.style.fontFamily; grid.style.fontWeight = glyph.style.fontWeight;
     grid.style.fontVariationSettings = glyph.style.fontVariationSettings; grid.style.fontStyle = glyph.style.fontStyle;
     const adv = Math.round(chEl.getBoundingClientRect().width / cardM.S * cardM.M.upm);
     $('#card-metrics').innerHTML = CL.mono
-      ? `<span>ADVANCE ${adv}</span><span class="ax-wght">wght ${CL.wght} ${MONO_W[CL.wght]}</span><span>Mono: six weights, Light to Bold</span>`
+      ? `<span>ADVANCE ${adv}</span><span class="ax-wght">wght ${CL.wght} ${MONO_W[CL.wght]}</span><span class="fam">${CL.narrow ? 'Mono Narrow' : 'Mono'}</span><span>six weights</span>`
       : `<span>ADVANCE ${adv}</span><span class="ax-wght">wght ${Math.round(CL.wght)}</span><span class="ax-GRAD">GRAD ${signed('GRAD', CL.GRAD)}</span><span class="ax-WTCH">WTCH ${Math.round(CL.WTCH)}</span>`;
     drawTri();
   }
   // the face the card needs, loaded before its advance is measured
-  const loadCard = () => document.fonts.load(`${CL.ital ? 'italic' : 'normal'} ${CL.mono ? CL.wght : 400} 24px ${CL.mono ? '"Arris Mono"' : 'Arris'}`, chEl.textContent).then(drawCard);
+  const loadCard = () => document.fonts.load(`${CL.ital ? 'italic' : 'normal'} ${CL.mono ? CL.wght : 400} 24px ${CL.mono ? (CL.narrow ? '"Arris Mono Narrow"' : '"Arris Mono"') : 'Arris'}`, chEl.textContent).then(drawCard);
   let stageH = 0, stageW = 0;
   new ResizeObserver(() => { if (stage.clientHeight !== stageH || stage.clientWidth !== stageW) { stageH = stage.clientHeight; stageW = stage.clientWidth; cardM = layoutCard(); drawCard(); } }).observe(stage);
   function step(d) {
@@ -1172,7 +1173,9 @@
   $('#card').appendChild($('#groups'));
   $('#card-up').addEventListener('click', () => { CL.ital = false; drawCard(); loadCard(); });
   $('#card-it').addEventListener('click', () => { CL.ital = true; drawCard(); loadCard(); });
-  $('#card-mono').addEventListener('click', () => { CL.mono = !CL.mono; drawCard(); if (CL.mono) loadCard(); });
+  $('#card-mono').addEventListener('click', () => { CL.mono = !CL.mono; if (!CL.mono) CL.narrow = false; drawCard(); if (CL.mono) loadCard(); });
+  // Narrow: Mono Narrow's drawing of the character, in the same cell (it turns Mono on)
+  $('#card-narrow').addEventListener('click', () => { CL.narrow = !CL.narrow; if (CL.narrow) CL.mono = true; drawCard(); loadCard(); });
 
   // The triangle: each axis runs along a median, from the middle of the
   // opposite edge (t = 0) to its vertex (t = 1). The axes do not end alike,

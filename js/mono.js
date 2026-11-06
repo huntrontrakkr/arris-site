@@ -353,6 +353,18 @@ main = print (tonnage ["3000", "470"])` },
     tabRow($('#mw-tabs'), ['Upright', 'Italic', 'Both'], i => { styles.dataset.show = SHOW[i]; });
   }
 
+  // the family the section is set in: Arris Mono, or Arris Mono Narrow (the same
+  // cells, narrower letters); the editor, ledger, weights and ligatures all follow
+  const fam = $('#fam-tabs');
+  if (fam) tabRow(fam, ['Arris Mono', 'Arris Mono Narrow'], i => {
+    $('#mono').classList.toggle('narrow', i === 1);
+    // the relay sample's first line names the family it is set in
+    const name = (t) => t.replace(/set in Arris Mono( Narrow)?$/m, `set in Arris Mono${i === 1 ? ' Narrow' : ''}`);
+    edited[current] = codeEl.textContent || edited[current];
+    edited.forEach((t, k) => { edited[k] = name(t); });
+    if (codeEl.textContent !== edited[current]) { codeEl.textContent = edited[current]; render(false); }
+  });
+
   /* ------------------------------------------------------------ the terminal: the Glasshouse's console */
   // The module from the long read above, as its night-shift console: a
   // status line in Powerline segments, panes of box drawing with sparklines

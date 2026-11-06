@@ -109,3 +109,81 @@
   font-display: swap;
   src: url("../fonts/arris-mono-700-italic.woff2") format("woff2");
 }
+@font-face {
+  font-family: "Arris Mono Narrow";
+  font-weight: 300;
+  font-display: swap;
+  src: url("../fonts/arris-mono-narrow-300.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Arris Mono Narrow";
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+  src: url("../fonts/arris-mono-narrow-300-italic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Arris Mono Narrow";
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/arris-mono-narrow-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Arris Mono Narrow";
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+  src: url("../fonts/arris-mono-narrow-400-italic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Arris Mono Narrow";
+  font-weight: 450;
+  font-display: swap;
+  src: url("../fonts/arris-mono-narrow-450.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Arris Mono Narrow";
+  font-weight: 450;
+  font-style: italic;
+  font-display: swap;
+  src: url("../fonts/arris-mono-narrow-450-italic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Arris Mono Narrow";
+  font-weight: 500;
+  font-display: swap;
+  src: url("../fonts/arris-mono-narrow-500.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Arris Mono Narrow";
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+  src: url("../fonts/arris-mono-narrow-500-italic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Arris Mono Narrow";
+  font-weight: 600;
+  font-display: swap;
+  src: url("../fonts/arris-mono-narrow-600.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Arris Mono Narrow";
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+  src: url("../fonts/arris-mono-narrow-600-italic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Arris Mono Narrow";
+  font-weight: 700;
+  font-display: swap;
+  src: url("../fonts/arris-mono-narrow-700.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Arris Mono Narrow";
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+  src: url("../fonts/arris-mono-narrow-700-italic.woff2") format("woff2");
+}

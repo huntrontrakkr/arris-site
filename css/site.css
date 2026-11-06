@@ -882,6 +882,11 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .mono-kicker { font-family: var(--mono); font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--cut); margin-bottom: 8px; }
 .mono-title { font-family: var(--mono); font-weight: 700; font-size: clamp(40px, 7.4vw, 104px); line-height: 1; letter-spacing: 0; max-width: 12ch; margin-bottom: 26px; }
 .mono-lede { font-size: clamp(19px, 2vw, 23px); line-height: 1.45; max-width: 46ch; }
+.mono-sub { font-size: clamp(16px, 1.5vw, 18px); line-height: 1.5; max-width: 52ch; color: var(--dim); margin-top: 12px; }
+.fam-tabs { margin-top: 18px; }
+/* the section's samples in Arris Mono Narrow: the same cells, narrower letters (the family tabs, mono.js);
+   the title stays in Arris Mono, whose ten modules it names */
+.mono.narrow :is(.editor, .ledger-fig, .mono-weights, .ligs) { --mono: "Arris Mono Narrow", "Arris Mono", ui-monospace, Menlo, Consolas, monospace; }
 .mono h3.lig-title { margin: 56px 0 6px; }
 .lig-note { font-family: var(--mono); font-size: 12px; color: var(--dim); margin: 0 0 14px; max-width: none; }
 

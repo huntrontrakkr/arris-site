@@ -9,8 +9,8 @@ arrives only when a character from it is on the page.
            (CSS unicode-range), so Cyrillic, Greek, symbols and the terminal
            set load on demand
 
-Also copies every Mono weight the release carries (Light to Bold, with
-Retina, each upright and italic) whole, writes data/font.json (version,
+Also copies every Mono and Mono Narrow weight the release carries (Light
+to Bold, with Retina, each upright and italic) whole, writes data/font.json (version,
 axes, features, code points with their Unicode names and blocks) and the
 @font-face rules to css/fonts.css.
 
@@ -91,14 +91,14 @@ MONO = {'Thin': 100, 'ExtraLight': 200, 'Light': 300, 'Regular': 400, 'Retina': 
         'SemiBold': 600, 'Bold': 700, 'ExtraBold': 800, 'Black': 900}
 
 
-def mono_styles(names):
-    """[(weight, italic, file name)] for the Mono files among names (ArrisMono-<Style>.<ext>)."""
+def mono_styles(names, prefix='ArrisMono-'):
+    """[(weight, italic, file name)] for the Mono files among names (<prefix><Style>.<ext>)."""
     out = []
     for n in names:
         base = n.rsplit('/', 1)[-1]
-        if not base.startswith('ArrisMono-'):
+        if not base.startswith(prefix):
             continue
-        style = base[len('ArrisMono-'):].rsplit('.', 1)[0]
+        style = base[len(prefix):].rsplit('.', 1)[0]
         italic = style.endswith('Italic')
         w = MONO.get(style.removesuffix('Italic') or 'Regular')
         if w is not None:
@@ -106,14 +106,16 @@ def mono_styles(names):
     return sorted(out)
 
 
-def mono_rules(styles):
-    return ['@font-face {\n  font-family: "Arris Mono";\n  font-weight: %d;\n%s  font-display: swap;\n'
-            '  src: url("../fonts/%s") format("woff2");\n}' % (w, '  font-style: italic;\n' if it else '', mono_file(w, it))
+def mono_rules(styles, narrow=False):
+    family = 'Arris Mono Narrow' if narrow else 'Arris Mono'
+    return ['@font-face {\n  font-family: "%s";\n  font-weight: %d;\n%s  font-display: swap;\n'
+            '  src: url("../fonts/%s") format("woff2");\n}'
+            % (family, w, '  font-style: italic;\n' if it else '', mono_file(w, it, narrow))
             for w, it, _ in styles]
 
 
-def mono_file(w, italic):
-    return f'arris-mono-{w}{"-italic" if italic else ""}.woff2'
+def mono_file(w, italic, narrow=False):
+    return f'arris-mono-{"narrow-" if narrow else ""}{w}{"-italic" if italic else ""}.woff2'
 
 
 def mono_only(src: Path):
@@ -122,7 +124,8 @@ def mono_only(src: Path):
     if not styles:
         sys.exit(f'{src}: no ArrisMono-*.ttf')
     for old in FONTS.glob('arris-mono-*.woff2'):
-        old.unlink()
+        if not old.name.startswith('arris-mono-narrow-'):
+            old.unlink()
     for w, it, path in styles:
         f = TTFont(path)
         f.flavor = 'woff2'
@@ -168,17 +171,22 @@ def main(zip_path):
                             'x': font['OS/2'].sxHeight},
                 'chars': [[c, unicodedata.name(chr(c), ''), block(c)] for c in sorted(cps)],
             }
-    styles = mono_styles([n for n in z.namelist() if n.startswith(f'{top}/web/') and n.endswith('.woff2')])
+    webs = [n for n in z.namelist() if n.startswith(f'{top}/web/') and n.endswith('.woff2')]
+    styles = mono_styles(webs)
+    narrow = mono_styles(webs, 'ArrisMonoNarrow-')
     for w, it, n in styles:
         (FONTS / mono_file(w, it)).write_bytes(z.read(n))
+    for w, it, n in narrow:
+        (FONTS / mono_file(w, it, True)).write_bytes(z.read(n))
     (DATA / 'font.json').write_text(json.dumps(info, separators=(',', ':'), ensure_ascii=False))
     rules = ['/* written by tools/fonts.py from the release zip; do not edit */']
     for style, file, rng in faces:
         rules.append('@font-face {\n  font-family: "Arris";\n  font-style: %s;\n  font-weight: 100 900;\n'
                      '  font-display: swap;\n  src: url("../fonts/%s") format("woff2");\n  unicode-range: %s;\n}'
                      % (style, file, rng))
-    rules += mono_rules(styles)
+    rules += mono_rules(styles) + mono_rules(narrow, True)
     (CSS / 'fonts.css').write_text('\n'.join(rules) + '\n')
+    print('mono narrow:', ', '.join(f'{w}{" italic" if it else ""}' for w, it, _ in narrow) or 'none in the zip')
     print(info['family'], info['version'], len(info['chars']), 'chars', info['features'])
     released(info['version'], Path(zip_path).stat().st_size)
 

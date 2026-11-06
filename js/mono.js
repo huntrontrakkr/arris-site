@@ -25,6 +25,70 @@ const armed = (ice, key) => ice !== key && key <= 0xFF;
 let sectors = 0..=9; /* inclusive */
 shards |> map(decrypt) |> filter(clean)   -- key <$> shards <*> ice
 if node != home || id == "#{handle}" { return node -> home }` },
+    { file: 'feed.py', lang: 'py', code:
+`# feed.py: in Mono Italic the f runs down, and an underscore into it
+from __future__ import annotations
+from dataclasses import dataclass, field
+
+@dataclass
+class Feed:
+    """A berth's camera: is_fresh until stale_for seconds pass,
+    then buf_full drops the oldest frame first."""
+    stale_for: float = 4.0
+    frames: list[bytes] = field(default_factory=list)
+
+    def take(self, frame: bytes, age: float) -> bool:
+        if age > self.stale_for or not frame:
+            return False   # skip_frame: too old, or empty
+        while len(self.frames) >= 240:
+            self.frames.pop(0)   # keep_frames at 240
+        self.frames.append(frame)
+        return True
+
+    def for_berth(self, berth: int):
+        yield from (f for f in self.frames if f[:1] == bytes([berth]))` },
+    { file: 'NIGHT.md', lang: 'md', code:
+`## Night shift, ring 4
+#### Berths
+
+| berth | load t | out   | note         |
+|-------|--------|-------|--------------|
+| 07    | 11.000 | 03:47 | on time      |
+| 09    |  0.214 | 04:10 | -> bay 12    |
+
+ring 4 ----> glasshouse ====> docks <---- arcology 7
+|---------- 40 m clearance at bay 09 ----------|
+
+---
+
+- [x] seal the bladder lift before the first run
+- [ ] TODO: swap the 1920x1080 feed for the 4K one
+- [ ] page the dock: \`[[ $berth =~ ^0[79]$ ]] && page 0347\`
+
+<!-- every run above is one line, however long -->` },
+    { file: 'pixels.c', lang: 'c', code:
+`/* pixels.c: the watch's figures, 9x12 pixels, a bit apiece */
+#include <stdint.h>
+
+#define ROWS 12
+static uint16_t glyph[10][ROWS];        /* 0 to 9, top row first */
+
+struct face { uint8_t hh, mm; int colon; };
+
+void set(int d, int x, int y) { glyph[d][y] |= 1u << x; }
+int  lit(int d, int x, int y) { return glyph[d][y] >> x & 0x1; }
+
+void tick(struct face *f) {
+    f->colon = !f->colon;               /* the colon blinks */
+    if (++f->mm == 60) { f->mm = 0; f->hh = (f->hh + 1) % 24; }
+}
+
+void shift(int d, int dx) {             /* dx pixels across */
+    for (int y = 0; y < ROWS; y++) {
+        if (dx > 0) glyph[d][y] <<= dx;
+        else        glyph[d][y] >>= -dx;
+    }
+}` },
     { file: 'burns.py', lang: 'py', code:
 `# burns.py
 from dataclasses import dataclass
@@ -84,26 +148,40 @@ main = print (tonnage ["3000", "470"])` },
 
   const KW = {
     rs: 'use fn let mut for in if return const struct impl match pub',
-    py: 'from import class def return for in if and or not lambda None True False assert',
+    py: 'from import class def return for in if elif while try finally with as yield and or not lambda None True False assert',
     ts: 'import from type export const if return null undefined true false',
     ex: 'defmodule do def end fn nil',
     hs: 'module where let in case of',
+    c: 'static struct void int for if else return',
   };
   const COMMENT = {
     rs: String.raw`\/\/[^\n]*|\/\*[\s\S]*?\*\/|-- [^\n]*`, ts: String.raw`\/\/[^\n]*|\/\*[\s\S]*?\*\/`,
-    py: String.raw`#[^\n]*`, ex: String.raw`#[^{\n][^\n]*`, hs: String.raw`--[^\n]*`,
+    py: String.raw`"""[\s\S]*?"""|#[^\n]*`, c: String.raw`\/\/[^\n]*|\/\*[\s\S]*?\*\/`, ex: String.raw`#[^{\n][^\n]*`, hs: String.raw`--[^\n]*`,
   };
   const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+  // Markdown: headings, comments, inline code, the task boxes and figures
+  function highlightMd(code) {
+    const re = /(<!--[\s\S]*?-->)|^(#{1,6} [^\n]*)|(`[^`\n]*`)|(\[[ x]\])|\b(\d[\d.:]*)\b/gm;
+    let out = '', last = 0, m;
+    while ((m = re.exec(code))) {
+      out += esc(code.slice(last, m.index));
+      const cls = m[1] ? 'cm' : m[2] ? 'hd' : m[3] ? 'st' : m[4] ? 'fn' : 'nu';
+      out += `<span class="${cls}">${esc(m[0])}</span>`;
+      last = re.lastIndex;
+    }
+    return out + esc(code.slice(last));
+  }
   function highlight(code, lang) {
+    if (lang === 'md') return highlightMd(code);
     const kw = new Set(KW[lang].split(' '));
-    const re = new RegExp(`(${COMMENT[lang]})|("(?:\\\\.|[^"\\\\])*")|(@\\w+)|\\b(0x[0-9A-Fa-f]+|\\d[\\d_]*(?:\\.\\d+)?)\\b|\\b([A-Za-z_]\\w*)\\b`, 'g');
+    const re = new RegExp(`(${COMMENT[lang]})|("(?:\\\\.|[^"\\\\])*")|(${lang === 'c' ? '#\\w+' : '@\\w+'})|\\b(0x[0-9A-Fa-f]+|\\d[\\d_]*(?:\\.\\d+)?)\\b|\\b([A-Za-z_]\\w*)\\b`, 'g');
     let out = '', last = 0, m;
     while ((m = re.exec(code))) {
       out += esc(code.slice(last, m.index));
       const [t, cm, st, at, nu, w] = m;
       let cls = cm ? 'cm' : st ? 'st' : at ? 'fn' : nu ? 'nu' : '';
-      if (w) cls = kw.has(w) ? 'kw' : /^[A-Z]/.test(w) || ['str', 'usize', 'float', 'list', 'number', 'string'].includes(w) ? 'ty' : code[re.lastIndex] === '(' ? 'fn' : '';
+      if (w) cls = kw.has(w) ? 'kw' : /^[A-Z]/.test(w) || ['str', 'usize', 'float', 'list', 'number', 'string', 'bytes', 'bool', 'int', 'uint8_t', 'uint16_t'].includes(w) ? 'ty' : code[re.lastIndex] === '(' ? 'fn' : '';
       out += cls ? `<span class="${cls}">${esc(t)}</span>` : esc(t);
       last = re.lastIndex;
     }

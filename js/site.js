@@ -586,15 +586,28 @@
     g.addColorStop(0, 'rgba(255, 236, 200, 0.55)'); g.addColorStop(1, 'rgba(255, 176, 0, 0)');
     f.fillStyle = g; f.beginPath(); f.arc(pp[0], pp[1], 26, 0, 7); f.fill();
     f.fillStyle = '#fff6e6'; f.beginPath(); f.arc(pp[0], pp[1], 3.6, 0, 7); f.fill();
-    // the glyphs, nearer ones clearer, the nearest to the place brighter
+    // the glyphs: the place's neighbours lit, the rest dim, nearer ones clearer.
+    // The lattice is a half-cube apart, so the place sits in one cell of it, and
+    // each of that cell's eight glyphs is lit by how near the place is to it
+    // (trilinearly: all of one at a glyph's own place, an eighth each at a
+    // cell's centre), and joined to the point by a line as strong
+    // (the nearest of them always fully lit, the others as they compare with it)
     const scale = cS / 150;
+    const wt = n => n.p.reduce((m, v, k) => m * Math.max(0, 1 - Math.abs(v - P[k])), 1);
+    const wMax = Math.max(...LAT.map(wt));
     for (const n of LAT) {
-      const q = proj(n.p), d = Math.hypot(n.p[0] - P[0], n.p[1] - P[1], n.p[2] - P[2]);
-      const a = clamp(0.2 + 0.5 * (q[2] + 1.2) / 2.4, 0.16, 0.72) + Math.max(0, 0.9 - d) * 0.4;
-      n.el.style.transform = `translate(${q[0].toFixed(1)}px, ${q[1].toFixed(1)}px) scale(${(q[3] * scale).toFixed(3)}) translate(-50%, -54%)`;
+      const q = proj(n.p), w = wt(n), lit = w > 0.002 ? Math.sqrt(w / wMax) : 0;
+      const a = lit ? 0.35 + 0.65 * lit : clamp(0.06 + 0.16 * (q[2] + 1.2) / 2.4, 0.05, 0.22);
+      n.el.style.transform = `translate(${q[0].toFixed(1)}px, ${q[1].toFixed(1)}px) scale(${(q[3] * scale * (1 + 0.2 * lit)).toFixed(3)}) translate(-50%, -54%)`;
       n.el.style.opacity = a.toFixed(3);
-      n.el.style.zIndex = Math.round((q[2] + 2) * 100);
+      n.el.style.zIndex = Math.round((q[2] + 2) * 100) + (lit ? 1000 : 0);
+      n.el.classList.toggle('near', lit > 0.6);
       n.q = q;
+      if (lit) {
+        b.strokeStyle = `rgba(255, 176, 0, ${(0.1 + 0.5 * lit).toFixed(3)})`;
+        b.lineWidth = 1;
+        b.setLineDash([2, 3]); seg(b, pp, q); b.setLineDash([]);
+      }
     }
   }
 
@@ -749,9 +762,18 @@
   const heat = axes => { dsHot = axes; clearTimeout(hotTimer); hotTimer = setTimeout(() => { dsHot = []; renderDS(); }, 900); };
   const local = e => { const r = cubeEl.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
   let dsDrag = null;
+  // on a touch screen the cube lets the page scroll up and down (touch-action:
+  // pan-y on a phone, where it is as wide as the page) and turns from side to
+  // side, but a finger put down on the point holds the page still and moves it
+  const REACH = { mouse: 24, pen: 24, touch: 30 };
+  const onPointAt = (x, y, type) => { const pp = proj(toP(LOC)); return Math.hypot(x - pp[0], y - pp[1]) < (REACH[type] || 24); };
+  cubeEl.addEventListener('touchstart', e => {
+    const t = e.touches[0], r = cubeEl.getBoundingClientRect();
+    if (e.touches.length === 1 && onPointAt(t.clientX - r.left, t.clientY - r.top, 'touch')) e.preventDefault();
+  }, { passive: false });
   cubeEl.addEventListener('pointerdown', e => {
-    const [x, y] = local(e), pp = proj(toP(LOC));
-    const onPoint = Math.hypot(x - pp[0], y - pp[1]) < 24;
+    const [x, y] = local(e);
+    const onPoint = onPointAt(x, y, e.pointerType);
     dsDrag = { mode: onPoint ? 'move' : 'turn', x, y, x0: x, y0: y, t: performance.now() };
     cubeEl.setPointerCapture(e.pointerId);
     dsSpin.yaw = dsSpin.pitch = 0;
@@ -766,6 +788,13 @@
       const pp = proj(toP(LOC));
       cubeEl.classList.toggle('on-point', Math.hypot(x - pp[0], y - pp[1]) < 24);
       return;
+    }
+    // a finger turning the cube waits until it has gone 10px and more across
+    // than down: until then it may be the page's scroll (which cancels it)
+    if (dsDrag.mode === 'turn' && e.pointerType === 'touch' && !dsDrag.going) {
+      const tx = x - dsDrag.x0, ty = y - dsDrag.y0;
+      if (Math.hypot(tx, ty) < 10 || Math.abs(ty) > Math.abs(tx)) { dsDrag.x = x; dsDrag.y = y; dsDrag.t = performance.now(); return; }
+      dsDrag.going = true;
     }
     const dx = x - dsDrag.x, dy = y - dsDrag.y, now = performance.now(), dt = Math.max(1, now - dsDrag.t);
     dsDrag.x = x; dsDrag.y = y; dsDrag.t = now;
@@ -789,7 +818,7 @@
   const endDrag = e => {
     if (!dsDrag) return;
     const [x, y] = local(e);
-    if (dsDrag.mode === 'turn' && Math.hypot(x - dsDrag.x0, y - dsDrag.y0) < 4) {
+    if (e.type === 'pointerup' && dsDrag.mode === 'turn' && Math.hypot(x - dsDrag.x0, y - dsDrag.y0) < 4) {
       // a tap on a glyph goes to its place
       let best = null;
       for (const n of LAT) if (n.q) { const d = Math.hypot(x - n.q[0], y - n.q[1]); if (d < 22 * Math.max(0.8, n.q[3]) && (!best || d < best.d)) best = { d, n }; }

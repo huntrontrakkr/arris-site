@@ -194,8 +194,11 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .8 0 0 0 0 .85 0 0 0 0 .86 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"); }
 .dsx-c { position: absolute; width: 16px; height: 16px; border: 0 solid var(--gr); pointer-events: none; }
 .dsx-c.tl { left: 12px; top: 12px; border-width: 1px 0 0 1px; }
-.dsx-c.tr { right: 30px; top: 12px; border-width: 1px 1px 0 0; }
-.dsx-c.bl { left: 30px; bottom: 12px; border-width: 0 0 1px 1px; }
+/* the cut corners take a line along the cut, 12px in, as the square ones take their L
+   (its centre the cut's middle moved 12px in: 11 + 12/√2 = 19.5px from each edge) */
+.dsx-c.tr, .dsx-c.bl { width: 18px; height: 0; border-width: 1px 0 0; transform: rotate(45deg); }
+.dsx-c.tr { right: 10.5px; top: 19px; }
+.dsx-c.bl { left: 10.5px; bottom: 19px; }
 .dsx-c.br { right: 12px; bottom: 12px; border-width: 0 1px 1px 0; }
 .dsx-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px 24px; flex-wrap: wrap; font-family: var(--mono); font-size: 12px; letter-spacing: .08em; color: var(--night-dim); }
 .dsx-axes { display: inline-flex; align-items: baseline; gap: 12px; }
@@ -260,6 +263,7 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .dsx-cube canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .dsx-lattice { position: absolute; inset: 0; pointer-events: none; }
 .dsx-lattice span { position: absolute; left: 0; top: 0; font-size: 30px; line-height: 1; will-change: transform, opacity; transform-origin: 0 0; }
+.dsx-lattice span.near { text-shadow: 0 0 12px rgba(255, 176, 0, .4); }   /* the place's neighbours */
 .dsx-hint { position: absolute; right: 0; top: 0; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: var(--night-dim); transition: opacity .6s; pointer-events: none; }
 .dsx-cube.used .dsx-hint { opacity: 0; }
 .dsx-foot { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 12px 28px; padding-top: 14px; border-top: 1px solid var(--night-line); }
@@ -276,8 +280,8 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .dsx-style { gap: 10px; }
 .dsx-style button + button::before { content: "/"; color: var(--night-dim); opacity: .5; margin-right: 10px; }
 @media (max-width: 860px) {
-  /* the line on top; under it the gauges, and beside them the cube, small, off to the side */
-  .dsx-main { grid-template-columns: minmax(0, 1fr) clamp(118px, 36%, 230px); grid-template-areas: "stage stage" "read cube"; gap: 22px 18px; align-items: center; }
+  /* the line on top; under it the gauges, and beside them the cube */
+  .dsx-main { grid-template-columns: minmax(0, 1fr) minmax(210px, 46%); grid-template-areas: "stage stage" "read cube"; gap: 22px 18px; align-items: center; }
   .dsx-left { display: contents; }
   .dsx-stage { grid-area: stage; }
   .dsx-read { grid-area: read; grid-template-columns: 1fr; gap: 12px; }
@@ -289,9 +293,28 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
   .dsx-g small { grid-column: 2; grid-row: 1; }
   .dsx-g input { grid-column: 1 / -1; margin-top: 2px; }
 }
-@media (max-width: 520px) {
+@media (max-width: 640px) {
+  /* a phone: one column, the cube as wide as the line, the gauges under it; the
+     named places one row that scrolls sideways; the actions as keys, clear of the cut */
+  .dsx { --dsx-pad: 20px; padding-bottom: 34px; gap: 18px; }
   .dsx-top { font-size: 11px; }
   .dsx-css { display: none; }
+  .dsx-main { grid-template-columns: minmax(0, 1fr); grid-template-areas: "stage" "cube" "read"; gap: 16px; }
+  .dsx-cube { width: min(100%, 440px); justify-self: center; aspect-ratio: 1 / .86; touch-action: pan-y; }
+  .dsx-read { gap: 10px; }
+  .dsx-foot { display: grid; gap: 12px; padding-top: 14px; }
+  .dsx-presets { flex-wrap: nowrap; gap: 8px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
+    margin-inline: calc(-1 * var(--dsx-pad)); padding-inline: var(--dsx-pad) 36px;
+    mask-image: linear-gradient(90deg, transparent, #000 var(--dsx-pad), #000 calc(100% - 36px), transparent); }
+  .dsx-presets::-webkit-scrollbar { display: none; }
+  .dsx-presets button, .dsx-fly, .dsx-style button { flex: none; padding: 8px 12px; border: 1px solid var(--night-line); }
+  .dsx-presets button[aria-pressed="true"] { box-shadow: none; border-color: var(--amber); }
+  .dsx-acts { justify-content: space-between; gap: 12px; }
+  .dsx-fly[aria-pressed="true"] { border-color: var(--amber); }
+  .dsx-style { gap: 0; }
+  .dsx-style button + button { border-left: 0; }
+  .dsx-style button + button::before { content: none; }
+  .dsx-style button[aria-pressed="true"] { background: var(--night-ink); color: var(--night); border-color: var(--night-ink); }
 }
 .switch.small button { padding: 5px 12px; font-size: 12px; }
 .switch.dark { border-color: var(--night-dim); }
@@ -959,6 +982,18 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .ed-sets button { font: inherit; font-family: var(--mono); font-size: 12px; background: none; color: var(--dim); border: 0; padding: 8px 10px; cursor: pointer; white-space: nowrap; }
 .ed-sets button[aria-pressed="true"] { color: var(--ink); }
 .ed-sets code { font-size: inherit; }
+@media (max-width: 720px) {
+  /* on a phone each row of switches is one line that scrolls sideways, as the code does */
+  .ed-bar { flex-direction: column; flex-wrap: nowrap; }
+  .ed-tabs, .ed-tools, .ed-sets { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
+    mask-image: linear-gradient(90deg, transparent, #000 12px, #000 calc(100% - 32px), transparent); }
+  .ed-tabs::-webkit-scrollbar, .ed-tools::-webkit-scrollbar, .ed-sets::-webkit-scrollbar { display: none; }
+  .ed-tabs { padding-right: 32px; }
+  .ed-tools { padding-right: 32px; border-top: 1px solid var(--line); }
+  .ed-sets { padding-right: 32px; }
+  .ed-tabs button, .ed-tools button, .ed-sets button { flex: none; }
+  .ed-sets button { padding: 10px; }
+}
 .editor.bold .ed-code { font-weight: 700; }
 .editor.ital .ed-code { font-style: italic; }
 .editor.cells .ed-code { background-image: repeating-linear-gradient(90deg, rgba(255,176,0,.13) 0 1px, transparent 1px 1ch),
@@ -968,6 +1003,7 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .ed-code .nu { color: var(--t700); } .ed-code .fn { color: var(--t600); } .ed-code .cm { color: var(--night-dim); font-style: italic; }
 /* keywords and comments in the Mono's cursive italic, as cursive coding faces set them */
 .ed-code .kw { font-style: italic; }
+.ed-code .hd { color: var(--amber); }   /* a Markdown heading */
 
 .ligs { border-top: 1px solid var(--line); }
 .lig-row { display: grid; grid-template-columns: 15ch minmax(0, 1fr); align-items: stretch; border-bottom: 1px solid var(--line); }

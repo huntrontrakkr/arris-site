@@ -294,13 +294,16 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
   .dsx-g input { grid-column: 1 / -1; margin-top: 2px; }
 }
 @media (max-width: 640px) {
-  /* a phone: one column, the cube as wide as the line, the gauges under it; the
-     named places one row that scrolls sideways; the actions as keys, clear of the cut */
-  .dsx { --dsx-pad: 20px; padding-bottom: 34px; gap: 18px; }
-  .dsx-top { font-size: 11px; }
+  /* a phone: the line under inspection has the width to itself, the gauges under
+     it; the cube is a small instrument in the top corner, beside the axes' names,
+     only showing where the line stands (the gauges and the named places move it,
+     so it takes no touch); the named places one row that scrolls sideways; the
+     actions as keys, clear of the cut */
+  .dsx { --dsx-pad: 20px; --dsx-cube: clamp(68px, 22vw, 92px); padding-bottom: 34px; gap: 18px; }
+  .dsx-top { font-size: 11px; min-height: calc(var(--dsx-cube) * .86); align-items: flex-start; padding-right: calc(var(--dsx-cube) + 14px); }
   .dsx-css { display: none; }
-  .dsx-main { grid-template-columns: minmax(0, 1fr); grid-template-areas: "stage" "cube" "read"; gap: 16px; }
-  .dsx-cube { width: min(100%, 440px); justify-self: center; aspect-ratio: 1 / .86; touch-action: pan-y; }
+  .dsx-main { grid-template-columns: minmax(0, 1fr); grid-template-areas: "stage" "read"; gap: 16px; }
+  .dsx-cube { position: absolute; grid-area: auto; top: var(--dsx-pad); right: calc(var(--dsx-pad) + 4px); width: var(--dsx-cube); aspect-ratio: 1 / .86; pointer-events: none; }
   .dsx-read { gap: 10px; }
   .dsx-foot { display: grid; gap: 12px; padding-top: 14px; }
   .dsx-presets { flex-wrap: nowrap; gap: 8px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;

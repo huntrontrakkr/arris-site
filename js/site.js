@@ -535,7 +535,8 @@
     }
     // each axis named along the edge nearest the reader's eye for it, its ends marked
     const P = toP(LOC), far = ['900', '+100', '100'];
-    const small = cW < 240;                                    // on a phone: the names only
+    const small = cW < 240;                                    // on a tablet: the names only
+    const tiny = cW < 140;                                     // on a phone, a corner instrument: no words
     f.font = `${small ? 9 : 10}px "Arris Mono", ui-monospace, monospace`; f.textBaseline = 'middle';
     for (let ax = 0; ax < 3; ax++) {
       let best = null;
@@ -552,7 +553,7 @@
       // kept inside the canvas: a name half off its edge reads as another word
       const half = f.measureText(AX3[ax]).width / 2 + 3;
       const lx = clamp(best.m[0] + o[0] * (small ? 12 : 18), half, cW - half), ly = clamp(best.m[1] + o[1] * (small ? 12 : 18), 8, cH - 8);
-      f.fillText(AX3[ax], lx, ly);
+      if (!tiny) f.fillText(AX3[ax], lx, ly);
       f.fillStyle = 'rgba(150, 160, 162, 0.6)';
       // only each axis's far end is numbered (its near end is where the others' near ends are)
       const hi = SIDE[ax] > 0 ? best.c : best.a, lo = SIDE[ax] > 0 ? best.a : best.c;
@@ -582,10 +583,11 @@
       f.fillStyle = 'rgba(255, 176, 0, 0.7)';
       f.fillRect(w[0] - 1.5, w[1] - 1.5, 3, 3);
     }
-    const g = f.createRadialGradient(pp[0], pp[1], 0, pp[0], pp[1], 26);
+    const glow = clamp(cS * 0.26, 8, 26), dot = clamp(cS * 0.036, 2, 3.6);   // (in proportion to the cube, in the phone's small one too)
+    const g = f.createRadialGradient(pp[0], pp[1], 0, pp[0], pp[1], glow);
     g.addColorStop(0, 'rgba(255, 236, 200, 0.55)'); g.addColorStop(1, 'rgba(255, 176, 0, 0)');
-    f.fillStyle = g; f.beginPath(); f.arc(pp[0], pp[1], 26, 0, 7); f.fill();
-    f.fillStyle = '#fff6e6'; f.beginPath(); f.arc(pp[0], pp[1], 3.6, 0, 7); f.fill();
+    f.fillStyle = g; f.beginPath(); f.arc(pp[0], pp[1], glow, 0, 7); f.fill();
+    f.fillStyle = '#fff6e6'; f.beginPath(); f.arc(pp[0], pp[1], dot, 0, 7); f.fill();
     // the glyphs: the place's neighbours lit, the rest dim, nearer ones clearer.
     // The lattice is a half-cube apart, so the place sits in one cell of it, and
     // each of that cell's eight glyphs is lit by how near the place is to it

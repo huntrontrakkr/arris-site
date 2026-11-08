@@ -135,7 +135,7 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 @keyframes inst-in { from { opacity: 0; transform: translateY(8px); } }
 @media (prefers-reduced-motion: reduce) { .inst-panel { animation: none; } }
 .origin-hed { font-family: var(--sans); font-size: clamp(26px, 3.2vw, 40px); line-height: 1.08; letter-spacing: 0; text-transform: none; color: var(--ink);
-  font-variation-settings: "wght" 650, "GRAD" 0, "WTCH" 0; margin-bottom: 16px; }
+  font-variation-settings: "wght" 450, "GRAD" 0, "WTCH" 0; margin-bottom: 16px; }
 
 /* the watch */
 .origin { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(32px, 6vw, 80px); align-items: center; }
@@ -145,6 +145,21 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
   clip-path: polygon(29.3% 0, 70.7% 0, 100% 29.3%, 100% 70.7%, 70.7% 100%, 29.3% 100%, 0 70.7%, 0 29.3%); }
 .watch-date { font-family: var(--mono); font-size: clamp(12px, 3vw, 15px); letter-spacing: .14em; color: var(--night-dim); }
 .watch-time { font-size: clamp(64px, 17vw, 112px); line-height: 1; font-variation-settings: "wght" 600, "GRAD" -50, "WTCH" 100; font-variant-numeric: tabular-nums; }
+/* the watch drawn as a watch (js/watchcase.js): the case an SVG, the dial's
+   figures still the page's text, laid on the dial and leaning with the case.
+   Sizes are in the watch's own width (cqw), so the figures keep to the dial */
+.watch.cased { width: min(100%, 440px); aspect-ratio: 500 / 600; background: none; clip-path: none; display: block; container-type: inline-size; }
+.watch-body { position: relative; width: 100%; height: 100%; transform: perspective(1100px) rotateX(var(--wc-rx, 3.75deg)) rotateY(var(--wc-ry, -3.15deg)); }
+.watch-case { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible;
+  filter: drop-shadow(var(--wc-sx, 5px) var(--wc-sy, 22px) 20px rgba(21, 20, 18, .28)); }
+.watch-dial { position: absolute; left: 17.4%; top: 22.83%; width: 65.2%; height: 54.33%; display: grid; place-content: center; text-align: center; gap: 1.2cqw; }
+.watch.cased .watch-date { font-size: max(10px, 3.2cqw); }
+.watch.cased .watch-time { font-size: 18.5cqw; }
+.watch.cased .watch-foot { font-size: max(9px, 2.3cqw); }
+.wc-tick { stroke: #f1ebdd; stroke-opacity: .14; stroke-width: 2.2; transition: stroke .3s, stroke-opacity .3s; }
+.wc-tick.major { stroke-width: 3.2; stroke-opacity: .3; }
+.wc-tick.on { stroke: var(--amber); stroke-opacity: .95; }
+.watch.leaking .wc-tick.on { stroke: var(--leak); }
 .watch.pixels .watch-time { font-feature-settings: "ss20" 1; }
 .watch.leaking .watch-time { color: var(--leak); }
 .watch-foot { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; color: var(--night-dim); }
@@ -155,8 +170,8 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 /* the upright: from the watch to the alphabet, a figure and a letter taken
    from the watch's pixels through the rule to Arris (site.js, transfer.json) */
 .up-kicker { font-family: var(--mono); font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--cut); margin-bottom: 8px; }
-.up-title { font-size: clamp(48px, 9vw, 136px); line-height: .95; letter-spacing: -.01em; max-width: 13ch; margin-bottom: 32px;
-  font-variation-settings: "wght" 800, "GRAD" 0, "WTCH" 0; }
+.up-title { font-size: clamp(40px, 6.6vw, 96px); line-height: 1; letter-spacing: -.005em; max-width: 18ch; margin-bottom: 36px;
+  font-variation-settings: "wght" 300, "GRAD" 0, "WTCH" 0; }
 .tf { display: grid; gap: 14px; }
 .tf-stage { background: var(--night); padding: clamp(18px, 4vw, 44px) clamp(18px, 5vw, 64px);
   clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px)); }

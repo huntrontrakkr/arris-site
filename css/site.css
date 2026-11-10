@@ -392,6 +392,14 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .it-lang { font-family: var(--mono); font-size: 12px; color: var(--dim); }
 .it-sample { font-style: italic; font-size: clamp(40px, 4.4vw, 60px); line-height: 1.1; font-variation-settings: "wght" 500, "GRAD" 0, "WTCH" 0; }
 
+/* the weight field, live (js/field.js): the film's ideas under the hand */
+.lf { margin: 40px 0 0; display: grid; gap: 12px; }
+.lf-head { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+.lf-letters[hidden] { display: none; }
+.lf-letters button { font-family: var(--sans); min-width: 34px; }
+.lf-canvas { display: block; width: 100%; aspect-ratio: 16 / 7; background: var(--night); touch-action: pan-y; cursor: crosshair;
+  clip-path: polygon(0 0, calc(100% - var(--c)) 0, 100% var(--c), 100% 100%, var(--c) 100%, 0 calc(100% - var(--c))); }
+@media (max-width: 700px) { .lf-canvas { aspect-ratio: 4 / 5; } }
 .field { margin: 40px 0 0; }
 .field video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: var(--night);
   clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px)); }

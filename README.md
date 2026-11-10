@@ -56,6 +56,11 @@ from the rule's outline:
 uv run --project ../arris-type python tools/transfer.py ../arris-type
 ```
 
+The live weight field under the designspace (`js/field.js`) draws a few
+glyphs from their own outlines at every 50 of weight: `data/field.json`,
+written by `tools/field.py` from the site's font. Rerun it after
+`tools/fonts.py`.
+
 The films are cut to short silent loops with posters by `tools/media.sh`,
 from the arris-films repository:
 

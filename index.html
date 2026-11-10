@@ -275,6 +275,26 @@
     </div>
   </div>
 
+  <div class="lf" id="lf">
+    <div class="lf-head">
+      <div class="switch small lf-tabs" role="group" aria-label="Specimen">
+        <button type="button" data-s="point" aria-pressed="true">Per point</button>
+        <button type="button" data-s="named" aria-pressed="false">Nine weights</button>
+        <button type="button" data-s="anod" aria-pressed="false">Anodized</button>
+      </div>
+      <div class="switch small lf-letters" role="group" aria-label="The letter" hidden>
+        <button type="button" data-ch="8" aria-pressed="true">8</button>
+        <button type="button" data-ch="A" aria-pressed="false">A</button>
+        <button type="button" data-ch="R" aria-pressed="false">R</button>
+        <button type="button" data-ch="g" aria-pressed="false">g</button>
+        <button type="button" data-ch="&amp;" aria-pressed="false">&amp;</button>
+        <button type="button" data-ch="k" aria-pressed="false">k</button>
+      </div>
+    </div>
+    <canvas class="lf-canvas" aria-label="The weight field, live: move the pointer across it, or tap"></canvas>
+    <p class="note lf-note"></p>
+  </div>
+
   <figure class="field">
     <video id="field-video" muted loop playsinline preload="none" poster="media/weight-field.jpg" aria-label="A field of eights, each outline point at its own weight">
       <source src="media/weight-field.mp4" type="video/mp4">
@@ -749,6 +769,7 @@ body {
 
 <script src="js/site.js" defer></script>
 <script src="js/watchcase.js" defer></script>
+<script src="js/field.js" defer></script>
 <script src="js/anneal.js" defer></script>
 <script src="js/mono.js" defer></script>
 <script src="js/belt.js" defer></script>

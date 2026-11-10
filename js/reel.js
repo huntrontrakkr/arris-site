@@ -42,7 +42,7 @@
     if (p !== aim) raf = requestAnimationFrame(step);
   }
   const go = () => { if (!raf) raf = requestAnimationFrame(step); };
-  const across = e => { const r = stage.getBoundingClientRect(); return Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) * (stops.length - 1); };
+  const across = e => { const r = stage.getBoundingClientRect(); return Math.min(1, Math.max(0, ((e.clientX - r.left) / r.width - 0.07) / 0.86)) * (stops.length - 1); };   // (the ends' films whole a little before the edge)
   stage.addEventListener('pointermove', e => {
     if (e.pointerType === 'mouse') { held = null; aim = across(e); go(); }
     else if (dragging) { aim = across(e); go(); }

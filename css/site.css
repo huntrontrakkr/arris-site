@@ -396,21 +396,6 @@ body.steel .bar nav .dl { color: var(--steel-ink); }
 .field video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: var(--night);
   clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px)); }
 .field figcaption { margin-top: 12px; }
-/* the reel: the film, and more short films small beside it to choose from (js/reel.js) */
-.reel { display: grid; grid-template-columns: minmax(0, 1fr) 132px; gap: 12px; align-items: start; position: relative; }
-.reel-strip { position: absolute; top: 0; right: 0; bottom: 0; width: 132px; display: grid; gap: 8px; align-content: start;
-  overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding-right: 2px; }
-.reel-item { display: grid; gap: 3px; padding: 0; border: 0; background: none; cursor: pointer; text-align: left; color: var(--dim);
-  font-family: var(--mono); font-size: 10.5px; letter-spacing: .04em; text-transform: uppercase; }
-.reel-item img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; background: var(--night);
-  outline: 1px solid var(--line); outline-offset: -1px; opacity: .72; transition: opacity .15s; }
-.reel-item:hover img, .reel-item:focus-visible img { opacity: 1; }
-.reel-item[aria-pressed="true"] { color: var(--ink); }
-.reel-item[aria-pressed="true"] img { opacity: 1; outline: 2px solid var(--cut); outline-offset: -2px; }
-@media (max-width: 700px) {
-  .reel { grid-template-columns: 1fr; }
-  .reel-strip { position: static; width: auto; grid-auto-flow: column; grid-auto-columns: 104px; overflow: auto hidden; padding: 0 0 4px; }
-}
 
 /* specimen */
 /* the examiner and the set, one surface: the examiner pinned and as tall as

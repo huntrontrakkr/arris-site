@@ -275,10 +275,26 @@
     </div>
   </div>
 
-  <figure class="field">
+  <figure class="field reel" id="reel">
     <video id="field-video" muted loop playsinline preload="none" poster="media/weight-field.jpg" aria-label="A field of eights, each outline point at its own weight">
       <source src="media/weight-field.mp4" type="video/mp4">
     </video>
+    <div class="reel-strip" role="group" aria-label="More short films: choose one to play it">
+      <button type="button" class="reel-item" data-src="media/weight-field.mp4" data-poster="media/weight-field.jpg" data-label="A field of eights, each outline point at its own weight" aria-pressed="true"><img src="media/weight-field.jpg" alt="" loading="lazy" width="480" height="270"><span>Weight field</span></button>
+      <button type="button" class="reel-item" data-src="media/reel/11-masters.mp4" data-poster="media/reel/11-masters.jpg" data-label="Eight masters: between two of them every point moves in a straight line" aria-pressed="false"><img src="media/reel/11-masters.jpg" alt="" loading="lazy" width="480" height="270"><span>Masters</span></button>
+      <button type="button" class="reel-item" data-src="media/reel/12-anatomy.mp4" data-poster="media/reel/12-anatomy.jpg" data-label="The measures of a word set in Arris" aria-pressed="false"><img src="media/reel/12-anatomy.jpg" alt="" loading="lazy" width="480" height="270"><span>Anatomy</span></button>
+      <button type="button" class="reel-item" data-src="media/reel/13-squint.mp4" data-poster="media/reel/13-squint.jpg" data-label="A glyph that changes form as its white closes" aria-pressed="false"><img src="media/reel/13-squint.jpg" alt="" loading="lazy" width="480" height="270"><span>Squint</span></button>
+      <button type="button" class="reel-item" data-src="media/reel/14-grade.mp4" data-poster="media/reel/14-grade.jpg" data-label="Grade: heavier or lighter strokes on the same line" aria-pressed="false"><img src="media/reel/14-grade.jpg" alt="" loading="lazy" width="480" height="270"><span>Grade</span></button>
+      <button type="button" class="reel-item" data-src="media/reel/15-kerning.mp4" data-poster="media/reel/15-kerning.jpg" data-label="Kerning, pair by pair" aria-pressed="false"><img src="media/reel/15-kerning.jpg" alt="" loading="lazy" width="480" height="270"><span>Kerning</span></button>
+      <button type="button" class="reel-item" data-src="media/reel/16-italic.mp4" data-poster="media/reel/16-italic.jpg" data-label="The italic: its chamfers turned into curves" aria-pressed="false"><img src="media/reel/16-italic.jpg" alt="" loading="lazy" width="480" height="270"><span>Italic</span></button>
+      <button type="button" class="reel-item" data-src="media/reel/18-cursive.mp4" data-poster="media/reel/18-cursive.jpg" data-label="A line of the cursive italic" aria-pressed="false"><img src="media/reel/18-cursive.jpg" alt="" loading="lazy" width="480" height="270"><span>Cursive</span></button>
+      <button type="button" class="reel-item" data-src="media/reel/19-italic-wave.mp4" data-poster="media/reel/19-italic-wave.jpg" data-label="A wave of weight through a line of italic" aria-pressed="false"><img src="media/reel/19-italic-wave.jpg" alt="" loading="lazy" width="480" height="270"><span>Italic wave</span></button>
+      <button type="button" class="reel-item" data-src="media/reel/17-ligatures.mp4" data-poster="media/reel/17-ligatures.jpg" data-label="Arris Mono's programming ligatures in code" aria-pressed="false"><img src="media/reel/17-ligatures.jpg" alt="" loading="lazy" width="480" height="270"><span>Ligatures</span></button>
+      <button type="button" class="reel-item" data-src="media/reel/20-cyrillic.mp4" data-poster="media/reel/20-cyrillic.jpg" data-label="The Cyrillic italic beside the Latin" aria-pressed="false"><img src="media/reel/20-cyrillic.jpg" alt="" loading="lazy" width="480" height="270"><span>Cyrillic</span></button>
+      <button type="button" class="reel-item" data-src="media/reel/06-babel.mp4" data-poster="media/reel/06-babel.jpg" data-label="One line in Latin, Cyrillic, Greek and Vietnamese" aria-pressed="false"><img src="media/reel/06-babel.jpg" alt="" loading="lazy" width="480" height="270"><span>Scripts</span></button>
+      <button type="button" class="reel-item" data-src="media/reel/10-molten.mp4" data-poster="media/reel/10-molten.jpg" data-label="The name in Cyrillic, glowing as hot metal" aria-pressed="false"><img src="media/reel/10-molten.jpg" alt="" loading="lazy" width="480" height="270"><span>Molten</span></button>
+      <button type="button" class="reel-item" data-src="media/reel/gauge-blocks.mp4" data-poster="media/reel/gauge-blocks.jpg" data-label="Nine anodized titanium gauge blocks, one a weight" aria-pressed="false"><img src="media/reel/gauge-blocks.jpg" alt="" loading="lazy" width="480" height="270"><span>Gauge blocks</span></button>
+    </div>
   </figure>
 </section>
 
@@ -749,6 +765,7 @@ body {
 
 <script src="js/site.js" defer></script>
 <script src="js/watchcase.js" defer></script>
+<script src="js/reel.js" defer></script>
 <script src="js/anneal.js" defer></script>
 <script src="js/mono.js" defer></script>
 <script src="js/belt.js" defer></script>

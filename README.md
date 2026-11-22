@@ -101,6 +101,16 @@ seeks as the page scrolls. `www.arristype.com` is a second, tiny Worker
 (`worker/www.jsonc`) that sends every address to arristype.com.
 `npx wrangler dev` runs the site locally.
 
+For the **Arris 2.002** patch release, `deploy.yml` also checks every hour
+whether `v2.002` is published by `arris-type`. Until it is, normal website
+deployments retain the existing released 2.001 fonts and download. Once it
+exists, the workflow downloads the published ZIP, runs `tools/fonts.py`,
+deploys the generated WOFF2 files, CSS, release metadata and download link,
+and verifies that the live `data/font.json` reports 2.002. The scheduled
+check skips deployments after that version is live. This release-specific
+sync is separate from the normal tracked font assets and should be updated
+or removed for the next font release.
+
 ## Layout
 
 | Path | What |
